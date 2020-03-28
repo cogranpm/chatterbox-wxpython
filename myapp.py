@@ -9,10 +9,11 @@ class ChatterboxApp(wx.App):
     def __init__(self):
         super().__init__()
         self.frame = None
+        self.data_directory = None
 
     def OnInit(self) -> bool:
         wx.ConfigBase.Set(wx.Config(cc.APPLICATION_NAME))
-        load_default_settings(cc.CONFIG_KEY_DATA_DIRECTORY)
+        self.data_directory = load_default_settings()
         self.frame = MainFrame(None, "Chatterbox")
         self.frame.Show()
         return True
