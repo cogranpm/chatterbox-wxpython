@@ -9,6 +9,7 @@
 
 import wx
 import wx.xrc
+from ObjectListView import ObjectListView, ColumnDefn
 
 ###########################################################################
 ## Class DlgSettings
@@ -35,6 +36,9 @@ class DlgSettings ( wx.Dialog ):
 
 
 		bSizer1.Add( bSizer2, 0, wx.EXPAND, 5 )
+
+		self.m_listView = ObjectListView(self, wx.ID_ANY, style=wx.LC_REPORT|wx.SUNKEN_BORDER)
+		bSizer1.Add( self.m_listView, 1, wx.ALL|wx.EXPAND, 5 )
 
 		stdButtonSizer = wx.StdDialogButtonSizer()
 		self.stdButtonSizerOK = wx.Button( self, wx.ID_OK )

@@ -2,6 +2,7 @@
 
 import wx
 import SettingsDialog
+from ObjectListView import ObjectListView, ColumnDefn
 
 # Implementing DlgSettings
 class SettingsDialogImp( SettingsDialog.DlgSettings ):
@@ -9,6 +10,15 @@ class SettingsDialogImp( SettingsDialog.DlgSettings ):
 		SettingsDialog.DlgSettings.__init__( self, parent )
 		self.data_directory = data_directory
 		self.dirty = False
+		# testing objectlistview
+		test_data = [{"name": "fred", "author": "mehungry"},
+					 {"name": "vargos", "author": "renounced"}]
+		self.m_listView.SetColumns(
+			[ColumnDefn("Name", "left", 220, "name"),
+			 ColumnDefn("Author", "left", 200, "author")
+			 ])
+		self.m_listView.SetObjects(test_data)
+
 
 	# Handlers for DlgSettings events.
 	def OnInitDialog( self, event ):
