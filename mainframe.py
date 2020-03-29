@@ -34,7 +34,7 @@ class MainFrame ( wx.Frame ):
 		self.menuFileExport = wx.MenuItem( self.menuFile, wx.ID_ANY, u"&Export", wx.EmptyString, wx.ITEM_NORMAL )
 		self.menuFile.Append( self.menuFileExport )
 
-		self.menuFileQuit = wx.MenuItem( self.menuFile, wx.ID_QUIT, u"&Quit"+ u"\t" + u"CTRL-Q", wx.EmptyString, wx.ITEM_NORMAL )
+		self.menuFileQuit = wx.MenuItem( self.menuFile, wx.ID_QUIT, u"&Quit"+ u"\t" + u"CTRL+Q", wx.EmptyString, wx.ITEM_NORMAL )
 		self.menuFile.Append( self.menuFileQuit )
 
 		self.m_menubar1.Append( self.menuFile, u"&File" )

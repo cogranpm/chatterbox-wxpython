@@ -1,7 +1,7 @@
 import wx
 from MainFrameImp import  MainFrameImp
 import chatterbox_constants as cc
-from fn_app import load_default_settings
+from fn_app import load_default_settings, set_default_paths
 
 
 class ChatterboxApp(wx.App):
@@ -19,8 +19,20 @@ class ChatterboxApp(wx.App):
         super().OnInit()
         wx.ConfigBase.Set(wx.Config(cc.APPLICATION_NAME))
         self.data_directory = load_default_settings()
+        is_valid = set_default_paths(self.data_directory)
+        if not is_valid:
+            # give user a chance to select a new path
+            pass
+
+        # load images
         self.frame = MainFrameImp(None)
         self.frame.Show()
         self.SetTopWindow(self.frame)
         return True
+
+    def OnExit(self) -> int:
+        # cleanup tasks here
+        return 0
+
+
 
