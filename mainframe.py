@@ -10,7 +10,7 @@
 import wx
 import wx.xrc
 import wx.aui
-import wx.dataview
+from ObjectListView import ObjectListView, ColumnDefn
 
 wx.ID_QUIT = 1000
 wx.ID_ADD_SHELF = 1001
@@ -100,10 +100,8 @@ class MainFrame ( wx.Frame ):
 		self.pnlShelfList = wx.Panel( self.pnlShelf, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		bSizer7 = wx.BoxSizer( wx.VERTICAL )
 
-		self.m_dvlShelf = wx.dataview.DataViewListCtrl( self.pnlShelfList, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.dataview.DV_SINGLE )
-		self.colShelfIndex = self.m_dvlShelf.AppendTextColumn( wx.EmptyString, wx.dataview.DATAVIEW_CELL_INERT, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
-		self.m_dvlcShelfName = self.m_dvlShelf.AppendTextColumn( u"Title", wx.dataview.DATAVIEW_CELL_INERT, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
-		bSizer7.Add( self.m_dvlShelf, 1, wx.EXPAND, 5 )
+		self.shelf_list = ObjectListView(self, wx.ID_ANY, style=wx.LC_REPORT|wx.SUNKEN_BORDER)
+		bSizer7.Add( self.shelf_list, 1, wx.EXPAND, 5 )
 
 
 		self.pnlShelfList.SetSizer( bSizer7 )
@@ -159,10 +157,8 @@ class MainFrame ( wx.Frame ):
 		self.pnlSubjectList = wx.Panel( self.pnlSubject, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		bSizer14 = wx.BoxSizer( wx.VERTICAL )
 
-		self.m_lstSubject = wx.dataview.DataViewListCtrl( self.pnlSubjectList, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.colSubjectIndex = self.m_lstSubject.AppendTextColumn( wx.EmptyString, wx.dataview.DATAVIEW_CELL_INERT, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
-		self.m_lstSubjectColTitle = self.m_lstSubject.AppendTextColumn( u"Title", wx.dataview.DATAVIEW_CELL_INERT, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
-		bSizer14.Add( self.m_lstSubject, 1, wx.ALL|wx.EXPAND, 5 )
+		self.subject_list = ObjectListView(self, wx.ID_ANY, style=wx.LC_REPORT|wx.SUNKEN_BORDER)
+		bSizer14.Add( self.subject_list, 1, wx.EXPAND, 5 )
 
 
 		self.pnlSubjectList.SetSizer( bSizer14 )
@@ -212,10 +208,8 @@ class MainFrame ( wx.Frame ):
 		self.pnlPublicationList = wx.Panel( self.pnlPublication, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		bSizer11 = wx.BoxSizer( wx.VERTICAL )
 
-		self.lstPublication = wx.dataview.DataViewListCtrl( self.pnlPublicationList, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.colPublicationIndex = self.lstPublication.AppendTextColumn( wx.EmptyString, wx.dataview.DATAVIEW_CELL_INERT, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
-		self.lstPublicationColTitle = self.lstPublication.AppendTextColumn( u"Title", wx.dataview.DATAVIEW_CELL_INERT, -1, wx.ALIGN_LEFT, wx.dataview.DATAVIEW_COL_RESIZABLE )
-		bSizer11.Add( self.lstPublication, 1, wx.ALL|wx.EXPAND, 5 )
+		self.publication_list = ObjectListView(self, wx.ID_ANY, style=wx.LC_REPORT|wx.SUNKEN_BORDER)
+		bSizer11.Add( self.publication_list, 1, wx.EXPAND, 5 )
 
 
 		self.pnlPublicationList.SetSizer( bSizer11 )
@@ -263,24 +257,15 @@ class MainFrame ( wx.Frame ):
 		self.m_btnAddShelf.Bind( wx.EVT_BUTTON, self.AddShelfOnButtonClick )
 		self.m_btnDeleteShelf.Bind( wx.EVT_BUTTON, self.DeleteShelfOnButtonClick )
 		self.m_btnEditShelf.Bind( wx.EVT_BUTTON, self.EditShelfOnButtonClick )
-		self.m_dvlShelf.Bind( wx.dataview.EVT_DATAVIEW_COLUMN_SORTED, self.OnShelfColumnSort, id = wx.ID_ANY )
-		self.m_dvlShelf.Bind( wx.dataview.EVT_DATAVIEW_ITEM_ACTIVATED, self.OnShelfItemActivated, id = wx.ID_ANY )
-		self.m_dvlShelf.Bind( wx.dataview.EVT_DATAVIEW_SELECTION_CHANGED, self.OnShelfSelectionChanged, id = wx.ID_ANY )
 		self.btnAddSubject.Bind( wx.EVT_BUTTON, self.AddSubjectOnButtonClick )
 		self.btnDeleteSubject.Bind( wx.EVT_BUTTON, self.DeleteSubjectOnButtonClick )
 		self.btnEditSubject.Bind( wx.EVT_BUTTON, self.EditSubjectOnButtonClick )
-		self.m_lstSubject.Bind( wx.dataview.EVT_DATAVIEW_COLUMN_SORTED, self.OnSubjectColumnSort, id = wx.ID_ANY )
-		self.m_lstSubject.Bind( wx.dataview.EVT_DATAVIEW_ITEM_ACTIVATED, self.OnSubjectItemActivated, id = wx.ID_ANY )
-		self.m_lstSubject.Bind( wx.dataview.EVT_DATAVIEW_SELECTION_CHANGED, self.SubjectOnSelectionChanged, id = wx.ID_ANY )
 		self.btnAddPublication.Bind( wx.EVT_BUTTON, self.AddPublicationOnButtonClick )
 		self.btnAddPublication.Bind( wx.EVT_UPDATE_UI, self.AddPublicationOnUpdateUI )
 		self.btnDeletePublication.Bind( wx.EVT_BUTTON, self.DeletePublicationOnButtonClick )
 		self.btnDeletePublication.Bind( wx.EVT_UPDATE_UI, self.DeletePublicationOnUpdateUI )
 		self.btnEditPublication.Bind( wx.EVT_BUTTON, self.EditPublicationOnButtonClick )
 		self.btnEditPublication.Bind( wx.EVT_UPDATE_UI, self.EditPublicationOnUpdateUI )
-		self.lstPublication.Bind( wx.dataview.EVT_DATAVIEW_COLUMN_SORTED, self.OnPublicationColumnSort, id = wx.ID_ANY )
-		self.lstPublication.Bind( wx.dataview.EVT_DATAVIEW_ITEM_ACTIVATED, self.OnPublicationItemActivated, id = wx.ID_ANY )
-		self.lstPublication.Bind( wx.dataview.EVT_DATAVIEW_SELECTION_CHANGED, self.PublicationSelectionChanged, id = wx.ID_ANY )
 
 	def __del__( self ):
 		pass
@@ -311,15 +296,6 @@ class MainFrame ( wx.Frame ):
 	def EditShelfOnButtonClick( self, event ):
 		event.Skip()
 
-	def OnShelfColumnSort( self, event ):
-		event.Skip()
-
-	def OnShelfItemActivated( self, event ):
-		event.Skip()
-
-	def OnShelfSelectionChanged( self, event ):
-		event.Skip()
-
 	def AddSubjectOnButtonClick( self, event ):
 		event.Skip()
 
@@ -327,15 +303,6 @@ class MainFrame ( wx.Frame ):
 		event.Skip()
 
 	def EditSubjectOnButtonClick( self, event ):
-		event.Skip()
-
-	def OnSubjectColumnSort( self, event ):
-		event.Skip()
-
-	def OnSubjectItemActivated( self, event ):
-		event.Skip()
-
-	def SubjectOnSelectionChanged( self, event ):
 		event.Skip()
 
 	def AddPublicationOnButtonClick( self, event ):
@@ -354,15 +321,6 @@ class MainFrame ( wx.Frame ):
 		event.Skip()
 
 	def EditPublicationOnUpdateUI( self, event ):
-		event.Skip()
-
-	def OnPublicationColumnSort( self, event ):
-		event.Skip()
-
-	def OnPublicationItemActivated( self, event ):
-		event.Skip()
-
-	def PublicationSelectionChanged( self, event ):
 		event.Skip()
 
 	def m_splitter1OnIdle( self, event ):

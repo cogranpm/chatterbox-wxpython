@@ -2,7 +2,7 @@
 
 import wx
 import SettingsDialog
-from ObjectListView import ObjectListView, ColumnDefn
+from ObjectListView import ColumnDefn
 
 # Implementing DlgSettings
 class SettingsDialogImp( SettingsDialog.DlgSettings ):

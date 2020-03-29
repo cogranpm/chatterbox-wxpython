@@ -4,10 +4,12 @@ import wx
 from mainframe import MainFrame
 from SettingsDialogImp import SettingsDialogImp
 from fn_app import make_icon
+from ObjectListView import ColumnDefn
 
 
 # Implementing MainFrame
 class MainFrameImp( MainFrame ):
+
 	def __init__( self, parent ):
 		MainFrame.__init__( self, parent )
 		ico = wx.Icon('icons/disconnect2.ico', wx.BITMAP_TYPE_ICO)
@@ -17,6 +19,18 @@ class MainFrameImp( MainFrame ):
 		self.m_btnAddShelf.SetBitmap(make_icon('Add.png'))
 		self.m_btnDeleteShelf.SetBitmap(make_icon('Cancel.png'))
 
+		# testing objectlistview
+		test_data = [{"name": "fred", "author": "mehungry"},
+					 {"name": "vargos", "author": "renounced"}]
+		self.shelf_list.SetColumns(
+			[ColumnDefn("Name", "left", 220, "name"),
+			 ColumnDefn("Author", "left", 200, "author")
+			 ])
+		self.shelf_list.SetObjects(test_data)
+		self.shelf_list.Bind(wx.EVT_LIST_ITEM_SELECTED, self.select_item)
+
+	def select_item(self, event):
+		print("selected: ", self.m_listView.GetSelectedObject()["name"])
 
 	# Handlers for MainFrame events.
 	def FileExportOnMenuSelection( self, event ):
