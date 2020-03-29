@@ -18,7 +18,10 @@ class SettingsDialogImp( SettingsDialog.DlgSettings ):
 			 ColumnDefn("Author", "left", 200, "author")
 			 ])
 		self.m_listView.SetObjects(test_data)
+		self.m_listView.Bind(wx.EVT_LIST_ITEM_SELECTED, self.select_item)
 
+	def select_item(self, event):
+		print("selected: ", self.m_listView.GetSelectedObject()["name"])
 
 	# Handlers for DlgSettings events.
 	def OnInitDialog( self, event ):
