@@ -3,11 +3,20 @@
 import wx
 from mainframe import MainFrame
 from SettingsDialogImp import SettingsDialogImp
+from fn_app import make_icon
+
 
 # Implementing MainFrame
 class MainFrameImp( MainFrame ):
 	def __init__( self, parent ):
 		MainFrame.__init__( self, parent )
+		ico = wx.Icon('icons/disconnect2.ico', wx.BITMAP_TYPE_ICO)
+		self.SetIcon(ico)
+		#self.m_btnEditShelf.SetBitmap(wx.Bitmap('icons/Edit.png', wx.BITMAP_TYPE_PNG))
+		self.m_btnEditShelf.SetBitmap(make_icon('Edit.png'))
+		self.m_btnAddShelf.SetBitmap(make_icon('Add.png'))
+		self.m_btnDeleteShelf.SetBitmap(make_icon('Cancel.png'))
+
 
 	# Handlers for MainFrame events.
 	def FileExportOnMenuSelection( self, event ):

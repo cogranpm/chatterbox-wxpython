@@ -1,6 +1,6 @@
 import wx
 import chatterbox_constants as cc
-
+import os
 
 def load_default_settings():
     config: wx.ConfigBase = wx.ConfigBase.Get()
@@ -27,4 +27,9 @@ def set_default_paths(path) -> bool:
     # make audio subdirectory if not exists
     # if the path doesn't exist return false, which triggers user to locate again
     return True
+
+
+def make_icon(name):
+    path = os.path.join(cc.PATH_ICONS, name)
+    return wx.Bitmap(path, wx.BITMAP_TYPE_PNG)
 
