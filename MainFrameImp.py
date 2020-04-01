@@ -8,6 +8,7 @@ from SettingsDialogImp import SettingsDialogImp
 from fn_app import make_icon
 from ObjectListView import ColumnDefn
 import logging
+import playground
 
 
 # Implementing MainFrame
@@ -54,6 +55,9 @@ class MainFrameImp( MainFrame ):
 
 	def handle_menu_playground( self, event ):
 		logging.warning("Playground")
+		dlg = playground.PlaygroundForm(self)
+		result = dlg.ShowModal()
+
 
 	def OnNotebookPageChanged( self, event ):
 		# TODO: Implement OnNotebookPageChanged

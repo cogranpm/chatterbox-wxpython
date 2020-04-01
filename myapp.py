@@ -18,7 +18,6 @@ class ChatterboxApp(wx.App):
         """ System, Toolkit and WxWidgets fully initialized"""
         super().OnInit()
         config_logging()
-        logging.warning('set up loggin')
         wx.ConfigBase.Set(wx.Config(cc.APPLICATION_NAME))
         self.data_directory = load_default_settings()
         is_valid = set_default_paths(self.data_directory)
