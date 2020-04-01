@@ -7,6 +7,7 @@ from MainFrame import MainFrame
 from SettingsDialogImp import SettingsDialogImp
 from fn_app import make_icon
 from ObjectListView import ColumnDefn
+import logging
 
 
 # Implementing MainFrame
@@ -50,6 +51,9 @@ class MainFrameImp( MainFrame ):
 				if dlg.dirty:
 					# more than this needs to happen
 					app.data_directory = dlg.data_directory
+
+	def handle_menu_playground( self, event ):
+		logging.warning("Playground")
 
 	def OnNotebookPageChanged( self, event ):
 		# TODO: Implement OnNotebookPageChanged
@@ -142,5 +146,7 @@ class MainFrameImp( MainFrame ):
 	def PublicationSelectionChanged( self, event ):
 		# TODO: Implement PublicationSelectionChanged
 		pass
+
+
 
 

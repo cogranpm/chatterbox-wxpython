@@ -45,6 +45,9 @@ class MainFrame ( wx.Frame ):
 		self.menuEditSettings = wx.MenuItem( self.menuEdit, wx.ID_PREFERENCES, u"&Settings", wx.EmptyString, wx.ITEM_NORMAL )
 		self.menuEdit.Append( self.menuEditSettings )
 
+		self.mnuEditPlayground = wx.MenuItem( self.menuEdit, wx.ID_ANY, u"Playground"+ u"\t" + u"CTRL-P", wx.EmptyString, wx.ITEM_NORMAL )
+		self.menuEdit.Append( self.mnuEditPlayground )
+
 		self.m_menubar1.Append( self.menuEdit, u"&Edit" )
 
 		self.SetMenuBar( self.m_menubar1 )
@@ -252,6 +255,7 @@ class MainFrame ( wx.Frame ):
 		self.Bind( wx.EVT_MENU, self.FileExportOnMenuSelection, id = self.menuFileExport.GetId() )
 		self.Bind( wx.EVT_MENU, self.menuFileQuitOnMenuSelection, id = self.menuFileQuit.GetId() )
 		self.Bind( wx.EVT_MENU, self.menuEditSettingsOnMenuSelection, id = self.menuEditSettings.GetId() )
+		self.Bind( wx.EVT_MENU, self.handle_menu_playground, id = self.mnuEditPlayground.GetId() )
 		self.m_auiShelf.Bind( wx.aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.OnNotebookPageChanged )
 		self.m_auiShelf.Bind( wx.aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.OnNotebookPageClose )
 		self.m_btnAddShelf.Bind( wx.EVT_BUTTON, self.AddShelfOnButtonClick )
@@ -279,6 +283,9 @@ class MainFrame ( wx.Frame ):
 		event.Skip()
 
 	def menuEditSettingsOnMenuSelection( self, event ):
+		event.Skip()
+
+	def handle_menu_playground( self, event ):
 		event.Skip()
 
 	def OnNotebookPageChanged( self, event ):

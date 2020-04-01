@@ -1,6 +1,7 @@
 import wx
 import chatterbox_constants as cc
 import os
+import logging
 
 def load_default_settings():
     config: wx.ConfigBase = wx.ConfigBase.Get()
@@ -32,4 +33,9 @@ def set_default_paths(path) -> bool:
 def make_icon(name):
     path = os.path.join(cc.PATH_ICONS, name)
     return wx.Bitmap(path, wx.BITMAP_TYPE_PNG)
+
+
+def config_logging():
+    logging.basicConfig(filename=cc.LOG_FILE_NAME, level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+
 
