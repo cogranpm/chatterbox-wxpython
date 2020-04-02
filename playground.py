@@ -14,29 +14,45 @@ class PlaygroundForm(wx.Dialog):
 
         # declarative ui style begin
         widget_list = \
-            [[w.sizer, [],
-            [w.std_buttons, [self, self.OnOKButtonClick]]
-            ]]
+            [
+                [w.sizer, [],
+                [
+                    [w.std_buttons, [self, self.OnOKButtonClick]]
+                ]
+                ]
+            ]
 
 
-        bSizer1 = widget_list[0][0]
-        #std_button_container = widget_list
+        # first child is the wiget function
+        # second position is list of arguments
+        # third position is list containing children
+        # this is a test, in reality the whole list of lists structure would be recursed etc
+        sizer_dec = widget_list[0][0]
+        bSizer1 = sizer_dec()
+        child_list = widget_list[0][2]
+        std_buttons_list = child_list[0]
+        std_buttons_dec = std_buttons_list[0]
+        std_buttons_arg = std_buttons_list[1]
+        # call the widget functions with arguments contained in list
+        # first should be parent instance, second  should be click handler
+        std_buttons = std_buttons_dec(std_buttons_arg)
 
-        stdButtonSizer = wx.StdDialogButtonSizer()
-        self.stdButtonSizerOK = wx.Button(self, wx.ID_OK)
-        stdButtonSizer.AddButton(self.stdButtonSizerOK)
-        self.stdButtonSizerCancel = wx.Button(self, wx.ID_CANCEL)
-        stdButtonSizer.AddButton(self.stdButtonSizerCancel)
-        stdButtonSizer.Realize()
 
-        bSizer1.Add(stdButtonSizer, 0, wx.EXPAND, 5)
+        # stdButtonSizer = wx.StdDialogButtonSizer()
+        # self.stdButtonSizerOK = wx.Button(self, wx.ID_OK)
+        # stdButtonSizer.AddButton(self.stdButtonSizerOK)
+        # self.stdButtonSizerCancel = wx.Button(self, wx.ID_CANCEL)
+        # stdButtonSizer.AddButton(self.stdButtonSizerCancel)
+        # stdButtonSizer.Realize()
+
+        bSizer1.Add(std_buttons, 0, wx.EXPAND, 5)
         self.SetSizer(bSizer1)
         self.Layout()
         self.Centre(wx.BOTH)
 
         # Connect Events
         self.Bind(wx.EVT_INIT_DIALOG, self.OnInitDialog)
-        self.stdButtonSizerOK.Bind(wx.EVT_BUTTON, self.OnOKButtonClick)
+        #self.stdButtonSizerOK.Bind(wx.EVT_BUTTON, self.OnOKButtonClick)
 
 
     def OnInitDialog(self, event):
@@ -44,4 +60,5 @@ class PlaygroundForm(wx.Dialog):
 
 
     def OnOKButtonClick(self, event):
+        print("ya clicked ok ya know")
         event.Skip()
