@@ -15,6 +15,17 @@ import wx
 def sizer() -> wx.BoxSizer:
     return wx.BoxSizer(wx.VERTICAL)
 
+def hsizer(items):
+    sizer = wx.BoxSizer(wx.HORIZONTAL)
+    for item in items:
+        sizer.Add(item)
+    return sizer
+
+def tool_button(parent, id, text, handler):
+    btn = wx.Button(parent, id, text, wx.DefaultPosition, wx.Size(40, 40), 0)
+    btn.Bind(wx.EVT_BUTTON, handler)
+    return btn
+
 def std_buttons(properties):
     parent = properties[0]
     okhandler = properties[1]

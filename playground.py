@@ -12,6 +12,21 @@ class PlaygroundForm(wx.Dialog):
 
         self.SetSizeHints(wx.DefaultSize, wx.DefaultSize)
 
+        # seesaw is a immediate function with keyword arguments style
+        # big on first class functions so function takes a list, some of the arguments are functions themselves
+        # the functions would be called before being passed to the called function
+        test_sizer = w.hsizer(
+            items=[
+                w.tool_button(parent=self, id=wx.ID_ANY, text="GO", handler=self.go_button_click),
+                w.tool_button(parent=self, id=wx.ID_ANY, text="OH", handler=self.oh_button_click),
+                w.hsizer(
+                    items=[
+                        w.tool_button(parent=self, id=wx.ID_ANY, text="IN", handler=self.go_button_click),
+                    ]
+                )
+                   ]
+        )
+
         # declarative ui style begin
         widget_list = \
             [
@@ -46,6 +61,7 @@ class PlaygroundForm(wx.Dialog):
         # stdButtonSizer.Realize()
 
         bSizer1.Add(std_buttons, 0, wx.EXPAND, 5)
+        bSizer1.Add(test_sizer)
         self.SetSizer(bSizer1)
         self.Layout()
         self.Centre(wx.BOTH)
@@ -62,3 +78,10 @@ class PlaygroundForm(wx.Dialog):
     def OnOKButtonClick(self, event):
         print("ya clicked ok ya know")
         event.Skip()
+
+    def go_button_click(self, event):
+        print("clicked go on me did ya")
+
+    def oh_button_click(self, event):
+        print("clicked oh on me did ya")
+
