@@ -4,6 +4,11 @@
 # client code declares function pointers rather than calling the function
 # and a 'tree' of widgets is built up then rendered
 
+# the seesaw way of doing things is that functions are called immediate
+# there are keyword arguments eg :text
+# container type widgets have an :items argument that take a list
+# containers that take a single child have a :content argument
+
 import wx
 
 
