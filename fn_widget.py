@@ -26,6 +26,26 @@ def tool_button(parent, id, text, handler):
     btn.Bind(wx.EVT_BUTTON, handler)
     return btn
 
+
+def notebook(parent, id = wx.ID_ANY):
+    notebook = wx.aui.AuiNotebook(parent, id, wx.DefaultPosition, wx.DefaultSize, 0)
+    return notebook
+
+def panel(parent, id = wx.ID_ANY):
+    panel = wx.Panel(parent, id, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+    return panel
+
+def splitter(parent, id = wx.ID_ANY):
+    splitter = wx.SplitterWindow(parent, id, wx.DefaultPosition, wx.DefaultSize, wx.SP_3D)
+    #splitter.Bind(wx.EVT_IDLE, m_splitter1OnIdle)
+    return splitter
+
+def static_text(parent, id = wx.ID_ANY, text = ''):
+    static_text = wx.StaticText(parent, id, text, wx.DefaultPosition, wx.DefaultSize, 0)
+    return static_text
+
+
+
 def std_buttons(properties):
     parent = properties[0]
     okhandler = properties[1]
@@ -37,5 +57,7 @@ def std_buttons(properties):
     stdButtonSizer.Realize()
     stdButtonSizerOK.Bind(wx.EVT_BUTTON, okhandler)
     return stdButtonSizer
+
+
 
 
