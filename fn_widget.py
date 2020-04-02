@@ -11,6 +11,10 @@
 
 import wx
 
+# to do
+# frame
+# menus
+
 
 def sizer() -> wx.BoxSizer:
     return wx.BoxSizer(wx.VERTICAL)
