@@ -4,7 +4,7 @@ import logging
 import fn_widget as w
 import wx.dataview as dv
 
-
+# if using a list of lists style this could be generic for any domain model data
 class TestModel(dv.DataViewIndexListModel):
 
     def __init__(self, data):
@@ -76,6 +76,8 @@ class PlaygroundForm(wx.Dialog):
 
 
         self.SetSizeHints(wx.DefaultSize, wx.DefaultSize)
+
+        self.dvc = dv.DataViewCtrl(self, style = wx.BORDER_THEME)
 
         # seesaw is a immediate function with keyword arguments style
         # big on first class functions so function takes a list, some of the arguments are functions themselves
