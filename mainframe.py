@@ -45,6 +45,9 @@ class MainFrame ( wx.Frame ):
 		self.menuEditSettings = wx.MenuItem( self.menuEdit, wx.ID_PREFERENCES, u"&Settings", wx.EmptyString, wx.ITEM_NORMAL )
 		self.menuEdit.Append( self.menuEditSettings )
 
+		self.mnuEditPlayground = wx.MenuItem( self.menuEdit, wx.ID_ANY, u"Playground"+ u"\t" + u"CTRL-P", wx.EmptyString, wx.ITEM_NORMAL )
+		self.menuEdit.Append( self.mnuEditPlayground )
+
 		self.m_menubar1.Append( self.menuEdit, u"&Edit" )
 
 		self.SetMenuBar( self.m_menubar1 )
@@ -101,7 +104,10 @@ class MainFrame ( wx.Frame ):
 		bSizer7 = wx.BoxSizer( wx.VERTICAL )
 
 		self.shelf_list = ObjectListView(self, wx.ID_ANY, style=wx.LC_REPORT|wx.SUNKEN_BORDER)
-		bSizer7.Add( self.shelf_list, 1, wx.EXPAND, 5 )
+		bSizer7.Add( self.shelf_list, 1, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_textCtrl1 = wx.TextCtrl( self.pnlShelfList, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer7.Add( self.m_textCtrl1, 0, wx.ALL, 5 )
 
 
 		self.pnlShelfList.SetSizer( bSizer7 )
@@ -157,8 +163,8 @@ class MainFrame ( wx.Frame ):
 		self.pnlSubjectList = wx.Panel( self.pnlSubject, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		bSizer14 = wx.BoxSizer( wx.VERTICAL )
 
-		self.subject_list = ObjectListView(self, wx.ID_ANY, style=wx.LC_REPORT|wx.SUNKEN_BORDER)
-		bSizer14.Add( self.subject_list, 1, wx.EXPAND, 5 )
+		self.m_textCtrl2 = wx.TextCtrl( self.pnlSubjectList, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer14.Add( self.m_textCtrl2, 0, wx.ALL, 5 )
 
 
 		self.pnlSubjectList.SetSizer( bSizer14 )
@@ -208,9 +214,6 @@ class MainFrame ( wx.Frame ):
 		self.pnlPublicationList = wx.Panel( self.pnlPublication, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		bSizer11 = wx.BoxSizer( wx.VERTICAL )
 
-		self.publication_list = ObjectListView(self, wx.ID_ANY, style=wx.LC_REPORT|wx.SUNKEN_BORDER)
-		bSizer11.Add( self.publication_list, 1, wx.EXPAND, 5 )
-
 
 		self.pnlPublicationList.SetSizer( bSizer11 )
 		self.pnlPublicationList.Layout()
@@ -252,6 +255,7 @@ class MainFrame ( wx.Frame ):
 		self.Bind( wx.EVT_MENU, self.FileExportOnMenuSelection, id = self.menuFileExport.GetId() )
 		self.Bind( wx.EVT_MENU, self.menuFileQuitOnMenuSelection, id = self.menuFileQuit.GetId() )
 		self.Bind( wx.EVT_MENU, self.menuEditSettingsOnMenuSelection, id = self.menuEditSettings.GetId() )
+		self.Bind( wx.EVT_MENU, self.handle_menu_playground, id = self.mnuEditPlayground.GetId() )
 		self.m_auiShelf.Bind( wx.aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.OnNotebookPageChanged )
 		self.m_auiShelf.Bind( wx.aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.OnNotebookPageClose )
 		self.m_btnAddShelf.Bind( wx.EVT_BUTTON, self.AddShelfOnButtonClick )
@@ -279,6 +283,9 @@ class MainFrame ( wx.Frame ):
 		event.Skip()
 
 	def menuEditSettingsOnMenuSelection( self, event ):
+		event.Skip()
+
+	def handle_menu_playground( self, event ):
 		event.Skip()
 
 	def OnNotebookPageChanged( self, event ):
