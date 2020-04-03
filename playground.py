@@ -163,7 +163,8 @@ class PlaygroundForm(wx.Dialog):
         print('selection made', event)
         print(event.GetModel().data)
         selected_item =self.dvc.GetSelection()
-        print(self.model.ItemToObject(selected_item))
+        # need to use the DataViewItemObjectMapper for this or the PyDataViewModel as the model baseclass
+        #print(self.model.ItemToObject(selected_item))
 
     def OnOKButtonClick(self, event):
         print("ya clicked ok ya know")
