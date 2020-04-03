@@ -71,65 +71,68 @@ class TestModel(dv.DataViewIndexListModel):
 class PyTestModel(dv.PyDataViewModel):
 
 
+    """
+    this class has a neat way to get the object that is stored
+    inside the row of the table without resorting to storing pointers etc
+    also supports sorting, adding, editing and deleting
+    also supports attributes on cells etc
+    """
     def __init__(self, data):
-        super().__init__(len(data))
+        super().__init__()
         self.data = data
+
+    def GetChildren(self, item, children):
+        for row in self.data:
+            children.append(self.ObjectToItem(row))
+        print("Hi this should update:", self.data)
+        return len(self.data)
+
+    def IsContainer(self, item):
+        if not item:
+            return True
+        return False
+
+    def GetParent(self, item):
+        return dv.NullDataViewItem
 
     def GetColumnType(self, col):
         return 'string'
 
-    def GetValueByRow(self, row, col):
-        return self.data[row][col]
-
-    def SetValueByRow(self, value, row, col):
-        self.data[row][col] = value
-
     def GetColumnCount(self):
         return len(self.data[0])
 
-    def GetCount(self):
-        return len(self.data)
+    def GetValue(self, item, col):
+        row = self.ItemToObject(item)
+        return row[col]
 
-    def GetAttrByRow(self, row, col, attr):
-        if col == 3:
+    def GetAttr(self, item, col, attr):
+        if col == 1:
             attr.SetColour('blue')
             attr.SetBold(True)
             return True
         return False
 
+    def SetValue(self, variant, item, col):
+        row = self.ItemToObject(item)
+        row[col] = variant
+        return True
+
     def Compare(self, item1, item2, col, ascending):
+        print('compare')
         if not ascending: # swap sort order?
             item2, item1 = item1, item2
-        row1 = self.GetRow(item1)
-        row2 = self.GetRow(item2)
+        row1 = self.ItemToObject(item1)
+        row2 = self.ItemToObject(item2)
+
+        # different sort depending on column
         if col == 1 or col == 2:
-            a = int(self.data[row1][col])
-            b = int(self.data[row2][col])
+            a = int(row1[col])
+            b = int(row2[col])
             return (a > b) - (a < b)
         else:
-            a = self.data[row1][col]
-            b = self.data[row2][col]
+            a = row1[col]
+            b = row2[col]
             return (a > b) - (a < b)
-
-    def DeleteRows(self, rows):
-        # make a copy since we'll be sorting(mutating) the list
-        rows = list(rows)
-        # use reverse order so the indexes don't change as we remove items
-        rows.sort(reverse=True)
-
-        for row in rows:
-            # remove it from our data structure
-            del self.data[row]
-            # notify the view(s) using this model that it has been removed
-            self.RowDeleted(row)
-
-
-    def AddRow(self, value):
-        # update data structure
-        self.data.append(value)
-        # notify views
-        self.RowAppended()
-
 
 
 class PlaygroundForm(wx.Dialog):
@@ -143,9 +146,12 @@ class PlaygroundForm(wx.Dialog):
 
         # testing out the list control
         self.dvc = dv.DataViewCtrl(self, wx.ID_ANY, style = wx.BORDER_THEME)
-        data = [['Peter', '33', '100'], ['Fred', '22', '98']]
-        self.model = TestModel(data)
+        self.data = [['Peter', '33', '100'], ['Fred', '22', '98']]
+        self.model = PyTestModel(self.data)
+        #self.model = TestModel(data)
         self.dvc.AssociateModel(self.model)
+        self.model.DecRef()
+
         self.dvc.AppendTextColumn("Name",  0, width=260, mode=dv.DATAVIEW_CELL_EDITABLE)
         self.dvc.AppendTextColumn("Age",   1, width=80, mode=dv.DATAVIEW_CELL_EDITABLE)
         self.dvc.AppendTextColumn("Weight", 2, width=80,  mode=dv.DATAVIEW_CELL_EDITABLE)
@@ -158,11 +164,11 @@ class PlaygroundForm(wx.Dialog):
         # the functions would be called before being passed to the called function
         test_sizer = w.hsizer(
             items=[
-                w.tool_button(parent=self, id=wx.ID_ANY, text="GO", handler=self.go_button_click),
-                w.tool_button(parent=self, id=wx.ID_ANY, text="OH", handler=self.oh_button_click),
+                w.tool_button(parent=self, id=wx.ID_ANY, text="Add", handler=self.add_button_click),
+                w.tool_button(parent=self, id=wx.ID_ANY, text="Del", handler=self.delete_button_click),
                 w.hsizer(
                     items=[
-                        w.tool_button(parent=self, id=wx.ID_ANY, text="IN", handler=self.go_button_click),
+                        w.tool_button(parent=self, id=wx.ID_ANY, text="IN", handler=self.add_button_click),
                     ]
                 )
                    ]
@@ -223,19 +229,19 @@ class PlaygroundForm(wx.Dialog):
         logging.info('Playgound Dialog Initialized')
 
     def list_selection_change(self, event: dv.DataViewEvent):
-        print('selection made', event)
-        print(event.GetModel().data)
-        selected_item =self.dvc.GetSelection()
-        # need to use the DataViewItemObjectMapper for this or the PyDataViewModel as the model baseclass
-        #print(self.model.ItemToObject(selected_item))
+        selected_item = self.dvc.GetSelection()
+        print(self.model.ItemToObject(selected_item))
 
     def OnOKButtonClick(self, event):
         print("ya clicked ok ya know")
         event.Skip()
 
-    def go_button_click(self, event):
-        print("clicked go on me did ya")
+    def add_button_click(self, event):
+        new_person = ['Mike', '44', '55']
+        self.data.append(new_person)
+        self.model.ItemAdded(dv.NullDataViewItem, self.model.ObjectToItem(new_person))
 
-    def oh_button_click(self, event):
-        print("clicked oh on me did ya")
+    def delete_button_click(self, event):
+        self.model.ItemDeleted(dv.NullDataViewItem, self.model.ObjectToItem(self.data[0]))
+        del(self.data[0])
 
