@@ -1,6 +1,4 @@
-cb5 = wx.CheckBox(self, -1, "Align Right", style=wx.ALIGN_RIGHT)
 
-self.Bind(wx.EVT_CHECKBOX, self.EvtCheckBox, cb1)
 # trying to experiment with a functional style
 # declarative ui something like seesaw for clojure
 # where widgets are defined by functions that take sequences of properties
