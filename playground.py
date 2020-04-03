@@ -4,9 +4,72 @@ import logging
 import fn_widget as w
 import wx.dataview as dv
 
+
 # if using a list of lists style this could be generic for any domain model data
 class TestModel(dv.DataViewIndexListModel):
-#class TestModel(dv.PyDataViewModel):
+
+    def __init__(self, data):
+        super().__init__(len(data))
+        self.data = data
+
+    def GetColumnType(self, col):
+        return 'string'
+
+    def GetValueByRow(self, row, col):
+        return self.data[row][col]
+
+    def SetValueByRow(self, value, row, col):
+        self.data[row][col] = value
+
+    def GetColumnCount(self):
+        return len(self.data[0])
+
+    def GetCount(self):
+        return len(self.data)
+
+    def GetAttrByRow(self, row, col, attr):
+        if col == 3:
+            attr.SetColour('blue')
+            attr.SetBold(True)
+            return True
+        return False
+
+    def Compare(self, item1, item2, col, ascending):
+        if not ascending: # swap sort order?
+            item2, item1 = item1, item2
+        row1 = self.GetRow(item1)
+        row2 = self.GetRow(item2)
+        if col == 1 or col == 2:
+            a = int(self.data[row1][col])
+            b = int(self.data[row2][col])
+            return (a > b) - (a < b)
+        else:
+            a = self.data[row1][col]
+            b = self.data[row2][col]
+            return (a > b) - (a < b)
+
+    def DeleteRows(self, rows):
+        # make a copy since we'll be sorting(mutating) the list
+        rows = list(rows)
+        # use reverse order so the indexes don't change as we remove items
+        rows.sort(reverse=True)
+
+        for row in rows:
+            # remove it from our data structure
+            del self.data[row]
+            # notify the view(s) using this model that it has been removed
+            self.RowDeleted(row)
+
+
+    def AddRow(self, value):
+        # update data structure
+        self.data.append(value)
+        # notify views
+        self.RowAppended()
+
+
+class PyTestModel(dv.PyDataViewModel):
+
 
     def __init__(self, data):
         super().__init__(len(data))
