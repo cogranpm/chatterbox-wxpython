@@ -6,9 +6,10 @@ import wx.dataview as dv
 
 # if using a list of lists style this could be generic for any domain model data
 class TestModel(dv.DataViewIndexListModel):
+#class TestModel(dv.PyDataViewModel):
 
     def __init__(self, data):
-        super.__init__(len(data))
+        super().__init__(len(data))
         self.data = data
 
     def GetColumnType(self, col):
@@ -38,12 +39,12 @@ class TestModel(dv.DataViewIndexListModel):
             item2, item1 = item1, item2
         row1 = self.GetRow(item1)
         row2 = self.GetRow(item2)
-        if col == 0:
-            a =  int(self.data[row1][col])
+        if col == 1 or col == 2:
+            a = int(self.data[row1][col])
             b = int(self.data[row2][col])
             return (a > b) - (a < b)
         else:
-            a =self.data[row1][col]
+            a = self.data[row1][col]
             b = self.data[row2][col]
             return (a > b) - (a < b)
 
@@ -77,7 +78,17 @@ class PlaygroundForm(wx.Dialog):
 
         self.SetSizeHints(wx.DefaultSize, wx.DefaultSize)
 
-        self.dvc = dv.DataViewCtrl(self, style = wx.BORDER_THEME)
+        # testing out the list control
+        self.dvc = dv.DataViewCtrl(self, wx.ID_ANY, style = wx.BORDER_THEME)
+        data = [['Peter', '33', '100'], ['Fred', '22', '98']]
+        self.model = TestModel(data)
+        self.dvc.AssociateModel(self.model)
+        self.dvc.AppendTextColumn("Name",  0, width=260, mode=dv.DATAVIEW_CELL_EDITABLE)
+        self.dvc.AppendTextColumn("Age",   1, width=80, mode=dv.DATAVIEW_CELL_EDITABLE)
+        self.dvc.AppendTextColumn("Weight", 2, width=80,  mode=dv.DATAVIEW_CELL_EDITABLE)
+        for c in self.dvc.Columns:
+            c.Sortable = True
+        self.dvc.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.list_selection_change)
 
         # seesaw is a immediate function with keyword arguments style
         # big on first class functions so function takes a list, some of the arguments are functions themselves
@@ -133,7 +144,7 @@ class PlaygroundForm(wx.Dialog):
         # stdButtonSizer.AddButton(self.stdButtonSizerCancel)
         # stdButtonSizer.Realize()
 
-
+        bSizer1.Add(self.dvc, 1, wx.EXPAND)
         bSizer1.Add(test_sizer)
         bSizer1.Add(std_buttons, 0, wx.EXPAND, 5)
         self.SetSizer(bSizer1)
@@ -148,6 +159,11 @@ class PlaygroundForm(wx.Dialog):
     def OnInitDialog(self, event):
         logging.info('Playgound Dialog Initialized')
 
+    def list_selection_change(self, event: dv.DataViewEvent):
+        print('selection made', event)
+        print(event.GetModel().data)
+        selected_item =self.dvc.GetSelection()
+        print(self.model.ItemToObject(selected_item))
 
     def OnOKButtonClick(self, event):
         print("ya clicked ok ya know")
