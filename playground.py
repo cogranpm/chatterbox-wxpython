@@ -210,6 +210,11 @@ class PlaygroundForm(wx.Dialog):
         bSizer1.Add(self.dvc, 1, wx.EXPAND)
         bSizer1.Add(test_sizer)
         bSizer1.Add(std_buttons, 0, wx.EXPAND, 5)
+
+        panel = self.OnFlexGridSizer(self)
+        bSizer1.Add(panel, 1, wx.EXPAND, 5)
+
+        # frame stuff
         self.SetSizer(bSizer1)
         self.Layout()
         self.Centre(wx.BOTH)
@@ -241,21 +246,47 @@ class PlaygroundForm(wx.Dialog):
         self.model.ItemDeleted(dv.NullDataViewItem, self.model.ObjectToItem(self.data[0]))
         del(self.data[0])
 
+    def edit_form(self, parent):
+        helpstr = """
+        This is the FlexGrid Sizer demo 
+        specify which columns or rows should grow
+        grow flexibly in either direction meaning,
+        you can specify proportional amounts for child elements
+        and specify behaviour in the non flexible direction
+        growable row means in the vertical direction
+        growable col means in the horizontal direction
+        use the proportion argument in the Add method to make cell grow at different amount """
+
+        apanel = w.panel(parent=parent,
+            items=
+            [
+                w.vsizer(
+                    items=[
+                        w.static_text(parent, text="Flex Grid Sizer"),
+                        w.static_text(parent, text=helpstr.lstrip())
+                    ]
+                )
+            ]
+        )
+        return apanel
+
+
     def OnFlexGridSizer(self, parent):
-        panel = w.panel(parent)
+        helpstr = """
+        This is the FlexGrid Sizer demo 
+        specify which columns or rows should grow
+        grow flexibly in either direction meaning,
+        you can specify proportional amounts for child elements
+        and specify behaviour in the non flexible direction
+        growable row means in the vertical direction
+        growable col means in the horizontal direction
+        use the proportion argument in the Add method to make cell grow at different amount """
+
+        panel = w.panel(parent, [])
         # vertical sizer to split screen
         box = wx.BoxSizer(wx.VERTICAL)
         # sizer to display help text
         # textbox = wx.BoxSizer(wx.HORIZONTAL)
-        helpstr = """
-This is the FlexGrid Sizer demo 
-specify which columns or rows should grow
-grow flexibly in either direction meaning,
-you can specify proportional amounts for child elements
-and specify behaviour in the non flexible direction
-growable row means in the vertical direction
-growable col means in the horizontal direction
-use the proportion argument in the Add method to make cell grow at different amount """
         sizerheader = wx.StaticText(panel, 0, "Flex Grid Sizer")
         sizerlabel = wx.StaticText(panel, 0, helpstr.lstrip())
         sizerheader.SetFont(wx.Font(18, wx.SWISS, wx.NORMAL, wx.BOLD))
@@ -346,3 +377,4 @@ use the proportion argument in the Add method to make cell grow at different amo
         box.SetSizeHints(parent)
         panel.SetBackgroundColour("orange")
         panel.Refresh()
+        return panel

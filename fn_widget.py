@@ -31,6 +31,12 @@ def hsizer(items):
         sizer.Add(item)
     return sizer
 
+def vsizer(items):
+    sizer = wx.BoxSizer(wx.VERTICAL)
+    for item in items:
+        sizer.Add(item)
+    return sizer
+
 def tool_button(parent, id, text, handler):
     btn = wx.Button(parent, id, text, wx.DefaultPosition, wx.Size(40, 40), 0)
     btn.Bind(wx.EVT_BUTTON, handler)
@@ -41,8 +47,11 @@ def notebook(parent, id = wx.ID_ANY):
     notebook = wx.aui.AuiNotebook(parent, id, wx.DefaultPosition, wx.DefaultSize, 0)
     return notebook
 
-def panel(parent, id = wx.ID_ANY):
+def panel(parent, items, id = wx.ID_ANY):
     panel = wx.Panel(parent, id, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+    for item in items:
+        pass
+        #sizer.Add(item)
     return panel
 
 def splitter(parent, id = wx.ID_ANY):
