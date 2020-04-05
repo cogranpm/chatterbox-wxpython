@@ -78,6 +78,69 @@ def form(parent, content, headerstr, helpstr):
     box.Add(lbl_help, 0, wx.ALL, 5)
     box.Add(wx.StaticLine(panel), 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
+    # contents
+    lbl_name = wx.StaticText(panel, -1, "Name:")
+    txt_name = wx.TextCtrl(panel, -1, "Emmett")
+
+    lblage = wx.StaticText(panel, -1, "Date of Birth:")
+    txtage = wx.TextCtrl(panel, -1, "06/19/2015")
+
+    lbladdress = wx.StaticText(panel, -1, "Address:")
+    addr1 = wx.TextCtrl(panel, -1, "Flat 1")
+    addr2 = wx.TextCtrl(panel, -1, "18890 Edgewood Ln")
+
+    lblcity = wx.StaticText(panel, -1, "City, State, Zip:")
+    city = wx.TextCtrl(panel, -1, "Prior Lake", size=(150, -1))
+    state = wx.TextCtrl(panel, -1, "MN", size=(50, -1))
+    zip = wx.TextCtrl(panel, -1, "55370", size=(70, -1))
+
+    lblphone = wx.StaticText(panel, -1, "Phone:")
+    phone = wx.TextCtrl(panel, -1, "612 562 4433")
+
+    lblemail = wx.StaticText(panel, -1, "Email:")
+    email = wx.TextCtrl(panel, -1, "mussym@live.com")
+
+    gridsizer = wx.FlexGridSizer(cols=2, hgap=5, vgap=5)
+    gridsizer.AddGrowableCol(1)
+
+    gridsizer.Add(lbl_name, proportion=0, flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
+    # make the name expand
+    gridsizer.Add(txt_name, proportion=0, flag=wx.EXPAND)
+
+    # age
+    gridsizer.Add(lblage, 0, wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
+    # keep the age a fixed size
+    gridsizer.Add(txtage, 0, 0)
+
+    # address
+    gridsizer.Add(lbladdress, 0, wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
+    gridsizer.Add(addr1, 0, wx.EXPAND)
+    # empty space in between, address 2 has no label, just space
+    # gridsizer.Add((10, 10))
+    gridsizer.AddSpacer(10)
+    gridsizer.Add(addr2, 0, wx.EXPAND)
+
+    # city state zip
+    gridsizer.Add(lblcity, 0, wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
+    # an inline box sizer for the single line city, state, zip
+    cstsizer = wx.BoxSizer(wx.HORIZONTAL)
+    cstsizer.Add(city, 1)  # city expands, state and zip do not
+    cstsizer.Add(state, 0, wx.LEFT | wx.RIGHT, 5)  # border on each side of state
+    cstsizer.Add(zip)
+    gridsizer.Add(cstsizer, 0, wx.EXPAND)
+
+    # phone
+    gridsizer.Add(lblphone, 0, wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
+    gridsizer.Add(phone, 0, wx.EXPAND)
+
+    # email
+    gridsizer.Add(lblemail, 0, wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
+    gridsizer.Add(email, 0, wx.EXPAND)
+
+    # can add a sizer to a sizer, not just add widget to sizer, creates a nested sizer
+    box.Add(gridsizer, 0, wx.EXPAND | wx.ALL, 10)
+
+
     btn_save = wx.Button(panel, -1, "Save")
     btn_cancel = wx.Button(panel, -1, "Cancel")
     btnSizer = wx.BoxSizer(wx.HORIZONTAL)
