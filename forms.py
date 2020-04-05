@@ -2,6 +2,7 @@
 from enum import Enum, auto
 
 EditFieldType = Enum('EditFieldType', 'TEXT COMBO CHECK')
+EditFieldWidth = Enum('EditFieldWidth', 'LARGE MEDIUM SMALL')
 
 
 
@@ -20,6 +21,5 @@ class FormLineSpec():
 
 class EditFieldSpec():
 
-    def __init__(self, type: EditFieldType):
+    def __init__(self, type: EditFieldType, width: EditFieldWidth):
         self.type = type
-    
