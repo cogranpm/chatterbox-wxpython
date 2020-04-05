@@ -135,7 +135,7 @@ class PlaygroundForm(wx.Dialog):
 
     def __init__(self, parent=None):
         wx.Dialog.__init__(self, parent, id=wx.ID_ANY, title=u"Settings", pos=wx.DefaultPosition,
-                           size=wx.Size(604, 230), style=wx.DEFAULT_DIALOG_STYLE)
+                           size=wx.Size(800, 600), style=wx.DEFAULT_DIALOG_STYLE)
 
         self.SetSizeHints(wx.DefaultSize, wx.DefaultSize)
 
@@ -210,8 +210,9 @@ class PlaygroundForm(wx.Dialog):
         bSizer1.Add(self.dvc, 1, wx.EXPAND)
         bSizer1.Add(test_sizer)
         bSizer1.Add(std_buttons, 0, wx.EXPAND, 5)
+        #panel = self.OnFlexGridSizer(self)
+        panel = self.edit_form(self)
 
-        panel = self.OnFlexGridSizer(self)
         bSizer1.Add(panel, 1, wx.EXPAND, 5)
 
         # frame stuff
@@ -249,7 +250,7 @@ class PlaygroundForm(wx.Dialog):
     def edit_form(self, parent):
         helpstr = """
         This is the FlexGrid Sizer demo 
-        specify which columns or rows should grow
+        specify  which columns or rows should grow
         grow flexibly in either direction meaning,
         you can specify proportional amounts for child elements
         and specify behaviour in the non flexible direction
@@ -257,18 +258,21 @@ class PlaygroundForm(wx.Dialog):
         growable col means in the horizontal direction
         use the proportion argument in the Add method to make cell grow at different amount """
 
-        apanel = w.panel(parent=parent,
-            items=
-            [
-                w.vsizer(
-                    items=[
-                        w.static_text(parent, text="Flex Grid Sizer"),
-                        w.static_text(parent, text=helpstr.lstrip())
-                    ]
-                )
-            ]
-        )
-        return apanel
+        panel = w.form(parent, [], "Form Demo", helpstr)
+        return panel
+
+        # apanel = w.panel(parent=parent,
+        #     items=
+        #     [
+        #         w.vsizer(
+        #             items=[
+        #                 w.static_text(parent, text="Flex Grid Sizer"),
+        #                 w.static_text(parent, text=helpstr.lstrip())
+        #             ]
+        #         )
+        #     ]
+        # )
+        # return apanel
 
 
     def OnFlexGridSizer(self, parent):
