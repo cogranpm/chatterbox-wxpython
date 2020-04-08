@@ -3,7 +3,7 @@ import wx
 import logging
 import fn_widget as w
 import wx.dataview as dv
-
+from forms import FormLineSpec, EditFieldType, EditFieldSpec, EditFieldWidth, FormSpec, large, medium, small, text, form, edit, edit_line, build
 
 # if using a list of lists style this could be generic for any domain model data
 class TestModel(dv.DataViewIndexListModel):
@@ -135,7 +135,7 @@ class PlaygroundForm(wx.Dialog):
 
     def __init__(self, parent=None):
         wx.Dialog.__init__(self, parent, id=wx.ID_ANY, title=u"Settings", pos=wx.DefaultPosition,
-                           size=wx.Size(800, 600), style=wx.DEFAULT_DIALOG_STYLE)
+                           size=wx.Size(1200, 1200), style=wx.DEFAULT_DIALOG_STYLE)
 
         self.SetSizeHints(wx.DefaultSize, wx.DefaultSize)
 
@@ -214,11 +214,12 @@ class PlaygroundForm(wx.Dialog):
         panel = self.edit_form(self)
 
         bSizer1.Add(panel, 1, wx.EXPAND, 5)
-
+        bSizer1.Fit(self)
         # frame stuff
         self.SetSizer(bSizer1)
         self.Layout()
         self.Centre(wx.BOTH)
+
 
         # Connect Events
         self.Bind(wx.EVT_INIT_DIALOG, self.OnInitDialog)
@@ -258,7 +259,23 @@ class PlaygroundForm(wx.Dialog):
         growable col means in the horizontal direction
         use the proportion argument in the Add method to make cell grow at different amount """
 
-        panel = w.form(parent, [], "Form Demo", helpstr)
+        #panel_raw = w.form(parent, [], "Form Demo", helpstr)
+
+        person_form = form(parent, "Form Demo", helpstr,[
+            edit_line("Name", [edit("name", text(), large())]),
+            edit_line("Age", [edit("age", text(), small())]),
+            edit_line("Address", [edit("addr1", text(), large())]),
+            edit_line(None, [edit("addr2", text(), large())]),
+            edit_line("City, State, Zip", [
+                edit("city", text(), large()),
+                edit("state", text(), small()),
+                edit("zip", text(), medium())
+            ]),
+            edit_line("Phone", [edit("phone", text(), small())]),
+            edit_line("Email", [edit("email", text(), medium())])
+        ])
+
+        panel = build(person_form)
         return panel
 
         # apanel = w.panel(parent=parent,
