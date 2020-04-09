@@ -79,6 +79,9 @@ def small():
 def text():
     return EditFieldType.TEXT
 
+def check():
+    return EditFieldType.CHECK
+
 def edit(name, type=EditFieldType.TEXT, width=EditFieldWidth.LARGE):
     return EditFieldSpec(name, type, width)
 

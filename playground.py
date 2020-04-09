@@ -3,7 +3,7 @@ import wx
 import logging
 import fn_widget as w
 import wx.dataview as dv
-from forms import FormLineSpec, EditFieldType, EditFieldSpec, EditFieldWidth, FormSpec, large, medium, small, text, form, edit, edit_line, build
+from forms import FormLineSpec, EditFieldType, EditFieldSpec, EditFieldWidth, FormSpec, large, medium, small, text, form, edit, edit_line, build, check
 
 # if using a list of lists style this could be generic for any domain model data
 class TestModel(dv.DataViewIndexListModel):
@@ -265,6 +265,7 @@ class PlaygroundForm(wx.Dialog):
             edit_line("Name", [edit("name", text(), large())]),
             edit_line("Age", [edit("age", text(), small())]),
             edit_line("Address", [edit("addr1", text(), large())]),
+            edit_line("Member", [edit("member", check(), None)]),
             edit_line(None, [edit("addr2", text(), large())]),
             edit_line("City, State, Zip", [
                 edit("city", text(), large()),
