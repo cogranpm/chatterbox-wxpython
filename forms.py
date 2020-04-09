@@ -4,7 +4,7 @@ from typing import List
 import wx
 
 EditFieldType = Enum('EditFieldType', 'TEXT COMBO CHECK')
-EditFieldWidth = Enum('EditFieldWidth', 'LARGE MEDIUM SMALL')
+EditFieldWidth = Enum('EditFieldWidth', 'LARGE MEDIUM SMALL DEFAULT')
 
 
 class FormSpec():
@@ -35,7 +35,7 @@ class FormLineSpec():
 class EditFieldSpec():
     """ this is an edit field in a form, for example a combo box, or text box etc """
 
-    def __init__(self, name: str, type: EditFieldType, width: EditFieldWidth):
+    def __init__(self, name: str, type: EditFieldType, width: EditFieldWidth = EditFieldWidth.DEFAULT):
         self.type = type
         self.name = name
         self.width = width
@@ -75,6 +75,9 @@ def medium():
 
 def small():
     return EditFieldWidth.SMALL
+
+def default():
+    return EditFieldWidth.DEFAULT
 
 def text():
     return EditFieldType.TEXT
@@ -141,32 +144,86 @@ def build_line(panel, line, gridsizer):
         gridsizer.AddSpacer(spacer_width)
 
     if len(line.edit_fields) == 1:
-        width = line.edit_fields[0].width
+        edit_field = line.edit_fields[0]
+        width = edit_field.width
+        sizer_flags = wx.SizerFlags()
+        size = None
         if width == EditFieldWidth.LARGE:
-            flag = wx.EXPAND
-            txt = wx.TextCtrl(panel, -1, "")
-            gridsizer.Add(txt, proportion=0, flag=flag)
+            sizer_flags.Expand()
         elif width == EditFieldWidth.MEDIUM:
-            txt = wx.TextCtrl(panel, -1, "", size=(width_medium, -1))
-            gridsizer.Add(txt)
+            size = wx.Size(width_medium, -1)
         else:
-            txt = wx.TextCtrl(panel, -1, "", size=(width_small, -1))
-            gridsizer.Add(txt)
+            size = wx.Size(width_small, -1)
+        control = build_control(edit_field, panel, size)
+        gridsizer.Add(control, sizer_flags)
     else:
         cstsizer = wx.BoxSizer(wx.HORIZONTAL)
-
         for i, edit in enumerate(line.edit_fields):
             txt_width = width_large_multi
             if edit.width == EditFieldWidth.SMALL:
                 txt_width = width_small_multi
             elif edit.width == EditFieldWidth.MEDIUM:
                 txt_width = width_medium_multi
-            txt = wx.TextCtrl(panel, -1, "", size=(txt_width, -1))
+            control = build_control(edit, panel, wx.Size(txt_width, -1))
+            sizer_flags = wx.SizerFlags()
             if i == 0:
-                cstsizer.Add(txt, 1) # first item expands, may need to change
+                sizer_flags.Expand().Proportion(1)
             elif i != len(line.edit_fields):
-                cstsizer.Add(txt, 0, wx.LEFT | wx.RIGHT, field_border_width)  # border on each side of field
-            else:
-                cstsizer.Add(txt)
+                sizer_flags.Border(wx.LEFT | wx.RIGHT, field_border_width)
+                #cstsizer.Add(txt, 0, wx.LEFT | wx.RIGHT, field_border_width)  # border on each side of field
+            cstsizer.Add(control, sizer_flags)
 
         gridsizer.Add(cstsizer, 0, wx.EXPAND)
+
+
+def build_control(edit_field: EditFieldSpec, panel, size):
+    switcher = {
+        EditFieldType.TEXT: build_text_control,
+        EditFieldType.CHECK: build_check_control,
+        EditFieldType.COMBO: build_combo_control
+    }
+    func = switcher.get(edit_field.type)
+    return func(edit_field, panel, size)
+
+
+def build_text_control(edit_field: EditFieldSpec, panel: wx.Panel, size: wx.Size):
+    if size is None:
+        control = wx.TextCtrl(panel, -1, "", name=edit_field.name)
+    else:
+        control = wx.TextCtrl(panel, -1, "", size=size, name=edit_field.name)
+    return control
+
+
+def build_check_control(edit_field: EditFieldSpec, panel: wx.Panel, size: wx.Size):
+    if size is None:
+        control = wx.CheckBox(panel, -1, "", name=edit_field.name)
+    else:
+        control = wx.CheckBox(panel, -1, "", size=size, name=edit_field.name)
+    return control
+
+
+def build_combo_control(edit_field: EditFieldSpec, panel: wx.Panel, size: wx.Size):
+    if size is None:
+        control = wx.Choice(panel, -1, "", name=edit_field.name)
+    else:
+        control = wx.Choice(panel, -1, "", size=size, name=edit_field.name)
+    return control
+
+
+def tool_button(parent, id, text, handler):
+    btn = wx.Button(parent, id, text, wx.DefaultPosition, wx.Size(40, 40), 0)
+    btn.Bind(wx.EVT_BUTTON, handler)
+    return btn
+
+
+def hsizer(items):
+    sizer = wx.BoxSizer(wx.HORIZONTAL)
+    for item in items:
+        sizer.Add(item)
+    return sizer
+
+
+def vsizer():
+    sizer = wx.BoxSizer(wx.VERTICAL)
+    return sizer
+
