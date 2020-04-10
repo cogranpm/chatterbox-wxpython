@@ -3,7 +3,9 @@ import wx
 import logging
 import fn_widget as w
 import wx.dataview as dv
-from forms import FormLineSpec, EditFieldType, EditFieldSpec, EditFieldWidth, FormSpec, large, medium, small, text, form, edit, edit_line, build, check, default, tool_button, hsizer, vsizer
+#from forms import FormLineSpec, EditFieldSpec, EditFieldWidth, FormSpec, TextField, ComboField, CheckboxField, \
+#    large, medium, small, form, edit_line, build, default, tool_button, hsizer, vsizer
+import forms as frm
 from models import PyTestModel
 
 
@@ -29,9 +31,9 @@ class PlaygroundForm(wx.Dialog):
             c.Sortable = True
         self.dvc.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.list_selection_change)
 
-        btn_add = tool_button(parent=self, id=wx.ID_ANY, text="Add", handler=self.add_button_click)
-        btn_delete = tool_button(parent=self, id=wx.ID_ANY, text="Del", handler=self.delete_button_click)
-        tool_sizer = hsizer([btn_add, btn_delete])
+        btn_add = frm.tool_button(parent=self, id=wx.ID_ANY, text="Add", handler=self.add_button_click)
+        btn_delete = frm.tool_button(parent=self, id=wx.ID_ANY, text="Del", handler=self.delete_button_click)
+        tool_sizer = frm.hsizer([btn_add, btn_delete])
 
         edit_panel = self.edit_form(self)
 
@@ -44,7 +46,7 @@ class PlaygroundForm(wx.Dialog):
         # stdButtonSizer.Realize()
 
         main_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        list_sizer = vsizer()
+        list_sizer = frm.vsizer()
         list_sizer.Add(self.dvc, wx.SizerFlags(1).Expand())
         list_sizer.Add(tool_sizer, wx.SizerFlags().Expand().Border(wx.ALL, 5))
         #main_sizer.Add(self.dvc, 1, wx.EXPAND)
@@ -97,22 +99,22 @@ class PlaygroundForm(wx.Dialog):
         growable col means in the horizontal direction
         use the proportion argument in the Add method to make cell grow at different amount """
 
-        person_form = form(parent, "Form Demo", helpstr,[
-            edit_line("Name", [edit("name", text(), large())]),
-            edit_line("Age", [edit("age", text(), small())]),
-            edit_line("Member", [edit("member", check(), default())]),
-            edit_line("Address", [edit("addr1", text(), large())]),
-            edit_line(None, [edit("addr2", text(), large())]),
-            edit_line("City, State, Zip", [
-                edit("city", text(), large()),
-                edit("state", text(), small()),
-                edit("zip", text(), medium())
+        person_form = frm.form(parent, "Form Demo", helpstr,[
+            frm.edit_line("Name", [frm.TextField("name", frm.large())]),
+            frm.edit_line("Age", [frm.TextField("age", frm.small())]),
+            frm.edit_line("Member", [frm.CheckboxField("member")]),
+            frm.edit_line("Address", [frm.TextField("addr1", frm.large())]),
+            frm.edit_line(None, [frm.TextField("addr2", frm.large())]),
+            frm.edit_line("City, State, Zip", [
+                frm.TextField("city", frm.large()),
+                frm.TextField("state", frm.small()),
+                frm.TextField("zip", frm.medium())
             ]),
-            edit_line("Phone", [edit("phone", text(), small())]),
-            edit_line("Email", [edit("email", text(), medium())])
+            frm.edit_line("Phone", [frm.TextField("phone", frm.small())]),
+            frm.edit_line("Email", [frm.TextField("email", frm.medium())])
         ])
 
-        panel = build(person_form)
+        panel = person_form.build()
         return panel
 
     def seesaw_style_test(self):

@@ -3,7 +3,7 @@
 import wx
 #from mainframe import MainFrame
 from testframe import TestFrame
-from MainFrame import MainFrame
+from mainframe import MainFrame
 from SettingsDialogImp import SettingsDialogImp
 from fn_app import make_icon
 from ObjectListView import ColumnDefn

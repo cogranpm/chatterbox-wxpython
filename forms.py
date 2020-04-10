@@ -3,43 +3,7 @@ from enum import Enum, auto
 from typing import List
 import wx
 
-EditFieldType = Enum('EditFieldType', 'TEXT COMBO CHECK')
 EditFieldWidth = Enum('EditFieldWidth', 'LARGE MEDIUM SMALL DEFAULT')
-
-
-class FormSpec():
-    """ for specifiying the contents of a form, a function will use this information to build up
-    a 'form' and all it's contents
-    a form consists of help text, title, and a bunch of labels/inputs
-    once this spec is built up it can be passed into a function in order
-    to render the corresponding controls
-    formSpec has multipl FormLines
-    FormLine has multiple EditFields
-    """
-
-    def __init__(self, parent, title: str, helpstr: str, edit_lines: List['FormLineSpec']):
-        self.parent = parent
-        self.title = title
-        self.helpstr = helpstr
-        self.edit_lines = edit_lines
-
-
-class FormLineSpec():
-    """ can be made up of multiple edit fields or a single, such as zip, state, city on a single line """
-
-    def __init__(self, labelstr: str, edit_fields: List['EditFieldSpec']):
-        self.labelstr = labelstr
-        self.edit_fields = edit_fields
-
-
-class EditFieldSpec():
-    """ this is an edit field in a form, for example a combo box, or text box etc """
-
-    def __init__(self, name: str, type: EditFieldType, width: EditFieldWidth = EditFieldWidth.DEFAULT):
-        self.type = type
-        self.name = name
-        self.width = width
-
 
 font_header = None
 font_help = None
@@ -79,136 +43,165 @@ def small():
 def default():
     return EditFieldWidth.DEFAULT
 
-def text():
-    return EditFieldType.TEXT
+class FormSpec():
+    """ for specifiying the contents of a form, a function will use this information to build up
+    a 'form' and all it's contents
+    a form consists of help text, title, and a bunch of labels/inputs
+    once this spec is built up it can be passed into a function in order
+    to render the corresponding controls
+    formSpec has multipl FormLines
+    FormLine has multiple EditFields
+    """
 
-def check():
-    return EditFieldType.CHECK
+    def __init__(self, parent, title: str, helpstr: str, edit_lines: List['FormLineSpec']):
+        self.parent = parent
+        self.title = title
+        self.helpstr = helpstr
+        self.edit_lines = edit_lines
 
-def edit(name, type=EditFieldType.TEXT, width=EditFieldWidth.LARGE):
-    return EditFieldSpec(name, type, width)
+    def build(self):
+        panel = wx.Panel(self.parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        box = wx.BoxSizer(wx.VERTICAL)
+        lbl_header = wx.StaticText(panel, 0, self.title)
+        lbl_help = wx.StaticText(panel, 0, self.helpstr.lstrip())
+        lbl_header.SetFont(header_font())
+        lbl_help.SetFont(help_font())
+        box.Add(lbl_header, 0, wx.ALL, 5)
+        # add a static line
+        box.Add(wx.StaticLine(panel), 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        box.Add(lbl_help, 0, wx.ALL, 5)
+        box.Add(wx.StaticLine(panel), 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+
+        gridsizer = wx.FlexGridSizer(cols=2, hgap=5, vgap=5)
+        gridsizer.AddGrowableCol(1)
+
+        for line in self.edit_lines:
+            line.build(panel, gridsizer)
+
+        # can add a sizer to a sizer, not just add widget to sizer, creates a nested sizer
+        box.Add(gridsizer, 0, wx.EXPAND | wx.ALL, 10)
+
+        btn_save = wx.Button(panel, -1, "Save")
+        btn_cancel = wx.Button(panel, -1, "Cancel")
+        btnSizer = wx.BoxSizer(wx.HORIZONTAL)
+        # this spacer pushes the buttons to the right
+        # btnSizer.Add((20, 20), 1)
+        btnSizer.AddStretchSpacer(20)
+        btnSizer.Add(btn_save)
+        btnSizer.AddSpacer(20)
+        btnSizer.Add(btn_cancel)
+        btnSizer.AddSpacer(20)
+        box.Add(btnSizer, 0, wx.EXPAND | wx.BOTTOM | wx.ALIGN_RIGHT, 10)
+
+        panel.SetSizer(box)
+        box.Fit(self.parent)  # this call triggers the layout alorithm to fire
+        box.SetSizeHints(self.parent)
+        # panel.SetBackgroundColour("orange")
+        panel.Refresh()
+        return panel
+
+class FormLineSpec():
+    """ can be made up of multiple edit fields or a single, such as zip, state, city on a single line """
+
+    def __init__(self, labelstr: str, edit_fields: List['EditFieldSpec']):
+        self.labelstr = labelstr
+        self.edit_fields = edit_fields
+
+    def build(self, panel, sizer):
+        if self.labelstr is not None:
+            lbl = wx.StaticText(panel, -1, f"{self.labelstr}:")
+            sizer.Add(lbl, proportion=0, flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
+        else:
+            sizer.AddSpacer(spacer_width)
+
+        if len(self.edit_fields) == 1:
+            edit_field = self.edit_fields[0]
+            width = edit_field.width
+            sizer_flags = wx.SizerFlags()
+            size = None
+            if width == EditFieldWidth.LARGE:
+                sizer_flags.Expand()
+            control = edit_field.build(panel, False)
+            sizer.Add(control, sizer_flags)
+        else:
+            cstsizer = wx.BoxSizer(wx.HORIZONTAL)
+            for i, edit in enumerate(self.edit_fields):
+                control = edit.build(panel, True)
+                sizer_flags = wx.SizerFlags()
+                if i == 0:
+                    sizer_flags.Expand().Proportion(1)
+                elif i != len(self.edit_fields):
+                    sizer_flags.Border(wx.LEFT | wx.RIGHT, field_border_width)
+                cstsizer.Add(control, sizer_flags)
+
+            sizer.Add(cstsizer, 0, wx.EXPAND)
+
+class EditFieldSpec():
+    """ this is an edit field in a form, for example a combo box, or text box etc """
+
+    def __init__(self, name: str, width: EditFieldWidth = EditFieldWidth.DEFAULT):
+        self.name = name
+        self.width = width
+
+    def get_size(self, multi_column: bool = False):
+        size = None
+        if not multi_column:
+            if self.width == EditFieldWidth.MEDIUM:
+                size = wx.Size(width_medium, -1)
+            else:
+                size = wx.Size(width_small, -1)
+        else:
+            txt_width = width_large_multi
+            if self.width == EditFieldWidth.SMALL:
+                txt_width = width_small_multi
+            elif self.width == EditFieldWidth.MEDIUM:
+                txt_width = width_medium_multi
+            size = wx.Size(txt_width, -1)
+        return size
+
+
+class TextField(EditFieldSpec):
+
+    def __init__(self, name, width: EditFieldWidth):
+        super().__init__(name, width)
+
+    def build(self, panel: wx.Panel, multi_column: bool = False):
+        size = self.get_size(multi_column)
+        if size is None:
+            control = wx.TextCtrl(panel, -1, "", name=self.name)
+        else:
+            control = wx.TextCtrl(panel, -1, "", size=size, name=self.name)
+        return control
+
+
+class ComboField(EditFieldSpec):
+
+    def __init__(self, name, width: EditFieldWidth):
+        super().__init__(name, width)
+
+    def build(self, panel: wx.Panel, multi_column: bool = False):
+        size = self.get_size(multi_column)
+        if size is None:
+            control = wx.Choice(panel, -1, "", name=self.name)
+        else:
+            control = wx.Choice(panel, -1, "", size=size, name=self.name)
+        return control
+
+
+class CheckboxField(EditFieldSpec):
+    def __init__(self, name):
+        super().__init__(name, None)
+
+    def build(self, panel: wx.Panel, multi_column: bool = False):
+        return wx.CheckBox(panel, -1, "", name=self.name)
+
+
 
 def edit_line(labelstr, edit_fields):
     return FormLineSpec(labelstr, edit_fields)
 
 def form(parent, title, helpstr, edit_lines):
     return FormSpec(parent, title, helpstr, edit_lines)
-
-def build(form: FormSpec):
-    panel = wx.Panel(form.parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
-    box = wx.BoxSizer(wx.VERTICAL)
-    lbl_header = wx.StaticText(panel, 0, form.title)
-    lbl_help = wx.StaticText(panel, 0, form.helpstr.lstrip())
-    lbl_header.SetFont(header_font())
-    lbl_help.SetFont(help_font())
-    box.Add(lbl_header, 0, wx.ALL, 5)
-    # add a static line
-    box.Add(wx.StaticLine(panel), 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-    box.Add(lbl_help, 0, wx.ALL, 5)
-    box.Add(wx.StaticLine(panel), 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-
-    gridsizer = wx.FlexGridSizer(cols=2, hgap=5, vgap=5)
-    gridsizer.AddGrowableCol(1)
-
-    for line in form.edit_lines:
-        build_line(panel, line, gridsizer)
-
-    # can add a sizer to a sizer, not just add widget to sizer, creates a nested sizer
-    box.Add(gridsizer, 0, wx.EXPAND | wx.ALL, 10)
-
-    btn_save = wx.Button(panel, -1, "Save")
-    btn_cancel = wx.Button(panel, -1, "Cancel")
-    btnSizer = wx.BoxSizer(wx.HORIZONTAL)
-    # this spacer pushes the buttons to the right
-    # btnSizer.Add((20, 20), 1)
-    btnSizer.AddStretchSpacer(20)
-    btnSizer.Add(btn_save)
-    btnSizer.AddSpacer(20)
-    btnSizer.Add(btn_cancel)
-    btnSizer.AddSpacer(20)
-    box.Add(btnSizer, 0, wx.EXPAND | wx.BOTTOM | wx.ALIGN_RIGHT, 10)
-
-    panel.SetSizer(box)
-    box.Fit(form.parent)  # this call triggers the layout alorithm to fire
-    box.SetSizeHints(form.parent)
-    #panel.SetBackgroundColour("orange")
-    panel.Refresh()
-    return panel
-
-
-def build_line(panel, line, gridsizer):
-    if line.labelstr is not None:
-        lbl = wx.StaticText(panel, -1, f"{line.labelstr}:")
-        gridsizer.Add(lbl, proportion=0, flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
-    else:
-        gridsizer.AddSpacer(spacer_width)
-
-    if len(line.edit_fields) == 1:
-        edit_field = line.edit_fields[0]
-        width = edit_field.width
-        sizer_flags = wx.SizerFlags()
-        size = None
-        if width == EditFieldWidth.LARGE:
-            sizer_flags.Expand()
-        elif width == EditFieldWidth.MEDIUM:
-            size = wx.Size(width_medium, -1)
-        else:
-            size = wx.Size(width_small, -1)
-        control = build_control(edit_field, panel, size)
-        gridsizer.Add(control, sizer_flags)
-    else:
-        cstsizer = wx.BoxSizer(wx.HORIZONTAL)
-        for i, edit in enumerate(line.edit_fields):
-            txt_width = width_large_multi
-            if edit.width == EditFieldWidth.SMALL:
-                txt_width = width_small_multi
-            elif edit.width == EditFieldWidth.MEDIUM:
-                txt_width = width_medium_multi
-            control = build_control(edit, panel, wx.Size(txt_width, -1))
-            sizer_flags = wx.SizerFlags()
-            if i == 0:
-                sizer_flags.Expand().Proportion(1)
-            elif i != len(line.edit_fields):
-                sizer_flags.Border(wx.LEFT | wx.RIGHT, field_border_width)
-                #cstsizer.Add(txt, 0, wx.LEFT | wx.RIGHT, field_border_width)  # border on each side of field
-            cstsizer.Add(control, sizer_flags)
-
-        gridsizer.Add(cstsizer, 0, wx.EXPAND)
-
-
-def build_control(edit_field: EditFieldSpec, panel, size):
-    switcher = {
-        EditFieldType.TEXT: build_text_control,
-        EditFieldType.CHECK: build_check_control,
-        EditFieldType.COMBO: build_combo_control
-    }
-    func = switcher.get(edit_field.type)
-    return func(edit_field, panel, size)
-
-
-def build_text_control(edit_field: EditFieldSpec, panel: wx.Panel, size: wx.Size):
-    if size is None:
-        control = wx.TextCtrl(panel, -1, "", name=edit_field.name)
-    else:
-        control = wx.TextCtrl(panel, -1, "", size=size, name=edit_field.name)
-    return control
-
-
-def build_check_control(edit_field: EditFieldSpec, panel: wx.Panel, size: wx.Size):
-    if size is None:
-        control = wx.CheckBox(panel, -1, "", name=edit_field.name)
-    else:
-        control = wx.CheckBox(panel, -1, "", size=size, name=edit_field.name)
-    return control
-
-
-def build_combo_control(edit_field: EditFieldSpec, panel: wx.Panel, size: wx.Size):
-    if size is None:
-        control = wx.Choice(panel, -1, "", name=edit_field.name)
-    else:
-        control = wx.Choice(panel, -1, "", size=size, name=edit_field.name)
-    return control
-
 
 def tool_button(parent, id, text, handler):
     btn = wx.Button(parent, id, text, wx.DefaultPosition, wx.Size(40, 40), 0)
