@@ -3,9 +3,8 @@ import wx
 import logging
 import fn_widget as w
 import wx.dataview as dv
-#from forms import FormLineSpec, EditFieldSpec, EditFieldWidth, FormSpec, TextField, ComboField, CheckboxField, \
-#    large, medium, small, form, edit_line, build, default, tool_button, hsizer, vsizer
 import forms as frm
+from lists import states
 from models import PyTestModel
 
 
@@ -49,7 +48,6 @@ class PlaygroundForm(wx.Dialog):
         list_sizer = frm.vsizer()
         list_sizer.Add(self.dvc, wx.SizerFlags(1).Expand())
         list_sizer.Add(tool_sizer, wx.SizerFlags().Expand().Border(wx.ALL, 5))
-        #main_sizer.Add(self.dvc, 1, wx.EXPAND)
         main_sizer.Add(list_sizer, wx.SizerFlags(1).Expand())
         main_sizer.Add(edit_panel, 1, wx.EXPAND, 5)
         # not sure if this is needed for a tabbed ui
@@ -107,8 +105,8 @@ class PlaygroundForm(wx.Dialog):
             frm.edit_line(None, [frm.TextField("addr2", frm.large())]),
             frm.edit_line("City, State, Zip", [
                 frm.TextField("city", frm.large()),
-                frm.TextField("state", frm.small()),
-                frm.TextField("zip", frm.medium())
+                frm.ComboField("state", frm.medium(), states),
+                frm.TextField("zip", frm.small())
             ]),
             frm.edit_line("Phone", [frm.TextField("phone", frm.small())]),
             frm.edit_line("Email", [frm.TextField("email", frm.medium())])

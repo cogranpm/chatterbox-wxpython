@@ -1,6 +1,7 @@
 # classes etc that help define a form and related controls
 from enum import Enum, auto
-from typing import List
+from typing import List, Tuple
+from lists import ListItem
 import wx
 
 EditFieldWidth = Enum('EditFieldWidth', 'LARGE MEDIUM SMALL DEFAULT')
@@ -121,7 +122,6 @@ class FormLineSpec():
             edit_field = self.edit_fields[0]
             width = edit_field.width
             sizer_flags = wx.SizerFlags()
-            size = None
             if width == EditFieldWidth.LARGE:
                 sizer_flags.Expand()
             control = edit_field.build(panel, False)
@@ -132,12 +132,15 @@ class FormLineSpec():
                 control = edit.build(panel, True)
                 sizer_flags = wx.SizerFlags()
                 if i == 0:
-                    sizer_flags.Expand().Proportion(1)
+                    sizer_flags.Expand().Proportion(1).Border(0)
                 elif i != len(self.edit_fields):
                     sizer_flags.Border(wx.LEFT | wx.RIGHT, field_border_width)
+                else:
+                    sizer_flags.Expand().Border(0)
                 cstsizer.Add(control, sizer_flags)
+                del sizer_flags
 
-            sizer.Add(cstsizer, 0, wx.EXPAND)
+            sizer.Add(cstsizer, -1, wx.EXPAND)
 
 class EditFieldSpec():
     """ this is an edit field in a form, for example a combo box, or text box etc """
@@ -167,6 +170,7 @@ class FormPanel(wx.Panel):
 
     def __init__(self, parent, name):
         super().__init__(parent=parent, name=name)
+        self.BackgroundColour = 'GREY'
 
 
 class TextField(EditFieldSpec):
@@ -185,16 +189,28 @@ class TextField(EditFieldSpec):
 
 class ComboField(EditFieldSpec):
 
-    def __init__(self, name, width: EditFieldWidth):
+    def __init__(self, name, width: EditFieldWidth, contents: List[ListItem] = None):
         super().__init__(name, width)
+        self.contents = contents
+        self.control = wx.ComboBox()
 
     def build(self, panel: wx.Panel, multi_column: bool = False):
         size = self.get_size(multi_column)
+        style = wx.CB_READONLY
+        choices = []
         if size is None:
-            control = wx.Choice(panel, -1, "", name=self.name)
+            self.control.Create(panel, -1, name=self.name, choices=choices, style=style)
         else:
-            control = wx.Choice(panel, -1, "", size=size, name=self.name)
-        return control
+            self.control.Create(panel, -1, size=size, name=self.name, choices=choices, style=style)
+        if self.contents is not None:
+            for item in self.contents:
+                self.control.Append(item.label, item.code )
+        self.control.Bind(wx.EVT_COMBOBOX, self.on_select)
+        return self.control
+
+    def on_select(self, event):
+        listitem = self.control.GetClientData(self.control.GetSelection())
+        print(listitem)
 
 
 class CheckboxField(EditFieldSpec):
