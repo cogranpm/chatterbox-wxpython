@@ -99,7 +99,7 @@ class PlaygroundForm(wx.Dialog):
         growable col means in the horizontal direction
         use the proportion argument in the Add method to make cell grow at different amount """
 
-        person_form = frm.form(parent, "Form Demo", helpstr,[
+        person_form = frm.form(parent, "frmDemo", "Form Demo", helpstr,[
             frm.edit_line("Name", [frm.TextField("name", frm.large())]),
             frm.edit_line("Age", [frm.TextField("age", frm.small())]),
             frm.edit_line("Member", [frm.CheckboxField("member")]),

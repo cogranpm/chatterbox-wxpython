@@ -43,6 +43,7 @@ def small():
 def default():
     return EditFieldWidth.DEFAULT
 
+
 class FormSpec():
     """ for specifiying the contents of a form, a function will use this information to build up
     a 'form' and all it's contents
@@ -53,14 +54,16 @@ class FormSpec():
     FormLine has multiple EditFields
     """
 
-    def __init__(self, parent, title: str, helpstr: str, edit_lines: List['FormLineSpec']):
+    def __init__(self, parent, name: str, title: str, helpstr: str, edit_lines: List['FormLineSpec']):
         self.parent = parent
         self.title = title
         self.helpstr = helpstr
         self.edit_lines = edit_lines
+        self.name = name
 
     def build(self):
-        panel = wx.Panel(self.parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        #panel = wx.Panel(self.parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        panel = FormPanel(self.parent, self.name)
         box = wx.BoxSizer(wx.VERTICAL)
         lbl_header = wx.StaticText(panel, 0, self.title)
         lbl_help = wx.StaticText(panel, 0, self.helpstr.lstrip())
@@ -160,6 +163,12 @@ class EditFieldSpec():
         return size
 
 
+class FormPanel(wx.Panel):
+
+    def __init__(self, parent, name):
+        super().__init__(parent=parent, name=name)
+
+
 class TextField(EditFieldSpec):
 
     def __init__(self, name, width: EditFieldWidth):
@@ -200,8 +209,8 @@ class CheckboxField(EditFieldSpec):
 def edit_line(labelstr, edit_fields):
     return FormLineSpec(labelstr, edit_fields)
 
-def form(parent, title, helpstr, edit_lines):
-    return FormSpec(parent, title, helpstr, edit_lines)
+def form(parent, name, title, helpstr, edit_lines):
+    return FormSpec(parent, name, title, helpstr, edit_lines)
 
 def tool_button(parent, id, text, handler):
     btn = wx.Button(parent, id, text, wx.DefaultPosition, wx.Size(40, 40), 0)
