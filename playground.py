@@ -12,56 +12,38 @@ from validators import NotEmpty
 class PlaygroundForm(wx.Dialog):
 
     def __init__(self, parent=None):
-        super().__init__(parent, id=wx.ID_ANY, title=u"Form Demo*", pos=wx.DefaultPosition,
-                           size=wx.Size(1200, 1200), style=wx.DEFAULT_DIALOG_STYLE)
+        super().__init__(parent, id=wx.ID_ANY, title=u"Form Demo", pos=wx.DefaultPosition,
+                           size=wx.Size(600, 800), style=wx.DEFAULT_DIALOG_STYLE)
 
         self.SetSizeHints(wx.DefaultSize, wx.DefaultSize)
 
         # testing out the list control
-        self.list_panel = wx.Panel(self, name="listpanel")
-        self.list_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.list_panel.SetSizer(self.list_sizer)
-        self.dvc = dv.DataViewCtrl(self.list_panel, wx.ID_ANY, style = wx.BORDER_THEME)
-        self.data = [['Peter', '33', '100'], ['Fred', '22', '98'], ['Malcolm', '43', '77']]
-        self.model = PyTestModel(self.data)
-        self.dvc.AssociateModel(self.model)
-        self.model.DecRef()
-
-        self.dvc.AppendTextColumn("Name",  0, width=260, mode=dv.DATAVIEW_CELL_EDITABLE)
-        self.dvc.AppendTextColumn("Age",   1, width=80, mode=dv.DATAVIEW_CELL_EDITABLE)
-        self.dvc.AppendTextColumn("Weight", 2, width=80,  mode=dv.DATAVIEW_CELL_EDITABLE)
-        for c in self.dvc.Columns:
-            c.Sortable = True
-        self.dvc.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.list_selection_change)
-        self.list_sizer.Add(self.dvc, wx.SizerFlags(1).Expand())
-
-        btn_add = frm.tool_button(parent=self.list_panel, id=wx.ID_ANY, text="Add", handler=self.add_button_click)
-        btn_delete = frm.tool_button(parent=self.list_panel, id=wx.ID_ANY, text="Del", handler=self.delete_button_click)
-        tool_sizer = frm.hsizer([btn_add, btn_delete])
-
-        edit_panel = self.edit_form(self)
-
-        # not sure if needed
-        # stdButtonSizer = wx.StdDialogButtonSizer()
-        # self.stdButtonSizerOK = wx.Button(self, wx.ID_OK)
-        # stdButtonSizer.AddButton(self.stdButtonSizerOK)
-        # self.stdButtonSizerCancel = wx.Button(self, wx.ID_CANCEL)
-        # stdButtonSizer.AddButton(self.stdButtonSizerCancel)
-        # stdButtonSizer.Realize()
+        # self.list_panel = wx.Panel(self, name="listpanel")
+        # self.list_sizer = wx.BoxSizer(wx.VERTICAL)
+        # self.list_panel.SetSizer(self.list_sizer)
+        # self.list()
+        # self.list_sizer.Add(self.dvc, wx.SizerFlags(1).Expand())
+        # btn_add = frm.tool_button(parent=self.list_panel, id=wx.ID_ANY, text="Add", handler=self.add_button_click)
+        # btn_delete = frm.tool_button(parent=self.list_panel, id=wx.ID_ANY, text="Del", handler=self.delete_button_click)
+        # tool_sizer = frm.hsizer([btn_add, btn_delete])
 
         main_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        list_sizer = frm.vsizer()
-        list_sizer.Add(self.list_panel, wx.SizerFlags(1).Expand())
-        list_sizer.Add(tool_sizer, wx.SizerFlags().Expand().Border(wx.ALL, 5))
-        main_sizer.Add(self.list_panel, wx.SizerFlags(1).Expand())
-        main_sizer.Add(edit_panel, 1, wx.EXPAND, 5)
+        self.SetSizer(main_sizer)
+        # edit_panel = self.edit_form()
+        self.edit_form()
+
+
+        # self.list_sizer.Add(tool_sizer, wx.SizerFlags().Expand().Border(wx.ALL, 5))
+        # main_sizer.Add(self.list_panel, wx.SizerFlags(1).Expand())
+        # main_sizer.Add(edit_panel, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
         # not sure if this is needed for a tabbed ui
         # main_sizer.Add(stdButtonSizer, 0, wx.EXPAND, 5)
-        main_sizer.Fit(self)
+
         # frame stuff
-        self.SetSizer(main_sizer)
+
         self.Layout()
         self.Centre(wx.BOTH)
+        main_sizer.Fit(self)
         # Connect Events
         self.Bind(wx.EVT_INIT_DIALOG, self.OnInitDialog)
         # self.stdButtonSizerOK.Bind(wx.EVT_BUTTON, self.OnOKButtonClick)
@@ -91,7 +73,21 @@ class PlaygroundForm(wx.Dialog):
         self.model.ItemDeleted(dv.NullDataViewItem, self.model.ObjectToItem(self.data[0]))
         del(self.data[0])
 
-    def edit_form(self, parent):
+    def list(self):
+        self.dvc = dv.DataViewCtrl(self, wx.ID_ANY, style=wx.BORDER_THEME)
+        self.data = [['Peter', '33', '100'], ['Fred', '22', '98'], ['Malcolm', '43', '77']]
+        self.model = PyTestModel(self.data)
+        self.dvc.AssociateModel(self.model)
+        self.model.DecRef()
+
+        self.dvc.AppendTextColumn("Name", 0, width=260, mode=dv.DATAVIEW_CELL_EDITABLE)
+        self.dvc.AppendTextColumn("Age", 1, width=80, mode=dv.DATAVIEW_CELL_EDITABLE)
+        self.dvc.AppendTextColumn("Weight", 2, width=80, mode=dv.DATAVIEW_CELL_EDITABLE)
+        for c in self.dvc.Columns:
+            c.Sortable = True
+        self.dvc.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.list_selection_change)
+
+    def edit_form(self):
         helpstr = """
         This is the FlexGrid Sizer demo 
         specify  which columns or rows should grow
@@ -102,7 +98,7 @@ class PlaygroundForm(wx.Dialog):
         growable col means in the horizontal direction
         use the proportion argument in the Add method to make cell grow at different amount """
 
-        person_form = frm.form(parent, "frmDemo", "Form Demo", helpstr,[
+        person_form = frm.form(self, "frmDemo", "Form Demo", helpstr,[
             frm.edit_line("Name", [frm.TextField("name", frm.large(), validators=[NotEmpty()])]),
             frm.edit_line("Age", [frm.TextField("age", frm.small())]),
             frm.edit_line("Member", [frm.CheckboxField("member")]),
