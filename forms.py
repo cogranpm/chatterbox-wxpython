@@ -85,17 +85,26 @@ class FormSpec():
         # can add a sizer to a sizer, not just add widget to sizer, creates a nested sizer
         box.Add(gridsizer, 0, wx.EXPAND | wx.ALL, 10)
 
-        btn_save = wx.Button(panel, -1, "Save")
-        btn_cancel = wx.Button(panel, -1, "Cancel")
-        btnSizer = wx.BoxSizer(wx.HORIZONTAL)
-        # this spacer pushes the buttons to the right
-        # btnSizer.Add((20, 20), 1)
-        btnSizer.AddStretchSpacer(20)
-        btnSizer.Add(btn_save)
-        btnSizer.AddSpacer(20)
-        btnSizer.Add(btn_cancel)
-        btnSizer.AddSpacer(20)
-        box.Add(btnSizer, 0, wx.EXPAND | wx.BOTTOM | wx.ALIGN_RIGHT, 10)
+        # btn_save = wx.Button(panel, -1, "Save")
+        # btn_cancel = wx.Button(panel, -1, "Cancel")
+        # btnSizer = wx.BoxSizer(wx.HORIZONTAL)
+        # # this spacer pushes the buttons to the right
+        # # btnSizer.Add((20, 20), 1)
+        # btnSizer.AddStretchSpacer(20)
+        # btnSizer.Add(btn_save)
+        # btnSizer.AddSpacer(20)
+        # btnSizer.Add(btn_cancel)
+        # btnSizer.AddSpacer(20)
+        # box.Add(btnSizer, 0, wx.EXPAND | wx.BOTTOM | wx.ALIGN_RIGHT, 10)
+
+        stdButtonSizer = wx.StdDialogButtonSizer()
+        stdButtonSizerOK = wx.Button(panel, wx.ID_OK, name="btnOK")
+        stdButtonSizerOK.SetDefault()
+        stdButtonSizer.AddButton(stdButtonSizerOK)
+        stdButtonSizerCancel = wx.Button(panel, wx.ID_CANCEL, name="btnCancel")
+        stdButtonSizer.AddButton(stdButtonSizerCancel)
+        stdButtonSizer.Realize()
+        box.Add(stdButtonSizer, 0, wx.EXPAND, 5)
 
         panel.SetSizer(box)
         box.Fit(self.parent)  # this call triggers the layout alorithm to fire
@@ -175,8 +184,9 @@ class FormPanel(wx.Panel):
 
 class TextField(EditFieldSpec):
 
-    def __init__(self, name, width: EditFieldWidth):
+    def __init__(self, name, width: EditFieldWidth, validators: List[wx.Validator] = None):
         super().__init__(name, width)
+        self.validators = validators
 
     def build(self, panel: wx.Panel, multi_column: bool = False):
         size = self.get_size(multi_column)
@@ -184,6 +194,11 @@ class TextField(EditFieldSpec):
             control = wx.TextCtrl(panel, -1, "", name=self.name)
         else:
             control = wx.TextCtrl(panel, -1, "", size=size, name=self.name)
+
+        if self.validators is not None:
+            for validator in self.validators:
+                control.Validator = validator
+
         return control
 
 

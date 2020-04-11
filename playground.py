@@ -6,6 +6,7 @@ import wx.dataview as dv
 import forms as frm
 from lists import states
 from models import PyTestModel
+from validators import NotEmpty
 
 
 class PlaygroundForm(wx.Dialog):
@@ -73,9 +74,9 @@ class PlaygroundForm(wx.Dialog):
         name_edit.SetValue(record[0])
         age_edit.SetValue(record[1])
 
-    def OnOKButtonClick(self, event):
-        print("ya clicked ok ya know")
-        event.Skip()
+    # def OnOKButtonClick(self, event):
+    #     print("ya clicked ok ya know")
+    #     event.Skip()
 
     def add_button_click(self, event):
         new_person = ['Mike', '44', '55']
@@ -98,7 +99,7 @@ class PlaygroundForm(wx.Dialog):
         use the proportion argument in the Add method to make cell grow at different amount """
 
         person_form = frm.form(parent, "frmDemo", "Form Demo", helpstr,[
-            frm.edit_line("Name", [frm.TextField("name", frm.large())]),
+            frm.edit_line("Name", [frm.TextField("name", frm.large(), validators=[NotEmpty()])]),
             frm.edit_line("Age", [frm.TextField("age", frm.small())]),
             frm.edit_line("Member", [frm.CheckboxField("member")]),
             frm.edit_line("Address", [frm.TextField("addr1", frm.large())]),
