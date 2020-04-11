@@ -65,25 +65,24 @@ class FormSpec():
     def build(self):
         #panel = wx.Panel(self.parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         panel = FormPanel(self.parent, self.name)
-        box = wx.BoxSizer(wx.VERTICAL)
         lbl_header = wx.StaticText(panel, 0, self.title)
         lbl_help = wx.StaticText(panel, 0, self.helpstr.lstrip())
         lbl_header.SetFont(header_font())
         lbl_help.SetFont(help_font())
-        box.Add(lbl_header, 0, wx.ALL, 5)
+        panel.Sizer.Add(lbl_header, 0, wx.ALL, 5)
         # add a static line
-        box.Add(wx.StaticLine(panel), 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-        box.Add(lbl_help, 0, wx.ALL, 5)
-        box.Add(wx.StaticLine(panel), 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        panel.Sizer.Add(wx.StaticLine(panel), 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        panel.Sizer.Add(lbl_help, 0, wx.ALL, 5)
+        panel.Sizer.Add(wx.StaticLine(panel), 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
         gridsizer = wx.FlexGridSizer(cols=2, hgap=5, vgap=5)
         gridsizer.AddGrowableCol(1)
 
         for line in self.edit_lines:
-            line.build(panel, gridsizer)
+            line.build(self.parent, panel, gridsizer)
 
         # can add a sizer to a sizer, not just add widget to sizer, creates a nested sizer
-        box.Add(gridsizer, 0, wx.EXPAND | wx.ALL, 10)
+        panel.Sizer.Add(gridsizer, 1, wx.EXPAND | wx.ALL, 10)
 
         # btn_save = wx.Button(panel, -1, "Save")
         # btn_cancel = wx.Button(panel, -1, "Cancel")
@@ -98,17 +97,17 @@ class FormSpec():
         # box.Add(btnSizer, 0, wx.EXPAND | wx.BOTTOM | wx.ALIGN_RIGHT, 10)
 
         stdButtonSizer = wx.StdDialogButtonSizer()
-        stdButtonSizerOK = wx.Button(panel, wx.ID_OK, name="btnOK")
+        stdButtonSizerOK = wx.Button(self.parent, wx.ID_OK, name="btnOK")
         stdButtonSizerOK.SetDefault()
         stdButtonSizer.AddButton(stdButtonSizerOK)
-        stdButtonSizerCancel = wx.Button(panel, wx.ID_CANCEL, name="btnCancel")
+        stdButtonSizerCancel = wx.Button(self.parent, wx.ID_CANCEL, name="btnCancel")
         stdButtonSizer.AddButton(stdButtonSizerCancel)
         stdButtonSizer.Realize()
-        box.Add(stdButtonSizer, 0, wx.EXPAND, 5)
+        panel.Sizer.Add(stdButtonSizer, 0, wx.EXPAND, 5)
 
-        panel.SetSizer(box)
-        box.Fit(self.parent)  # this call triggers the layout alorithm to fire
-        box.SetSizeHints(self.parent)
+        #panel.SetSizer(box)
+        panel.Sizer.Fit(self.parent)  # this call triggers the layout alorithm to fire
+        panel.Sizer.SetSizeHints(self.parent)
         # panel.SetBackgroundColour("orange")
         panel.Refresh()
         return panel
@@ -120,7 +119,7 @@ class FormLineSpec():
         self.labelstr = labelstr
         self.edit_fields = edit_fields
 
-    def build(self, panel, sizer):
+    def build(self, parent, panel, sizer):
         if self.labelstr is not None:
             lbl = wx.StaticText(panel, -1, f"{self.labelstr}:")
             sizer.Add(lbl, proportion=0, flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
@@ -133,12 +132,12 @@ class FormLineSpec():
             sizer_flags = wx.SizerFlags()
             if width == EditFieldWidth.LARGE:
                 sizer_flags.Expand()
-            control = edit_field.build(panel, False)
+            control = edit_field.build(parent, panel, False)
             sizer.Add(control, sizer_flags)
         else:
             cstsizer = wx.BoxSizer(wx.HORIZONTAL)
             for i, edit in enumerate(self.edit_fields):
-                control = edit.build(panel, True)
+                control = edit.build(parent, panel, True)
                 sizer_flags = wx.SizerFlags()
                 if i == 0:
                     sizer_flags.Expand().Proportion(1).Border(0)
@@ -179,7 +178,11 @@ class FormPanel(wx.Panel):
 
     def __init__(self, parent, name):
         super().__init__(parent=parent, name=name)
+        self.parent = parent
         self.BackgroundColour = 'GREY'
+        self.main_sizer = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(self.main_sizer)
+
 
 
 class TextField(EditFieldSpec):
@@ -188,12 +191,12 @@ class TextField(EditFieldSpec):
         super().__init__(name, width)
         self.validators = validators
 
-    def build(self, panel: wx.Panel, multi_column: bool = False):
+    def build(self, parent, panel: wx.Panel, multi_column: bool = False):
         size = self.get_size(multi_column)
         if size is None:
-            control = wx.TextCtrl(panel, -1, "", name=self.name)
+            control = wx.TextCtrl(parent, -1, "", name=self.name)
         else:
-            control = wx.TextCtrl(panel, -1, "", size=size, name=self.name)
+            control = wx.TextCtrl(parent, -1, "", size=size, name=self.name)
 
         if self.validators is not None:
             for validator in self.validators:
@@ -209,14 +212,14 @@ class ComboField(EditFieldSpec):
         self.contents = contents
         self.control = wx.ComboBox()
 
-    def build(self, panel: wx.Panel, multi_column: bool = False):
+    def build(self, parent, panel: wx.Panel, multi_column: bool = False):
         size = self.get_size(multi_column)
         style = wx.CB_READONLY
         choices = []
         if size is None:
-            self.control.Create(panel, -1, name=self.name, choices=choices, style=style)
+            self.control.Create(parent, -1, name=self.name, choices=choices, style=style)
         else:
-            self.control.Create(panel, -1, size=size, name=self.name, choices=choices, style=style)
+            self.control.Create(parent, -1, size=size, name=self.name, choices=choices, style=style)
         if self.contents is not None:
             for item in self.contents:
                 self.control.Append(item.label, item.code )
@@ -224,6 +227,7 @@ class ComboField(EditFieldSpec):
         return self.control
 
     def on_select(self, event):
+        # an example of how to get the selected item data
         listitem = self.control.GetClientData(self.control.GetSelection())
         print(listitem)
 
@@ -232,8 +236,8 @@ class CheckboxField(EditFieldSpec):
     def __init__(self, name):
         super().__init__(name, None)
 
-    def build(self, panel: wx.Panel, multi_column: bool = False):
-        return wx.CheckBox(panel, -1, "", name=self.name)
+    def build(self, parent, panel: wx.Panel, multi_column: bool = False):
+        return wx.CheckBox(parent, -1, "", name=self.name)
 
 
 

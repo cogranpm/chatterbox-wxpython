@@ -1,5 +1,6 @@
 import wx
 
+
 class NotEmpty(wx.PyValidator):
 
     def __init__(self):

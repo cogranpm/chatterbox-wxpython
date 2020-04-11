@@ -12,13 +12,16 @@ from validators import NotEmpty
 class PlaygroundForm(wx.Dialog):
 
     def __init__(self, parent=None):
-        wx.Dialog.__init__(self, parent, id=wx.ID_ANY, title=u"Settings", pos=wx.DefaultPosition,
+        super().__init__(parent, id=wx.ID_ANY, title=u"Form Demo*", pos=wx.DefaultPosition,
                            size=wx.Size(1200, 1200), style=wx.DEFAULT_DIALOG_STYLE)
 
         self.SetSizeHints(wx.DefaultSize, wx.DefaultSize)
 
         # testing out the list control
-        self.dvc = dv.DataViewCtrl(self, wx.ID_ANY, style = wx.BORDER_THEME)
+        self.list_panel = wx.Panel(self, name="listpanel")
+        self.list_sizer = wx.BoxSizer(wx.VERTICAL)
+        self.list_panel.SetSizer(self.list_sizer)
+        self.dvc = dv.DataViewCtrl(self.list_panel, wx.ID_ANY, style = wx.BORDER_THEME)
         self.data = [['Peter', '33', '100'], ['Fred', '22', '98'], ['Malcolm', '43', '77']]
         self.model = PyTestModel(self.data)
         self.dvc.AssociateModel(self.model)
@@ -30,9 +33,10 @@ class PlaygroundForm(wx.Dialog):
         for c in self.dvc.Columns:
             c.Sortable = True
         self.dvc.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.list_selection_change)
+        self.list_sizer.Add(self.dvc, wx.SizerFlags(1).Expand())
 
-        btn_add = frm.tool_button(parent=self, id=wx.ID_ANY, text="Add", handler=self.add_button_click)
-        btn_delete = frm.tool_button(parent=self, id=wx.ID_ANY, text="Del", handler=self.delete_button_click)
+        btn_add = frm.tool_button(parent=self.list_panel, id=wx.ID_ANY, text="Add", handler=self.add_button_click)
+        btn_delete = frm.tool_button(parent=self.list_panel, id=wx.ID_ANY, text="Del", handler=self.delete_button_click)
         tool_sizer = frm.hsizer([btn_add, btn_delete])
 
         edit_panel = self.edit_form(self)
@@ -47,9 +51,9 @@ class PlaygroundForm(wx.Dialog):
 
         main_sizer = wx.BoxSizer(wx.HORIZONTAL)
         list_sizer = frm.vsizer()
-        list_sizer.Add(self.dvc, wx.SizerFlags(1).Expand())
+        list_sizer.Add(self.list_panel, wx.SizerFlags(1).Expand())
         list_sizer.Add(tool_sizer, wx.SizerFlags().Expand().Border(wx.ALL, 5))
-        main_sizer.Add(list_sizer, wx.SizerFlags(1).Expand())
+        main_sizer.Add(self.list_panel, wx.SizerFlags(1).Expand())
         main_sizer.Add(edit_panel, 1, wx.EXPAND, 5)
         # not sure if this is needed for a tabbed ui
         # main_sizer.Add(stdButtonSizer, 0, wx.EXPAND, 5)
