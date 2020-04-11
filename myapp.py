@@ -1,5 +1,6 @@
 import wx
-from MainFrameImp import  MainFrameImp
+#from MainFrameImp import  MainFrameImp
+from frames import AppFrame
 import chatterbox_constants as cc
 from fn_app import load_default_settings, set_default_paths, config_logging
 import logging
@@ -26,7 +27,7 @@ class ChatterboxApp(wx.App):
             pass
 
         # load images
-        self.frame = MainFrameImp(None)
+        self.frame = AppFrame()
         self.frame.Show()
         self.SetTopWindow(self.frame)
         return True
