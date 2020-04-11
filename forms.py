@@ -61,20 +61,19 @@ class FormSpec():
         self.helpstr = helpstr
         self.edit_lines = edit_lines
         self.name = name
+        self.sizer = vsizer()
 
     def build(self):
-        #panel = wx.Panel(self.parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
-        #panel = FormPanel(self.parent, self.name)
-        da_sizer = self.parent.Sizer
+
         lbl_header = wx.StaticText(self.parent, 0, self.title)
         lbl_help = wx.StaticText(self.parent, 0, self.helpstr.lstrip())
         lbl_header.SetFont(header_font())
         lbl_help.SetFont(help_font())
-        da_sizer.Add(lbl_header, 0, wx.ALL, 5)
+        self.sizer.Add(lbl_header, 0, wx.ALL, 5)
         # add a static line
-        da_sizer.Add(wx.StaticLine(self.parent), 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-        da_sizer.Add(lbl_help, 0, wx.ALL, 5)
-        da_sizer.Add(wx.StaticLine(self.parent), 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        self.sizer.Add(wx.StaticLine(self.parent), 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        self.sizer.Add(lbl_help, 0, wx.ALL, 5)
+        self.sizer.Add(wx.StaticLine(self.parent), 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
         gridsizer = wx.FlexGridSizer(cols=2, hgap=5, vgap=5)
         gridsizer.AddGrowableCol(1)
@@ -83,7 +82,7 @@ class FormSpec():
             line.build(self.parent, gridsizer)
 
         # can add a sizer to a sizer, not just add widget to sizer, creates a nested sizer
-        da_sizer.Add(gridsizer, 1, wx.EXPAND | wx.ALL, 10)
+        self.sizer.Add(gridsizer, 1, wx.EXPAND | wx.ALL, 10)
 
         # btn_save = wx.Button(panel, -1, "Save")
         # btn_cancel = wx.Button(panel, -1, "Cancel")
@@ -104,14 +103,8 @@ class FormSpec():
         stdButtonSizerCancel = wx.Button(self.parent, wx.ID_CANCEL, name="btnCancel")
         stdButtonSizer.AddButton(stdButtonSizerCancel)
         stdButtonSizer.Realize()
-        da_sizer.Add(stdButtonSizer, 0, wx.EXPAND, 5)
-
-        #panel.SetSizer(box)
-        # panel.Sizer.Fit(self.parent)  # this call triggers the layout alorithm to fire
-        #panel.Sizer.SetSizeHints(self.parent)
-        # panel.SetBackgroundColour("orange")
-        # panel.Refresh()
-        # return panel
+        self.sizer.Add(stdButtonSizer, 0, wx.EXPAND, 5)
+        self.parent.Sizer.Add(self.sizer, wx.SizerFlags(1).Expand())
 
 class FormLineSpec():
     """ can be made up of multiple edit fields or a single, such as zip, state, city on a single line """
@@ -173,17 +166,6 @@ class EditFieldSpec():
                 txt_width = width_medium_multi
             size = wx.Size(txt_width, -1)
         return size
-
-
-class FormPanel(wx.Panel):
-
-    def __init__(self, parent, name):
-        super().__init__(parent=parent, name=name)
-        self.parent = parent
-        self.BackgroundColour = 'GREY'
-        self.main_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.SetSizer(self.main_sizer)
-
 
 
 class TextField(EditFieldSpec):
