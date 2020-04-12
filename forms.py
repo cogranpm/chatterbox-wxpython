@@ -170,21 +170,18 @@ class EditFieldSpec():
 
 class TextField(EditFieldSpec):
 
-    def __init__(self, name, width: EditFieldWidth, validators: List[wx.Validator] = None):
+    def __init__(self, name, width: EditFieldWidth, validator: wx.PyValidator = None):
         super().__init__(name, width)
-        self.validators = validators
+        self.validator = validator
 
     def build(self, parent, multi_column: bool = False):
         size = self.get_size(multi_column)
         if size is None:
-            control = wx.TextCtrl(parent, -1, "", name=self.name)
+            control = wx.TextCtrl(parent, -1, "", name=self.name, validator=self.validator)
         else:
-            control = wx.TextCtrl(parent, -1, "", size=size, name=self.name)
-
-        if self.validators is not None:
-            for validator in self.validators:
-                control.Validator = validator
-
+            control = wx.TextCtrl(parent, -1, "", size=size, name=self.name, validator=self.validator)
+        # if self.validator is not None:
+        #     control.Validator = self.validator
         return control
 
 

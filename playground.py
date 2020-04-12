@@ -6,59 +6,50 @@ import wx.dataview as dv
 import forms as frm
 from lists import states
 from models import PyTestModel
-from validators import NotEmpty
+from validators import NameValidator
 
 
 class PlaygroundForm(wx.Dialog):
 
     def __init__(self, parent=None):
         super().__init__(parent, id=wx.ID_ANY, title=u"Form Demo", pos=wx.DefaultPosition,
-                           size=wx.Size(600, 800), style=wx.DEFAULT_DIALOG_STYLE)
+                           size=wx.Size(600, 800), style=wx.DEFAULT_DIALOG_STYLE | wx.WS_EX_VALIDATE_RECURSIVELY)
 
         self.SetSizeHints(wx.DefaultSize, wx.DefaultSize)
 
-        # testing out the list control
-        # self.list_panel = wx.Panel(self, name="listpanel")
-        # self.list_sizer = wx.BoxSizer(wx.VERTICAL)
-        # self.list_panel.SetSizer(self.list_sizer)
-        # self.list()
-        # self.list_sizer.Add(self.dvc, wx.SizerFlags(1).Expand())
-        # btn_add = frm.tool_button(parent=self.list_panel, id=wx.ID_ANY, text="Add", handler=self.add_button_click)
-        # btn_delete = frm.tool_button(parent=self.list_panel, id=wx.ID_ANY, text="Del", handler=self.delete_button_click)
-        # tool_sizer = frm.hsizer([btn_add, btn_delete])
-
-        main_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        main_sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(main_sizer)
-        # edit_panel = self.edit_form()
+        self.list = self.create_list()
+        main_sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
+        btn_add = frm.tool_button(self, id=wx.ID_ANY, text="Add", handler=self.add_button_click)
+        btn_delete = frm.tool_button(self, id=wx.ID_ANY, text="Del", handler=self.delete_button_click)
+        tool_sizer = frm.hsizer([btn_add, btn_delete])
+        main_sizer.Add(tool_sizer, wx.SizerFlags(0))
+        self.name_validator = NameValidator(self.data[0])
         self.edit_form()
 
-
-        # self.list_sizer.Add(tool_sizer, wx.SizerFlags().Expand().Border(wx.ALL, 5))
-        # main_sizer.Add(self.list_panel, wx.SizerFlags(1).Expand())
-        # main_sizer.Add(edit_panel, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
-        # not sure if this is needed for a tabbed ui
-        # main_sizer.Add(stdButtonSizer, 0, wx.EXPAND, 5)
-
         # frame stuff
-
         self.Layout()
         self.Centre(wx.BOTH)
         main_sizer.Fit(self)
         # Connect Events
         self.Bind(wx.EVT_INIT_DIALOG, self.OnInitDialog)
-        # self.stdButtonSizerOK.Bind(wx.EVT_BUTTON, self.OnOKButtonClick)
-
 
     def OnInitDialog(self, event):
         logging.info('Playgound Dialog Initialized')
 
     def list_selection_change(self, event: dv.DataViewEvent):
-        selected_item = self.dvc.GetSelection()
+        selected_item = self.list.GetSelection()
         record = self.model.ItemToObject(selected_item)
         name_edit: wx.Window = wx.Window.FindWindowByName("name", self)
         age_edit: wx.Window = wx.Window.FindWindowByName("age", self)
-        name_edit.SetValue(record[0])
-        age_edit.SetValue(record[1])
+
+        name_edit.Validator.set_data(record)
+        age_edit.Validator.set_data(record)
+
+        self.TransferDataToWindow()
+        #name_edit.SetValue(record[0])
+        #age_edit.SetValue(record[1])
 
     # def OnOKButtonClick(self, event):
     #     print("ya clicked ok ya know")
@@ -73,19 +64,20 @@ class PlaygroundForm(wx.Dialog):
         self.model.ItemDeleted(dv.NullDataViewItem, self.model.ObjectToItem(self.data[0]))
         del(self.data[0])
 
-    def list(self):
-        self.dvc = dv.DataViewCtrl(self, wx.ID_ANY, style=wx.BORDER_THEME)
+    def create_list(self):
+        dvc = dv.DataViewCtrl(self, wx.ID_ANY, style=wx.BORDER_THEME)
         self.data = [['Peter', '33', '100'], ['Fred', '22', '98'], ['Malcolm', '43', '77']]
         self.model = PyTestModel(self.data)
-        self.dvc.AssociateModel(self.model)
+        dvc.AssociateModel(self.model)
         self.model.DecRef()
 
-        self.dvc.AppendTextColumn("Name", 0, width=260, mode=dv.DATAVIEW_CELL_EDITABLE)
-        self.dvc.AppendTextColumn("Age", 1, width=80, mode=dv.DATAVIEW_CELL_EDITABLE)
-        self.dvc.AppendTextColumn("Weight", 2, width=80, mode=dv.DATAVIEW_CELL_EDITABLE)
-        for c in self.dvc.Columns:
+        dvc.AppendTextColumn("Name", 0, width=260, mode=dv.DATAVIEW_CELL_EDITABLE)
+        dvc.AppendTextColumn("Age", 1, width=80, mode=dv.DATAVIEW_CELL_EDITABLE)
+        dvc.AppendTextColumn("Weight", 2, width=80, mode=dv.DATAVIEW_CELL_EDITABLE)
+        for c in dvc.Columns:
             c.Sortable = True
-        self.dvc.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.list_selection_change)
+        dvc.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.list_selection_change)
+        return dvc
 
     def edit_form(self):
         helpstr = """
@@ -99,18 +91,18 @@ class PlaygroundForm(wx.Dialog):
         use the proportion argument in the Add method to make cell grow at different amount """
 
         person_form = frm.form(self, "frmDemo", "Form Demo", helpstr,[
-            frm.edit_line("Name", [frm.TextField("name", frm.large(), validators=[NotEmpty()])]),
-            frm.edit_line("Age", [frm.TextField("age", frm.small())]),
+            frm.edit_line("Name", [frm.TextField("name", frm.large(), validator=self.name_validator)]),
+            frm.edit_line("Age", [frm.TextField("age", frm.small(), validator=self.name_validator)]),
             frm.edit_line("Member", [frm.CheckboxField("member")]),
-            frm.edit_line("Address", [frm.TextField("addr1", frm.large())]),
-            frm.edit_line(None, [frm.TextField("addr2", frm.large())]),
+            frm.edit_line("Address", [frm.TextField("addr1", frm.large(), validator=self.name_validator)]),
+            frm.edit_line(None, [frm.TextField("addr2", frm.large(), validator=self.name_validator)]),
             frm.edit_line("City, State, Zip", [
-                frm.TextField("city", frm.large()),
+                frm.TextField("city", frm.large(), validator=self.name_validator),
                 frm.ComboField("state", frm.medium(), states),
-                frm.TextField("zip", frm.small())
+                frm.TextField("zip", frm.small(), validator=self.name_validator)
             ]),
-            frm.edit_line("Phone", [frm.TextField("phone", frm.small())]),
-            frm.edit_line("Email", [frm.TextField("email", frm.medium())])
+            frm.edit_line("Phone", [frm.TextField("phone", frm.small(), validator=self.name_validator)]),
+            frm.edit_line("Email", [frm.TextField("email", frm.medium(), validator=self.name_validator)])
         ])
 
         panel = person_form.build()
