@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['main.py'],
-             pathex=['E:\\shared\\Source\\python\\conda\\wx\\chatterbox'],
+             pathex=['E:\\shared\\source\\python\\conda\\wx\\chatterbox'],
              binaries=[],
              datas=[],
              hiddenimports=[],

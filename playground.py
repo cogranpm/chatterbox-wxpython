@@ -6,7 +6,7 @@ import wx.dataview as dv
 import forms as frm
 from lists import states
 from models import PyTestModel
-from validators import NameValidator
+from validators import FieldValidator, not_empty
 
 
 class PlaygroundForm(wx.Dialog):
@@ -25,7 +25,8 @@ class PlaygroundForm(wx.Dialog):
         btn_delete = frm.tool_button(self, id=wx.ID_ANY, text="Del", handler=self.delete_button_click)
         tool_sizer = frm.hsizer([btn_add, btn_delete])
         main_sizer.Add(tool_sizer, wx.SizerFlags(0))
-        self.name_validator = NameValidator(self.data[0])
+        self.name_validator = FieldValidator(self.data[0], None, 0, [not_empty])
+        self.age_validator = FieldValidator(self.data[0], None, 1, [not_empty])
         self.edit_form()
 
         # frame stuff
@@ -92,7 +93,7 @@ class PlaygroundForm(wx.Dialog):
 
         person_form = frm.form(self, "frmDemo", "Form Demo", helpstr,[
             frm.edit_line("Name", [frm.TextField("name", frm.large(), validator=self.name_validator)]),
-            frm.edit_line("Age", [frm.TextField("age", frm.small(), validator=self.name_validator)]),
+            frm.edit_line("Age", [frm.TextField("age", frm.small(), validator=self.age_validator)]),
             frm.edit_line("Member", [frm.CheckboxField("member")]),
             frm.edit_line("Address", [frm.TextField("addr1", frm.large(), validator=self.name_validator)]),
             frm.edit_line(None, [frm.TextField("addr2", frm.large(), validator=self.name_validator)]),
