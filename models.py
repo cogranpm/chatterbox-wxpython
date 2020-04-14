@@ -1,11 +1,24 @@
 import wx
 import wx.dataview as dv
+from typing import List, Dict
+from dataclasses import dataclass
+
+# not sure how to do date time
+column_type_map: Dict[type, str] = {str: 'string', bool: 'bool', float: 'double'}
+
+
+@dataclass(frozen=True)
+class ColumnSpec:
+    key: str
+    data_type: type
+    label: str
+    width: int
+    browseable: bool = False
+    sortable: bool = False
 
 # this is a wxPython xtra model based class
 # has a ItemToObject mapper built in which makes
 # selection processing easy
-
-
 class PyTestModel(dv.PyDataViewModel):
     """
     this class has a neat way to get the object that is stored
@@ -13,14 +26,17 @@ class PyTestModel(dv.PyDataViewModel):
     also supports sorting, adding, editing and deleting
     also supports attributes on cells etc
     """
-    def __init__(self, data):
+    def __init__(self, data, columns: Dict[str, ColumnSpec]):
         super().__init__()
         self.data = data
+        self.columns = columns
+
+    def get_column_by_index(self, index):
+        return list(self.columns.values())[index]
 
     def GetChildren(self, item, children):
         for row in self.data:
             children.append(self.ObjectToItem(row))
-        print("Hi this should update:", self.data)
         return len(self.data)
 
     def IsContainer(self, item):
@@ -32,14 +48,19 @@ class PyTestModel(dv.PyDataViewModel):
         return dv.NullDataViewItem
 
     def GetColumnType(self, col):
-        return 'string'
+        global column_type_map
+        return column_type_map[self.get_column_by_index(col).data_type]
 
     def GetColumnCount(self):
-        return len(self.data[0])
+        # this needs to change to a map access
+        return len(self.columns.keys())
+        # return len(self.data[0])
 
     def GetValue(self, item, col):
         row = self.ItemToObject(item)
-        return row[col]
+        # change to map access
+        # return row[col]
+        return row[self.get_column_by_index(col).key]
 
     def GetAttr(self, item, col, attr):
         if col == 1:
@@ -50,7 +71,9 @@ class PyTestModel(dv.PyDataViewModel):
 
     def SetValue(self, variant, item, col):
         row = self.ItemToObject(item)
-        row[col] = variant
+        # change to map access
+        #row[col] = variant
+        row[self.get_column_by_index(col).key] = variant
         return True
 
     def Compare(self, item1, item2, col, ascending):
@@ -60,15 +83,24 @@ class PyTestModel(dv.PyDataViewModel):
         row2 = self.ItemToObject(item2)
 
         # different sort depending on column
-        if col == 1 or col == 2:
-            a = int(row1[col])
-            b = int(row2[col])
+        if self.get_column_by_index(col).data_type == int:
+            a = int(row1[self.get_column_by_index(col).key])
+            b = int(row2[self.get_column_by_index(col).key])
             return (a > b) - (a < b)
         else:
-            a = row1[col]
-            b = row2[col]
+            a = row1[self.get_column_by_index(col).key]
+            b = row2[self.get_column_by_index(col).key]
             return (a > b) - (a < b)
 
+        # if col == 1 or col == 2:
+        #     a = int(row1[col])
+        #     b = int(row2[col])
+        #     return (a > b) - (a < b)
+        # else:
+        #     a = row1[col]
+        #     b = row2[col]
+        #     return (a > b) - (a < b)
+#
 
 # this is an example of a wxWidgets style DataView model for a table/list
 # if using a list of lists style this could be generic for any domain model data

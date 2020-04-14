@@ -5,8 +5,16 @@ import fn_widget as w
 import wx.dataview as dv
 import forms as frm
 from lists import states
-from models import PyTestModel
+from models import PyTestModel, ColumnSpec
 from validators import FieldValidator, not_empty
+from typing import List, Dict
+
+
+def create_data():
+    return [{'name': 'Fred', 'age': 22, 'member': False, 'address1': "44 Jones lane"},
+            {'name': 'Peter', 'age': 76, 'member': True, 'address1': "22 Honeysuckle Avenue"},
+            {'name': 'Beltran', 'age': 22, 'member': True, 'address1': "223 Brigard Stree"},
+            {'name': 'Anne', 'age': 4, 'member': False, 'address1': "4 The Alter Place"}]
 
 
 class PlaygroundForm(wx.Dialog):
@@ -19,14 +27,20 @@ class PlaygroundForm(wx.Dialog):
 
         main_sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(main_sizer)
+        self.create_columns()
+        self.data = create_data()
+        self.model = PyTestModel(self.data, self.columns)
         self.list = self.create_list()
+        self.name_validator = FieldValidator(self.data[0], self.name_column.key, [not_empty])
+        self.age_validator = FieldValidator(self.data[0], self.age_column.key, [not_empty])
+        self.address1_validator = FieldValidator(self.data[0], self.address1_column.key, [])
+
         main_sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
         btn_add = frm.tool_button(self, id=wx.ID_ANY, text="Add", handler=self.add_button_click)
         btn_delete = frm.tool_button(self, id=wx.ID_ANY, text="Del", handler=self.delete_button_click)
         tool_sizer = frm.hsizer([btn_add, btn_delete])
         main_sizer.Add(tool_sizer, wx.SizerFlags(0))
-        self.name_validator = FieldValidator(self.data[0], None, 0, [not_empty])
-        self.age_validator = FieldValidator(self.data[0], None, 1, [not_empty])
+
         self.edit_form()
 
         # frame stuff
@@ -39,25 +53,31 @@ class PlaygroundForm(wx.Dialog):
     def OnInitDialog(self, event):
         logging.info('Playgound Dialog Initialized')
 
+    def create_columns(self):
+        self.name_column = ColumnSpec('name', str, 'Name', 100, True)
+        self.age_column = ColumnSpec('age', int, 'Age', 40, True)
+        self.member_column = ColumnSpec('member', bool, 'Member', 40, True)
+        self.address1_column = ColumnSpec('address1', str, 'Address', 120, True)
+        self.columns = {self.name_column.key: self.name_column, self.age_column.key: self.age_column, self.member_column.key: self.member_column,
+                        self.address1_column.key: self.address1_column}
+
     def list_selection_change(self, event: dv.DataViewEvent):
         selected_item = self.list.GetSelection()
         record = self.model.ItemToObject(selected_item)
-        name_edit: wx.Window = wx.Window.FindWindowByName("name", self)
-        age_edit: wx.Window = wx.Window.FindWindowByName("age", self)
-
-        name_edit.Validator.set_data(record)
-        age_edit.Validator.set_data(record)
+        for key in self.columns:
+            print(key)
+            control: wx.Window = wx.Window.FindWindowByName(key, self)
+            if control is not None and control.Validator is not None:
+                control.Validator.set_data(record)
 
         self.TransferDataToWindow()
-        #name_edit.SetValue(record[0])
-        #age_edit.SetValue(record[1])
 
     # def OnOKButtonClick(self, event):
     #     print("ya clicked ok ya know")
     #     event.Skip()
 
     def add_button_click(self, event):
-        new_person = ['Mike', '44', '55']
+        new_person = {'name': 'Peter', 'age': 33, 'address1': '14 Angel Terrace'}
         self.data.append(new_person)
         self.model.ItemAdded(dv.NullDataViewItem, self.model.ObjectToItem(new_person))
 
@@ -67,16 +87,16 @@ class PlaygroundForm(wx.Dialog):
 
     def create_list(self):
         dvc = dv.DataViewCtrl(self, wx.ID_ANY, style=wx.BORDER_THEME)
-        self.data = [['Peter', '33', '100'], ['Fred', '22', '98'], ['Malcolm', '43', '77']]
-        self.model = PyTestModel(self.data)
         dvc.AssociateModel(self.model)
         self.model.DecRef()
 
-        dvc.AppendTextColumn("Name", 0, width=260, mode=dv.DATAVIEW_CELL_EDITABLE)
-        dvc.AppendTextColumn("Age", 1, width=80, mode=dv.DATAVIEW_CELL_EDITABLE)
-        dvc.AppendTextColumn("Weight", 2, width=80, mode=dv.DATAVIEW_CELL_EDITABLE)
+        for i, key in enumerate(self.columns):
+            list_column = dvc.AppendTextColumn(self.columns[key].label, i, width=self.columns[key].width, mode=dv.DATAVIEW_CELL_EDITABLE)
+            #list_column.sortable = True
+
         for c in dvc.Columns:
             c.Sortable = True
+
         dvc.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.list_selection_change)
         return dvc
 
@@ -92,10 +112,10 @@ class PlaygroundForm(wx.Dialog):
         use the proportion argument in the Add method to make cell grow at different amount """
 
         person_form = frm.form(self, "frmDemo", "Form Demo", helpstr,[
-            frm.edit_line("Name", [frm.TextField("name", frm.large(), validator=self.name_validator)]),
-            frm.edit_line("Age", [frm.TextField("age", frm.small(), validator=self.age_validator)]),
+            frm.edit_line("Name", [frm.TextField(self.name_column.key, frm.large(), validator=self.name_validator)]),
+            frm.edit_line("Age", [frm.TextField(self.age_column.key, frm.small(), validator=self.age_validator)]),
             frm.edit_line("Member", [frm.CheckboxField("member")]),
-            frm.edit_line("Address", [frm.TextField("addr1", frm.large(), validator=self.name_validator)]),
+            frm.edit_line("Address", [frm.TextField(self.address1_column.key, frm.large(), validator=self.address1_validator)]),
             frm.edit_line(None, [frm.TextField("addr2", frm.large(), validator=self.name_validator)]),
             frm.edit_line("City, State, Zip", [
                 frm.TextField("city", frm.large(), validator=self.name_validator),

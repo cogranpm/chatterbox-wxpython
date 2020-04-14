@@ -14,21 +14,21 @@ def not_empty(control):
         control.Refresh()
         return True
 
+
 class FieldValidator(wx.Validator):
     """ can always use the same validator for all controls and do a switch on control name """
 
-    def __init__(self, data, key, index, validators):
+    def __init__(self, data, key, validators):
         """ at this moment in time takes a key and index to support both map data and list
         validators is a list of functions to apply
         """
         super().__init__()
         self.data = data
         self.key = key
-        self.index = index
         self.validators = validators
 
     def Clone(self):
-        return FieldValidator(self.data, self.key, self.index, self.validators)
+        return FieldValidator(self.data, self.key, self.validators)
 
     def set_data(self, data):
         self.data = data
@@ -41,16 +41,12 @@ class FieldValidator(wx.Validator):
                 return result
         return True
 
-
     def TransferToWindow(self):
-        print("TransferToWindow called")
-        print(self.data)
         control = self.GetWindow()
-        control.SetValue(self.data[self.index])
+        control.SetValue(str(self.data[self.key]))
         return True
 
     def TransferFromWindow(self):
-        print("transfer from window called")
         control = self.GetWindow()
-        self.data[self.index] = control.GetValue()
+        self.data[self.key] = control.GetValue()
         return True
