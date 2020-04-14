@@ -2,15 +2,19 @@ import wx
 import wx.dataview as dv
 from typing import List, Dict
 from dataclasses import dataclass
+from enum import Enum
 
 # not sure how to do date time
-column_type_map: Dict[type, str] = {str: 'string', bool: 'bool', float: 'double'}
+ColumnType = Enum('ColumnType', 'str bool float int date')
+column_type_map: Dict[ColumnType, str] = {ColumnType.str: 'string', ColumnType.bool: 'bool',
+                                          ColumnType.float: 'double', ColumnType.int: 'string',
+                                          ColumnType.date: 'string'}
 
 
 @dataclass(frozen=True)
 class ColumnSpec:
     key: str
-    data_type: type
+    data_type: ColumnType
     label: str
     width: int
     browseable: bool = False

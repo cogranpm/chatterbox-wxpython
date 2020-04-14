@@ -5,7 +5,7 @@ import fn_widget as w
 import wx.dataview as dv
 import forms as frm
 from lists import states
-from models import PyTestModel, ColumnSpec
+from models import PyTestModel, ColumnSpec, ColumnType
 from validators import FieldValidator, not_empty
 from typing import List, Dict
 
@@ -54,10 +54,10 @@ class PlaygroundForm(wx.Dialog):
         logging.info('Playgound Dialog Initialized')
 
     def create_columns(self):
-        self.name_column = ColumnSpec('name', str, 'Name', 100, True)
-        self.age_column = ColumnSpec('age', int, 'Age', 40, True)
-        self.member_column = ColumnSpec('member', bool, 'Member', 40, True)
-        self.address1_column = ColumnSpec('address1', str, 'Address', 120, True)
+        self.name_column = ColumnSpec('name', ColumnType.str, 'Name', 100, True)
+        self.age_column = ColumnSpec('age', ColumnType.int, 'Age', 40, True)
+        self.member_column = ColumnSpec('member', ColumnType.bool, 'Member', 40, True)
+        self.address1_column = ColumnSpec('address1', ColumnType.str, 'Address', 120, True)
         self.columns = {self.name_column.key: self.name_column, self.age_column.key: self.age_column, self.member_column.key: self.member_column,
                         self.address1_column.key: self.address1_column}
 
@@ -91,8 +91,15 @@ class PlaygroundForm(wx.Dialog):
         self.model.DecRef()
 
         for i, key in enumerate(self.columns):
-            list_column = dvc.AppendTextColumn(self.columns[key].label, i, width=self.columns[key].width, mode=dv.DATAVIEW_CELL_EDITABLE)
-            #list_column.sortable = True
+            column_spec = self.columns[key]
+            if column_spec.data_type == ColumnType.bool:
+                list_column: dv.DataViewColumn = dvc.AppendToggleColumn(column_spec.label, i,
+                                                                        width=column_spec.width,
+                                                                        mode=dv.DATAVIEW_CELL_EDITABLE)
+            else:
+                list_column = dvc.AppendTextColumn(column_spec.label, i, width=column_spec.width,
+                                                   mode=dv.DATAVIEW_CELL_EDITABLE)
+            #list_column.Sortable = column_spec.sortable
 
         for c in dvc.Columns:
             c.Sortable = True
