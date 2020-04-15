@@ -85,6 +85,16 @@ class PlaygroundForm(wx.Dialog):
         self.model.ItemDeleted(dv.NullDataViewItem, self.model.ObjectToItem(self.data[0]))
         del(self.data[0])
 
+    def create_list_column(self, index: int, dvc: dv.DataViewCtrl, column_spec: ColumnSpec):
+        if column_spec.data_type == ColumnType.bool:
+            list_column: dv.DataViewColumn = dvc.AppendToggleColumn(column_spec.label, index,
+                                                                    width=column_spec.width,
+                                                                    mode=dv.DATAVIEW_CELL_EDITABLE)
+        else:
+            list_column = dvc.AppendTextColumn(column_spec.label, index, width=column_spec.width,
+                                               mode=dv.DATAVIEW_CELL_EDITABLE)
+        return list_column
+
     def create_list(self):
         dvc = dv.DataViewCtrl(self, wx.ID_ANY, style=wx.BORDER_THEME)
         dvc.AssociateModel(self.model)
@@ -92,14 +102,8 @@ class PlaygroundForm(wx.Dialog):
 
         for i, key in enumerate(self.columns):
             column_spec = self.columns[key]
-            if column_spec.data_type == ColumnType.bool:
-                list_column: dv.DataViewColumn = dvc.AppendToggleColumn(column_spec.label, i,
-                                                                        width=column_spec.width,
-                                                                        mode=dv.DATAVIEW_CELL_EDITABLE)
-            else:
-                list_column = dvc.AppendTextColumn(column_spec.label, i, width=column_spec.width,
-                                                   mode=dv.DATAVIEW_CELL_EDITABLE)
-            #list_column.Sortable = column_spec.sortable
+            if column_spec.browseable:
+                column = self.create_list_column(i, dvc, column_spec)
 
         for c in dvc.Columns:
             c.Sortable = True
