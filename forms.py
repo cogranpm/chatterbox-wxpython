@@ -213,11 +213,12 @@ class ComboField(EditFieldSpec):
 
 
 class CheckboxField(EditFieldSpec):
-    def __init__(self, name):
+    def __init__(self, name, validator: wx.PyValidator = None):
         super().__init__(name, None)
+        self.validator = validator
 
     def build(self, parent, multi_column: bool = False):
-        return wx.CheckBox(parent, -1, "", name=self.name)
+        return wx.CheckBox(parent, -1, "", name=self.name, validator=self.validator)
 
 
 

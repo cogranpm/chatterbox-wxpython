@@ -3,21 +3,7 @@ import wx.dataview as dv
 from enum import Enum
 from typing import Dict, List
 from dataclasses import dataclass
-from models import PyTestModel
-
-# not sure how to do date time
-ColumnType = Enum('ColumnType', 'str bool float int date')
-column_type_map: Dict[ColumnType, str] = {ColumnType.str: 'string', ColumnType.bool: 'bool',
-                                          ColumnType.float: 'double', ColumnType.int: 'string',
-                                          ColumnType.date: 'string'}
-@dataclass(frozen=True)
-class ColumnSpec:
-    key: str
-    data_type: ColumnType
-    label: str
-    width: int
-    browseable: bool = False
-    sortable: bool = False
+from models import PyTestModel, ColumnSpec, ColumnType
 
 
 def create_list_column(index: int, dvc: dv.DataViewCtrl, column_spec: ColumnSpec):

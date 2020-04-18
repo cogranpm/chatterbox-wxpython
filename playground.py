@@ -6,7 +6,7 @@ import wx.dataview as dv
 import forms as frm
 from lists import states, ColumnSpec, ColumnType, ListSpec
 from models import PyTestModel
-from validators import FieldValidator, not_empty
+from validators import FieldValidator, CheckboxValidator, not_empty
 import wx.py as py
 
 from typing import List, Dict
@@ -40,7 +40,6 @@ class PlaygroundForm(wx.Dialog):
 
         main_sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(main_sizer)
-        self.create_columns()
 
         # self.data = create_data()
         # self.model = PyTestModel(self.data, self.columns)
@@ -51,7 +50,8 @@ class PlaygroundForm(wx.Dialog):
             ColumnSpec(member_column, ColumnType.bool, 'Member', 40, True),
             ColumnSpec(address1_column, ColumnType.str, 'Address', 120, True),
             ColumnSpec(address2_column, ColumnType.str, 'Address 2', 120, True)
-        ])
+        ], create_data())
+        self.list = self.listspec.build(self, self.list_selection_change)
 
         # self.columns = {self.name_column.key: self.name_column, self.age_column.key: self.age_column, self.member_column.key: self.member_column,
         #                self.address1_column.key: self.address1_column, self.address2_column.key: self.address2_column}
@@ -62,10 +62,11 @@ class PlaygroundForm(wx.Dialog):
         wx.py.dispatcher.connect(receiver=self.push, signal='Interpreter.push')
 
         # declare the validators
-        self.name_validator = FieldValidator(self.data[0], name_column, [not_empty])
-        self.age_validator = FieldValidator(self.data[0], age_column, [not_empty])
-        self.address1_validator = FieldValidator(self.data[0], address1_column, [])
-        self.address2_validator = FieldValidator(self.data[0], address2_column, [])
+        self.name_validator = FieldValidator(None, name_column, [not_empty])
+        self.age_validator = FieldValidator(None, age_column, [not_empty])
+        self.address1_validator = FieldValidator(None, address1_column, [])
+        self.address2_validator = FieldValidator(None, address2_column, [])
+        self.member_validator = CheckboxValidator(None, member_column, [])
 
         main_sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
         btn_add = frm.tool_button(self, id=wx.ID_ANY, text="Add", handler=self.add_button_click)
@@ -89,13 +90,15 @@ class PlaygroundForm(wx.Dialog):
         """ just an example of dispatcher in action """
         print('got a push')
 
+    # this could possibly be moved to the listspec class
+    # after all it knows the parent which is the only variant needed
     def list_selection_change(self, event: dv.DataViewEvent):
         # testing dispatcher stuff
         py.dispatcher.send(signal='Interpreter.push', sender=self, command='listchange', more=event)
         selected_item = self.list.GetSelection()
-        record = self.model.ItemToObject(selected_item)
-        for key in self.columns:
-            control: wx.Window = wx.Window.FindWindowByName(key, self)
+        record = self.listspec.model.ItemToObject(selected_item)
+        for column in self.listspec.columns:
+            control: wx.Window = wx.Window.FindWindowByName(column.key, self)
             if control is not None and control.Validator is not None:
                 control.Validator.set_data(record)
 
@@ -107,30 +110,12 @@ class PlaygroundForm(wx.Dialog):
 
     def add_button_click(self, event):
         new_person = {'name': 'Peter', 'age': 33, 'address1': '14 Angel Terrace'}
-        self.data.append(new_person)
-        self.model.ItemAdded(dv.NullDataViewItem, self.model.ObjectToItem(new_person))
+        self.listspec.data.append(new_person)
+        self.listspec.model.ItemAdded(dv.NullDataViewItem, self.listspec.model.ObjectToItem(new_person))
 
     def delete_button_click(self, event):
-        self.model.ItemDeleted(dv.NullDataViewItem, self.model.ObjectToItem(self.data[0]))
-        del(self.data[0])
-
-
-
-    def create_list(self):
-        dvc = dv.DataViewCtrl(self, wx.ID_ANY, style=wx.BORDER_THEME)
-        dvc.AssociateModel(self.model)
-        self.model.DecRef()
-
-        for i, key in enumerate(self.columns):
-            column_spec = self.columns[key]
-            if column_spec.browseable:
-                column = self.create_list_column(i, dvc, column_spec)
-
-        for c in dvc.Columns:
-            c.Sortable = True
-
-        dvc.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.list_selection_change)
-        return dvc
+        self.model.ItemDeleted(dv.NullDataViewItem, self.listspec.model.ObjectToItem(self.listspec.data[0]))
+        del(self.listspec.data[0])
 
     def edit_form(self):
         helpstr = """
@@ -146,7 +131,7 @@ class PlaygroundForm(wx.Dialog):
         person_form = frm.form(self, "frmDemo", "Form Demo", helpstr, [
             frm.edit_line("Name", [frm.TextField(name_column, frm.large(), validator=self.name_validator)]),
             frm.edit_line("Age", [frm.TextField(age_column, frm.small(), validator=self.age_validator)]),
-            frm.edit_line("Member", [frm.CheckboxField(member_column)]),
+            frm.edit_line("Member", [frm.CheckboxField(member_column, validator=self.member_validator)]),
             frm.edit_line("Address", [frm.TextField(address1_column, frm.large(), validator=self.address1_validator)]),
             frm.edit_line(None, [frm.TextField(address2_column, frm.large(), validator=self.address2_validator)]),
             frm.edit_line("City, State, Zip", [

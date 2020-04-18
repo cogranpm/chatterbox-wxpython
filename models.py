@@ -1,6 +1,22 @@
 import wx.dataview as dv
 from typing import List, Dict
-from lists import ColumnSpec
+from dataclasses import dataclass
+from enum import Enum
+
+# not sure how to do date time
+ColumnType = Enum('ColumnType', 'str bool float int date')
+column_type_map: Dict[ColumnType, str] = {ColumnType.str: 'string', ColumnType.bool: 'bool',
+                                          ColumnType.float: 'double', ColumnType.int: 'string',
+                                          ColumnType.date: 'string'}
+
+@dataclass(frozen=True)
+class ColumnSpec:
+    key: str
+    data_type: ColumnType
+    label: str
+    width: int
+    browseable: bool = False
+    sortable: bool = False
 
 
 # this is a wxPython xtra model based class
@@ -13,13 +29,14 @@ class PyTestModel(dv.PyDataViewModel):
     also supports sorting, adding, editing and deleting
     also supports attributes on cells etc
     """
-    def __init__(self, data, columns: Dict[str, ColumnSpec]):
+    def __init__(self, data, columns: List[ColumnSpec]):
         super().__init__()
         self.data = data
         self.columns = columns
 
     def get_column_by_index(self, index):
-        return list(self.columns.values())[index]
+        # return list(self.columns.values())[index]
+        return self.columns[index]
 
     def GetChildren(self, item, children):
         for row in self.data:

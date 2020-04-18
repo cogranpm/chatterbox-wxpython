@@ -50,3 +50,13 @@ class FieldValidator(wx.Validator):
         control = self.GetWindow()
         self.data[self.key] = control.GetValue()
         return True
+
+
+class CheckboxValidator(FieldValidator):
+
+    def TransferToWindow(self):
+        control = self.GetWindow()
+        control.SetValue(self.data[self.key])
+
+
+
