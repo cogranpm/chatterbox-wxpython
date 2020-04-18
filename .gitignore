@@ -3,3 +3,4 @@
 /dist/chatterbox/
 /app.log
 /forms/
+__pycache__/
