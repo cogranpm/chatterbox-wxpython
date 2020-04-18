@@ -7,15 +7,16 @@ import forms as frm
 from lists import states
 from models import PyTestModel, ColumnSpec, ColumnType
 from validators import FieldValidator, not_empty
+import wx.py as py
 
 from typing import List, Dict
 
 
 def create_data():
-    return [{'name': 'Fred', 'age': 22, 'member': False, 'address1': "44 Jones lane"},
-            {'name': 'Peter', 'age': 76, 'member': True, 'address1': "22 Honeysuckle Avenue"},
-            {'name': 'Beltran', 'age': 22, 'member': True, 'address1': "223 Brigard Stree"},
-            {'name': 'Anne', 'age': 4, 'member': False, 'address1': "4 The Alter Place"}]
+    return [{'name': 'Fred', 'age': 22, 'member': False, 'address1': "44 Jones lane", 'address2': "C/O Jean"},
+            {'name': 'Peter', 'age': 76, 'member': True, 'address1': "22 Honeysuckle Avenue", 'address2': "C/O Medelle"},
+            {'name': 'Beltran', 'age': 22, 'member': True, 'address1': "223 Brigard Stree", 'address2': "C/O Arther"},
+            {'name': 'Anne', 'age': 4, 'member': False, 'address1': "4 The Alter Place", 'address2': "C/O Anne"}]
 
 
 class PlaygroundForm(wx.Dialog):
@@ -32,9 +33,16 @@ class PlaygroundForm(wx.Dialog):
         self.data = create_data()
         self.model = PyTestModel(self.data, self.columns)
         self.list = self.create_list()
+
+        # dispatcher.connect
+        # just showing an example
+        wx.py.dispatcher.connect(receiver=self.push, signal='Interpreter.push')
+
+        # declare the validators
         self.name_validator = FieldValidator(self.data[0], self.name_column.key, [not_empty])
         self.age_validator = FieldValidator(self.data[0], self.age_column.key, [not_empty])
         self.address1_validator = FieldValidator(self.data[0], self.address1_column.key, [])
+        self.address2_validator = FieldValidator(self.data[0], self.address2_column.key, [])
 
         main_sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
         btn_add = frm.tool_button(self, id=wx.ID_ANY, text="Add", handler=self.add_button_click)
@@ -54,19 +62,25 @@ class PlaygroundForm(wx.Dialog):
     def OnInitDialog(self, event):
         logging.info('Playgound Dialog Initialized')
 
+    def push(self, command, more):
+        """ just an example of dispatcher in action """
+        print('got a push')
+
     def create_columns(self):
         self.name_column = ColumnSpec('name', ColumnType.str, 'Name', 100, True)
         self.age_column = ColumnSpec('age', ColumnType.int, 'Age', 40, True)
         self.member_column = ColumnSpec('member', ColumnType.bool, 'Member', 40, True)
         self.address1_column = ColumnSpec('address1', ColumnType.str, 'Address', 120, True)
+        self.address2_column = ColumnSpec('address2', ColumnType.str, 'Address2', 120, True)
         self.columns = {self.name_column.key: self.name_column, self.age_column.key: self.age_column, self.member_column.key: self.member_column,
-                        self.address1_column.key: self.address1_column}
+                        self.address1_column.key: self.address1_column, self.address2_column.key: self.address2_column}
 
     def list_selection_change(self, event: dv.DataViewEvent):
+        # testing dispatcher stuff
+        py.dispatcher.send(signal='Interpreter.push', sender=self, command='listchange', more=event)
         selected_item = self.list.GetSelection()
         record = self.model.ItemToObject(selected_item)
         for key in self.columns:
-            print(key)
             control: wx.Window = wx.Window.FindWindowByName(key, self)
             if control is not None and control.Validator is not None:
                 control.Validator.set_data(record)
@@ -128,7 +142,7 @@ class PlaygroundForm(wx.Dialog):
             frm.edit_line("Age", [frm.TextField(self.age_column.key, frm.small(), validator=self.age_validator)]),
             frm.edit_line("Member", [frm.CheckboxField("member")]),
             frm.edit_line("Address", [frm.TextField(self.address1_column.key, frm.large(), validator=self.address1_validator)]),
-            frm.edit_line(None, [frm.TextField("addr2", frm.large(), validator=self.name_validator)]),
+            frm.edit_line(None, [frm.TextField("addr2", frm.large(), validator=self.address2_validator)]),
             frm.edit_line("City, State, Zip", [
                 frm.TextField("city", frm.large(), validator=self.name_validator),
                 frm.ComboField("state", frm.medium(), states),
