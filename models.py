@@ -1,24 +1,7 @@
-import wx
 import wx.dataview as dv
 from typing import List, Dict
-from dataclasses import dataclass
-from enum import Enum
+from lists import ColumnSpec
 
-# not sure how to do date time
-ColumnType = Enum('ColumnType', 'str bool float int date')
-column_type_map: Dict[ColumnType, str] = {ColumnType.str: 'string', ColumnType.bool: 'bool',
-                                          ColumnType.float: 'double', ColumnType.int: 'string',
-                                          ColumnType.date: 'string'}
-
-
-@dataclass(frozen=True)
-class ColumnSpec:
-    key: str
-    data_type: ColumnType
-    label: str
-    width: int
-    browseable: bool = False
-    sortable: bool = False
 
 # this is a wxPython xtra model based class
 # has a ItemToObject mapper built in which makes

@@ -4,12 +4,23 @@ import logging
 import fn_widget as w
 import wx.dataview as dv
 import forms as frm
-from lists import states
-from models import PyTestModel, ColumnSpec, ColumnType
+from lists import states, ColumnSpec, ColumnType, ListSpec
+from models import PyTestModel
 from validators import FieldValidator, not_empty
 import wx.py as py
 
 from typing import List, Dict
+
+name_column = 'name'
+age_column = 'age'
+member_column = 'member'
+address1_column = 'address1'
+address2_column = 'address2'
+city_column = 'city'
+state_column = 'state'
+zip_column = 'zip'
+phone_column = 'phone'
+email_column = 'email'
 
 
 def create_data():
@@ -30,19 +41,31 @@ class PlaygroundForm(wx.Dialog):
         main_sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(main_sizer)
         self.create_columns()
-        self.data = create_data()
-        self.model = PyTestModel(self.data, self.columns)
-        self.list = self.create_list()
+
+        # self.data = create_data()
+        # self.model = PyTestModel(self.data, self.columns)
+        # self.list = self.create_list()
+        self.listspec = ListSpec([
+            ColumnSpec(name_column, ColumnType.str, 'Name', 100, True),
+            ColumnSpec(age_column, ColumnType.int, 'Age', 40, True),
+            ColumnSpec(member_column, ColumnType.bool, 'Member', 40, True),
+            ColumnSpec(address1_column, ColumnType.str, 'Address', 120, True),
+            ColumnSpec(address2_column, ColumnType.str, 'Address 2', 120, True)
+        ])
+
+        # self.columns = {self.name_column.key: self.name_column, self.age_column.key: self.age_column, self.member_column.key: self.member_column,
+        #                self.address1_column.key: self.address1_column, self.address2_column.key: self.address2_column}
+
 
         # dispatcher.connect
         # just showing an example
         wx.py.dispatcher.connect(receiver=self.push, signal='Interpreter.push')
 
         # declare the validators
-        self.name_validator = FieldValidator(self.data[0], self.name_column.key, [not_empty])
-        self.age_validator = FieldValidator(self.data[0], self.age_column.key, [not_empty])
-        self.address1_validator = FieldValidator(self.data[0], self.address1_column.key, [])
-        self.address2_validator = FieldValidator(self.data[0], self.address2_column.key, [])
+        self.name_validator = FieldValidator(self.data[0], name_column, [not_empty])
+        self.age_validator = FieldValidator(self.data[0], age_column, [not_empty])
+        self.address1_validator = FieldValidator(self.data[0], address1_column, [])
+        self.address2_validator = FieldValidator(self.data[0], address2_column, [])
 
         main_sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
         btn_add = frm.tool_button(self, id=wx.ID_ANY, text="Add", handler=self.add_button_click)
@@ -65,15 +88,6 @@ class PlaygroundForm(wx.Dialog):
     def push(self, command, more):
         """ just an example of dispatcher in action """
         print('got a push')
-
-    def create_columns(self):
-        self.name_column = ColumnSpec('name', ColumnType.str, 'Name', 100, True)
-        self.age_column = ColumnSpec('age', ColumnType.int, 'Age', 40, True)
-        self.member_column = ColumnSpec('member', ColumnType.bool, 'Member', 40, True)
-        self.address1_column = ColumnSpec('address1', ColumnType.str, 'Address', 120, True)
-        self.address2_column = ColumnSpec('address2', ColumnType.str, 'Address2', 120, True)
-        self.columns = {self.name_column.key: self.name_column, self.age_column.key: self.age_column, self.member_column.key: self.member_column,
-                        self.address1_column.key: self.address1_column, self.address2_column.key: self.address2_column}
 
     def list_selection_change(self, event: dv.DataViewEvent):
         # testing dispatcher stuff
@@ -100,15 +114,7 @@ class PlaygroundForm(wx.Dialog):
         self.model.ItemDeleted(dv.NullDataViewItem, self.model.ObjectToItem(self.data[0]))
         del(self.data[0])
 
-    def create_list_column(self, index: int, dvc: dv.DataViewCtrl, column_spec: ColumnSpec):
-        if column_spec.data_type == ColumnType.bool:
-            list_column: dv.DataViewColumn = dvc.AppendToggleColumn(column_spec.label, index,
-                                                                    width=column_spec.width,
-                                                                    mode=dv.DATAVIEW_CELL_EDITABLE)
-        else:
-            list_column = dvc.AppendTextColumn(column_spec.label, index, width=column_spec.width,
-                                               mode=dv.DATAVIEW_CELL_EDITABLE)
-        return list_column
+
 
     def create_list(self):
         dvc = dv.DataViewCtrl(self, wx.ID_ANY, style=wx.BORDER_THEME)
@@ -137,19 +143,19 @@ class PlaygroundForm(wx.Dialog):
         growable col means in the horizontal direction
         use the proportion argument in the Add method to make cell grow at different amount """
 
-        person_form = frm.form(self, "frmDemo", "Form Demo", helpstr,[
-            frm.edit_line("Name", [frm.TextField(self.name_column.key, frm.large(), validator=self.name_validator)]),
-            frm.edit_line("Age", [frm.TextField(self.age_column.key, frm.small(), validator=self.age_validator)]),
-            frm.edit_line("Member", [frm.CheckboxField("member")]),
-            frm.edit_line("Address", [frm.TextField(self.address1_column.key, frm.large(), validator=self.address1_validator)]),
-            frm.edit_line(None, [frm.TextField("addr2", frm.large(), validator=self.address2_validator)]),
+        person_form = frm.form(self, "frmDemo", "Form Demo", helpstr, [
+            frm.edit_line("Name", [frm.TextField(name_column, frm.large(), validator=self.name_validator)]),
+            frm.edit_line("Age", [frm.TextField(age_column, frm.small(), validator=self.age_validator)]),
+            frm.edit_line("Member", [frm.CheckboxField(member_column)]),
+            frm.edit_line("Address", [frm.TextField(address1_column, frm.large(), validator=self.address1_validator)]),
+            frm.edit_line(None, [frm.TextField(address2_column, frm.large(), validator=self.address2_validator)]),
             frm.edit_line("City, State, Zip", [
-                frm.TextField("city", frm.large(), validator=self.name_validator),
-                frm.ComboField("state", frm.medium(), states),
-                frm.TextField("zip", frm.small(), validator=self.name_validator)
+                frm.TextField(city_column, frm.large(), validator=self.name_validator),
+                frm.ComboField(state_column, frm.medium(), states),
+                frm.TextField(zip_column, frm.small(), validator=self.name_validator)
             ]),
-            frm.edit_line("Phone", [frm.TextField("phone", frm.small(), validator=self.name_validator)]),
-            frm.edit_line("Email", [frm.TextField("email", frm.medium(), validator=self.name_validator)])
+            frm.edit_line("Phone", [frm.TextField(phone_column, frm.small(), validator=self.name_validator)]),
+            frm.edit_line("Email", [frm.TextField(email_column, frm.medium(), validator=self.name_validator)])
         ])
 
         panel = person_form.build()
