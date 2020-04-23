@@ -43,7 +43,9 @@ class FieldValidator(wx.Validator):
 
     def TransferToWindow(self):
         control = self.GetWindow()
-        control.SetValue(str(self.data[self.key]))
+        print(control.Name)
+        record = self.data[self.key]
+        control.SetValue(str(record) if record is not None else "")
         return True
 
     def TransferFromWindow(self):
@@ -52,11 +54,37 @@ class FieldValidator(wx.Validator):
         return True
 
 
-class CheckboxValidator(FieldValidator):
+class CheckboxValidator(wx.Validator):
+
+    def __init__(self, data, key, validators):
+        super().__init__()
+        self.data = data
+        self.key = key
+        self.validators = validators
+
+    def Clone(self):
+        return CheckboxValidator(self.data, self.key, self.validators)
+
+    def set_data(self, data):
+        self.data = data
+
+    def Validate(self, win):
+        control = self.GetWindow()
+        for validator in self.validators:
+            result = validator(control)
+            if not result:
+                return result
+        return True
 
     def TransferToWindow(self):
         control = self.GetWindow()
-        control.SetValue(self.data[self.key])
+        bool_data = self.data[self.key]
+        control.SetValue(bool_data if bool_data is not None else False)
+        return True
 
+    def TransferFromWindow(self):
+        control = self.GetWindow()
+        self.data[self.key] = control.GetValue()
+        return True
 
 

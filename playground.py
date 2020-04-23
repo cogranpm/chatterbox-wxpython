@@ -24,10 +24,14 @@ email_column = 'email'
 
 
 def create_data():
-    return [{'name': 'Fred', 'age': 22, 'member': False, 'address1': "44 Jones lane", 'address2': "C/O Jean"},
-            {'name': 'Peter', 'age': 76, 'member': True, 'address1': "22 Honeysuckle Avenue", 'address2': "C/O Medelle"},
-            {'name': 'Beltran', 'age': 22, 'member': True, 'address1': "223 Brigard Stree", 'address2': "C/O Arther"},
-            {'name': 'Anne', 'age': 4, 'member': False, 'address1': "4 The Alter Place", 'address2': "C/O Anne"}]
+    return [{'name': 'Fred', 'age': 22, 'member': False, 'address1': "44 Jones lane", 'address2': "C/O Jean",
+             'city': 'Melbourne', 'zip': '33456', 'state': 'TAS', 'phone': '1234567890', 'email': 'email@email.com'},
+            {'name': 'Peter', 'age': 76, 'member': True, 'address1': "22 Honeysuckle Avenue", 'address2': "C/O Medelle",
+             'city': 'Melbourne', 'zip': '33456', 'state': 'TAS', 'phone': '1234567890', 'email': 'email@email.com'},
+            {'name': 'Beltran', 'age': 22, 'member': True, 'address1': "223 Brigard Stree", 'address2': "C/O Arther",
+             'city': 'Melbourne', 'zip': '33456', 'state': 'TAS', 'phone': '1234567890', 'email': 'email@email.com'},
+            {'name': 'Anne', 'age': 4, 'member': False, 'address1': "4 The Alter Place", 'address2': "C/O Anne",
+             'city': 'Melbourne', 'zip': '33456', 'state': 'TAS', 'phone': '1234567890', 'email': 'email@email.com'}]
 
 
 class PlaygroundForm(wx.Dialog):
@@ -49,7 +53,12 @@ class PlaygroundForm(wx.Dialog):
             ColumnSpec(age_column, ColumnType.int, 'Age', 40, True),
             ColumnSpec(member_column, ColumnType.bool, 'Member', 40, True),
             ColumnSpec(address1_column, ColumnType.str, 'Address', 120, True),
-            ColumnSpec(address2_column, ColumnType.str, 'Address 2', 120, True)
+            ColumnSpec(address2_column, ColumnType.str, 'Address 2', 120, True),
+            ColumnSpec(city_column, ColumnType.str, 'City', 80, True),
+            ColumnSpec(zip_column, ColumnType.str, 'Zip', 45, True),
+            ColumnSpec(state_column, ColumnType.str, 'State', 45, True),
+            ColumnSpec(phone_column, ColumnType.str, 'Phone', 145, True),
+            ColumnSpec(email_column, ColumnType.str, 'Email', 145, True)
         ], create_data())
         self.list = self.listspec.build(self, self.list_selection_change)
 
@@ -67,6 +76,11 @@ class PlaygroundForm(wx.Dialog):
         self.address1_validator = FieldValidator(None, address1_column, [])
         self.address2_validator = FieldValidator(None, address2_column, [])
         self.member_validator = CheckboxValidator(None, member_column, [])
+        self.email_validator = FieldValidator(None, email_column, [])
+        self.phone_validator = FieldValidator(None, phone_column, [])
+        self.city_validator = FieldValidator(None, city_column, [])
+        self.state_validator = FieldValidator(None, state_column, [])
+        self.zip_validator = FieldValidator(None, zip_column, [])
 
         main_sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
         btn_add = frm.tool_button(self, id=wx.ID_ANY, text="Add", handler=self.add_button_click)
@@ -135,12 +149,12 @@ class PlaygroundForm(wx.Dialog):
             frm.edit_line("Address", [frm.TextField(address1_column, frm.large(), validator=self.address1_validator)]),
             frm.edit_line(None, [frm.TextField(address2_column, frm.large(), validator=self.address2_validator)]),
             frm.edit_line("City, State, Zip", [
-                frm.TextField(city_column, frm.large(), validator=self.name_validator),
+                frm.TextField(city_column, frm.large(), validator=self.city_validator),
                 frm.ComboField(state_column, frm.medium(), states),
-                frm.TextField(zip_column, frm.small(), validator=self.name_validator)
+                frm.TextField(zip_column, frm.small(), validator=self.state_validator)
             ]),
-            frm.edit_line("Phone", [frm.TextField(phone_column, frm.small(), validator=self.name_validator)]),
-            frm.edit_line("Email", [frm.TextField(email_column, frm.medium(), validator=self.name_validator)])
+            frm.edit_line("Phone", [frm.TextField(phone_column, frm.small(), validator=self.phone_validator)]),
+            frm.edit_line("Email", [frm.TextField(email_column, frm.medium(), validator=self.email_validator)])
         ])
 
         panel = person_form.build()
