@@ -47,7 +47,11 @@ class AppFrame(wx.Frame):
     def handle_menu_playground(self, event):
         logging.warning("Playground")
         with playground.PlaygroundForm(self) as dlg:
-            result = dlg.ShowModal()
+            if dlg.ShowModal() == wx.ID_OK:
+                # save the data perhaps
+                logging.warning("save the data here perhaps")
+                dlg.Close()
+
 
     def OnNotebookPageChanged(self, event):
         event.Skip()

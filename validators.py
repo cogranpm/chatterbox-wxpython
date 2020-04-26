@@ -43,7 +43,6 @@ class FieldValidator(wx.Validator):
 
     def TransferToWindow(self):
         control = self.GetWindow()
-        print(control.Name)
         record = self.data[self.key]
         control.SetValue(str(record) if record is not None else "")
         return True
@@ -102,27 +101,34 @@ class ComboValidator(wx.Validator):
     def set_data(self, data):
         self.data = data
 
+    def Validate(self, win):
+        control = self.GetWindow()
+        for validator in self.validators:
+            result = validator(control)
+            if not result:
+                return result
+        return True
+
     def TransferToWindow(self):
         control = self.GetWindow()
         data = self.data[self.key]
         items = control.GetItems()
-        matching_index = 0
-        for index in range(len(items)):
+        matching_index = -1
+        for index, item in enumerate(items):
             data_at_index = control.GetClientData(index)
             if data_at_index == data:
                 matching_index = index
                 break
 
-        if matching_index > 0:
+        if matching_index >= 0:
             control.Selection = matching_index
         return True
 
     def TransferFromWindow(self):
         control = self.GetWindow()
-        if control.HasClientClientObjecData():
-            value = control.GetClientData(control.GetSelection())
-            if value is not None:
-                self.data[self.key] = value
+        value = control.GetClientData(control.GetSelection())
+        if value is not None:
+            self.data[self.key] = value
         return True
 
 

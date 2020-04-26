@@ -22,16 +22,16 @@ zip_column = 'zip'
 phone_column = 'phone'
 email_column = 'email'
 
-
+# contrived, to be removed
 def create_data():
     return [{'name': 'Fred', 'age': 22, 'member': False, 'address1': "44 Jones lane", 'address2': "C/O Jean",
-             'city': 'Melbourne', 'zip': '33456', 'state': 'VIC', 'phone': '1234567890', 'email': 'email@email.com'},
+             'city': 'Melbourne', 'zip': '33458', 'state': 'VIC', 'phone': '1234567890', 'email': 'email@email.com'},
             {'name': 'Peter', 'age': 76, 'member': True, 'address1': "22 Honeysuckle Avenue", 'address2': "C/O Medelle",
-             'city': 'Melbourne', 'zip': '33456', 'state': 'NSW', 'phone': '1234567890', 'email': 'email@email.com'},
+             'city': 'Melbourne', 'zip': '33454', 'state': 'NSW', 'phone': '1234567890', 'email': 'email@email.com'},
             {'name': 'Beltran', 'age': 22, 'member': True, 'address1': "223 Brigard Stree", 'address2': "C/O Arther",
-             'city': 'Melbourne', 'zip': '33456', 'state': 'WA', 'phone': '1234567890', 'email': 'email@email.com'},
+             'city': 'Melbourne', 'zip': '33452', 'state': 'WA', 'phone': '1234567890', 'email': 'email@email.com'},
             {'name': 'Anne', 'age': 4, 'member': False, 'address1': "4 The Alter Place", 'address2': "C/O Anne",
-             'city': 'Melbourne', 'zip': '33456', 'state': 'TAS', 'phone': '1234567890', 'email': 'email@email.com'}]
+             'city': 'Melbourne', 'zip': '33451', 'state': 'TAS', 'phone': '1234567890', 'email': 'email@email.com'}]
 
 
 class PlaygroundForm(wx.Dialog):
@@ -71,6 +71,7 @@ class PlaygroundForm(wx.Dialog):
         wx.py.dispatcher.connect(receiver=self.push, signal='Interpreter.push')
 
         # declare the validators
+        # make as declarative as possible
         self.name_validator = FieldValidator(None, name_column, [not_empty])
         self.age_validator = FieldValidator(None, age_column, [not_empty])
         self.address1_validator = FieldValidator(None, address1_column, [])
@@ -100,6 +101,14 @@ class PlaygroundForm(wx.Dialog):
     def OnInitDialog(self, event):
         logging.info('Playgound Dialog Initialized')
 
+    def on_ok(self, event):
+        # pass
+        # self.EndModal()
+        event.Skip()
+
+    def on_cancel(self, event):
+        event.Skip()
+
     def push(self, command, more):
         """ just an example of dispatcher in action """
         print('got a push')
@@ -117,10 +126,6 @@ class PlaygroundForm(wx.Dialog):
                 control.Validator.set_data(record)
 
         self.TransferDataToWindow()
-
-    # def OnOKButtonClick(self, event):
-    #     print("ya clicked ok ya know")
-    #     event.Skip()
 
     def add_button_click(self, event):
         new_person = {'name': 'Peter', 'age': 33, 'address1': '14 Angel Terrace'}
@@ -157,7 +162,7 @@ class PlaygroundForm(wx.Dialog):
             frm.edit_line("Email", [frm.TextField(email_column, frm.medium(), validator=self.email_validator)])
         ])
 
-        panel = person_form.build()
+        panel = person_form.build(ok_handler=self.on_ok, cancel_handler=self.on_cancel)
         return panel
 
     def seesaw_style_test(self):

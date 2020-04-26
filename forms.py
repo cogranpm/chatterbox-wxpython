@@ -44,6 +44,9 @@ def small():
 def default():
     return EditFieldWidth.DEFAULT
 
+def bind_button(btn, handler):
+    btn.Bind(wx.EVT_BUTTON, handler)
+
 
 class FormSpec():
     """ for specifiying the contents of a form, a function will use this information to build up
@@ -63,7 +66,7 @@ class FormSpec():
         self.name = name
         self.sizer = vsizer()
 
-    def build(self):
+    def build(self, ok_handler=None, cancel_handler=None):
 
         lbl_header = wx.StaticText(self.parent, 0, self.title)
         lbl_help = wx.StaticText(self.parent, 0, self.helpstr.lstrip())
@@ -99,12 +102,18 @@ class FormSpec():
         stdButtonSizer = wx.StdDialogButtonSizer()
         stdButtonSizerOK = wx.Button(self.parent, wx.ID_OK, name="btnOK")
         stdButtonSizerOK.SetDefault()
+        if ok_handler is not None:
+            bind_button(stdButtonSizerOK, ok_handler)
+
         stdButtonSizer.AddButton(stdButtonSizerOK)
         stdButtonSizerCancel = wx.Button(self.parent, wx.ID_CANCEL, name="btnCancel")
         stdButtonSizer.AddButton(stdButtonSizerCancel)
+        if cancel_handler is not None:
+            bind_button(stdButtonSizerCancel, cancel_handler)
         stdButtonSizer.Realize()
         self.sizer.Add(stdButtonSizer, 0, wx.EXPAND, 5)
         self.parent.Sizer.Add(self.sizer, wx.SizerFlags(1).Expand())
+
 
 class FormLineSpec():
     """ can be made up of multiple edit fields or a single, such as zip, state, city on a single line """
@@ -205,14 +214,12 @@ class ComboField(EditFieldSpec):
         if self.contents is not None:
             for item in self.contents:
                 self.control.Append(item.label, item.code )
-        self.control.Bind(wx.EVT_COMBOBOX, self.on_select)
+        # self.control.Bind(wx.EVT_COMBOBOX, self.on_select)
         return self.control
 
-    def on_select(self, event):
+    #def on_select(self, event):
         # an example of how to get the selected item data
-        listitem = self.control.GetClientData(self.control.GetSelection())
-        print(listitem)
-
+        #listitem = self.control.GetClientData(self.control.GetSelection())
 
 class CheckboxField(EditFieldSpec):
     def __init__(self, name, validator: wx.PyValidator = None):
