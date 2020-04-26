@@ -6,7 +6,7 @@ import wx.dataview as dv
 import forms as frm
 from lists import states, ColumnSpec, ColumnType, ListSpec
 from models import PyTestModel
-from validators import FieldValidator, CheckboxValidator, not_empty
+from validators import FieldValidator, CheckboxValidator, ComboValidator, not_empty
 import wx.py as py
 
 from typing import List, Dict
@@ -25,11 +25,11 @@ email_column = 'email'
 
 def create_data():
     return [{'name': 'Fred', 'age': 22, 'member': False, 'address1': "44 Jones lane", 'address2': "C/O Jean",
-             'city': 'Melbourne', 'zip': '33456', 'state': 'TAS', 'phone': '1234567890', 'email': 'email@email.com'},
+             'city': 'Melbourne', 'zip': '33456', 'state': 'VIC', 'phone': '1234567890', 'email': 'email@email.com'},
             {'name': 'Peter', 'age': 76, 'member': True, 'address1': "22 Honeysuckle Avenue", 'address2': "C/O Medelle",
-             'city': 'Melbourne', 'zip': '33456', 'state': 'TAS', 'phone': '1234567890', 'email': 'email@email.com'},
+             'city': 'Melbourne', 'zip': '33456', 'state': 'NSW', 'phone': '1234567890', 'email': 'email@email.com'},
             {'name': 'Beltran', 'age': 22, 'member': True, 'address1': "223 Brigard Stree", 'address2': "C/O Arther",
-             'city': 'Melbourne', 'zip': '33456', 'state': 'TAS', 'phone': '1234567890', 'email': 'email@email.com'},
+             'city': 'Melbourne', 'zip': '33456', 'state': 'WA', 'phone': '1234567890', 'email': 'email@email.com'},
             {'name': 'Anne', 'age': 4, 'member': False, 'address1': "4 The Alter Place", 'address2': "C/O Anne",
              'city': 'Melbourne', 'zip': '33456', 'state': 'TAS', 'phone': '1234567890', 'email': 'email@email.com'}]
 
@@ -79,7 +79,7 @@ class PlaygroundForm(wx.Dialog):
         self.email_validator = FieldValidator(None, email_column, [])
         self.phone_validator = FieldValidator(None, phone_column, [])
         self.city_validator = FieldValidator(None, city_column, [])
-        self.state_validator = FieldValidator(None, state_column, [])
+        self.state_validator = ComboValidator(None, state_column, [])
         self.zip_validator = FieldValidator(None, zip_column, [])
 
         main_sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
@@ -150,8 +150,8 @@ class PlaygroundForm(wx.Dialog):
             frm.edit_line(None, [frm.TextField(address2_column, frm.large(), validator=self.address2_validator)]),
             frm.edit_line("City, State, Zip", [
                 frm.TextField(city_column, frm.large(), validator=self.city_validator),
-                frm.ComboField(state_column, frm.medium(), states),
-                frm.TextField(zip_column, frm.small(), validator=self.state_validator)
+                frm.ComboField(state_column, frm.medium(), states, validator=self.state_validator),
+                frm.TextField(zip_column, frm.small(), validator=self.zip_validator)
             ]),
             frm.edit_line("Phone", [frm.TextField(phone_column, frm.small(), validator=self.phone_validator)]),
             frm.edit_line("Email", [frm.TextField(email_column, frm.medium(), validator=self.email_validator)])

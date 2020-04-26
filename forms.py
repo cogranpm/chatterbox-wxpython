@@ -187,19 +187,21 @@ class TextField(EditFieldSpec):
 
 class ComboField(EditFieldSpec):
 
-    def __init__(self, name, width: EditFieldWidth, contents: List[ListItem] = None):
+    def __init__(self, name, width: EditFieldWidth, contents: List[ListItem] = None, validator: wx.Validator = None):
         super().__init__(name, width)
         self.contents = contents
         self.control = wx.ComboBox()
+        self.validator = validator
 
     def build(self, parent,  multi_column: bool = False):
         size = self.get_size(multi_column)
         style = wx.CB_READONLY
         choices = []
         if size is None:
-            self.control.Create(parent, -1, name=self.name, choices=choices, style=style)
+            self.control.Create(parent, -1, name=self.name, choices=choices, style=style, validator=self.validator)
         else:
-            self.control.Create(parent, -1, size=size, name=self.name, choices=choices, style=style)
+            self.control.Create(parent, -1, size=size, name=self.name, choices=choices, style=style,
+                                validator=self.validator)
         if self.contents is not None:
             for item in self.contents:
                 self.control.Append(item.label, item.code )

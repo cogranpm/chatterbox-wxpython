@@ -88,3 +88,41 @@ class CheckboxValidator(wx.Validator):
         return True
 
 
+class ComboValidator(wx.Validator):
+
+    def __init__(self, data, key, validators):
+        super().__init__()
+        self.data = data
+        self.key = key
+        self.validators = validators
+
+    def Clone(self):
+        return ComboValidator(self.data, self.key, self.validators)
+
+    def set_data(self, data):
+        self.data = data
+
+    def TransferToWindow(self):
+        control = self.GetWindow()
+        data = self.data[self.key]
+        items = control.GetItems()
+        matching_index = 0
+        for index in range(len(items)):
+            data_at_index = control.GetClientData(index)
+            if data_at_index == data:
+                matching_index = index
+                break
+
+        if matching_index > 0:
+            control.Selection = matching_index
+        return True
+
+    def TransferFromWindow(self):
+        control = self.GetWindow()
+        if control.HasClientClientObjecData():
+            value = control.GetClientData(control.GetSelection())
+            if value is not None:
+                self.data[self.key] = value
+        return True
+
+
