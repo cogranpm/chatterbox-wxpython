@@ -33,6 +33,110 @@ def create_data():
             {'name': 'Anne', 'age': 4, 'member': False, 'address1': "4 The Alter Place", 'address2': "C/O Anne",
              'city': 'Melbourne', 'zip': '33451', 'state': 'TAS', 'phone': '1234567890', 'email': 'email@email.com'}]
 
+class PlaygroundPanel(wx.Panel):
+
+    def __init__(self, parent=None):
+        super().__init__(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        main_sizer = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(main_sizer)
+        self.listspec = ListSpec([
+            ColumnSpec(name_column, ColumnType.str, 'Name', 100, True),
+            ColumnSpec(age_column, ColumnType.int, 'Age', 40, True),
+            ColumnSpec(member_column, ColumnType.bool, 'Member', 40, True),
+            ColumnSpec(address1_column, ColumnType.str, 'Address', 120, True),
+            ColumnSpec(address2_column, ColumnType.str, 'Address 2', 120, True),
+            ColumnSpec(city_column, ColumnType.str, 'City', 80, True),
+            ColumnSpec(zip_column, ColumnType.str, 'Zip', 45, True),
+            ColumnSpec(state_column, ColumnType.str, 'State', 45, True),
+            ColumnSpec(phone_column, ColumnType.str, 'Phone', 145, True),
+            ColumnSpec(email_column, ColumnType.str, 'Email', 145, True)
+        ], create_data())
+        self.list = self.listspec.build(self, self.list_selection_change)
+        wx.py.dispatcher.connect(receiver=self.push, signal='Interpreter.push')
+
+        # declare the validators
+        # make as declarative as possible
+        self.name_validator = FieldValidator(None, name_column, [not_empty])
+        self.age_validator = FieldValidator(None, age_column, [not_empty])
+        self.address1_validator = FieldValidator(None, address1_column, [])
+        self.address2_validator = FieldValidator(None, address2_column, [])
+        self.member_validator = CheckboxValidator(None, member_column, [])
+        self.email_validator = FieldValidator(None, email_column, [])
+        self.phone_validator = FieldValidator(None, phone_column, [])
+        self.city_validator = FieldValidator(None, city_column, [])
+        self.state_validator = ComboValidator(None, state_column, [])
+        self.zip_validator = FieldValidator(None, zip_column, [])
+
+        main_sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
+        btn_add = frm.tool_button(self, id=wx.ID_ANY, text="Add", handler=self.add_button_click)
+        btn_delete = frm.tool_button(self, id=wx.ID_ANY, text="Del", handler=self.delete_button_click)
+        tool_sizer = frm.hsizer([btn_add, btn_delete])
+        main_sizer.Add(tool_sizer, wx.SizerFlags(0))
+        self.edit_form()
+
+    def on_ok(self, event):
+        # pass
+        # self.EndModal()
+        event.Skip()
+
+    def on_cancel(self, event):
+        event.Skip()
+
+    def push(self, command, more):
+        """ just an example of dispatcher in action """
+        print('got a push')
+
+    # this could possibly be moved to the listspec class
+    # after all it knows the parent which is the only variant needed
+    def list_selection_change(self, event: dv.DataViewEvent):
+        # testing dispatcher stuff
+        py.dispatcher.send(signal='Interpreter.push', sender=self, command='listchange', more=event)
+        selected_item = self.list.GetSelection()
+        record = self.listspec.model.ItemToObject(selected_item)
+        for column in self.listspec.columns:
+            control: wx.Window = wx.Window.FindWindowByName(column.key, self)
+            if control is not None and control.Validator is not None:
+                control.Validator.set_data(record)
+
+        self.TransferDataToWindow()
+
+    def add_button_click(self, event):
+        new_person = {'name': 'Peter', 'age': 33, 'address1': '14 Angel Terrace'}
+        self.listspec.data.append(new_person)
+        self.listspec.model.ItemAdded(dv.NullDataViewItem, self.listspec.model.ObjectToItem(new_person))
+
+    def delete_button_click(self, event):
+        self.model.ItemDeleted(dv.NullDataViewItem, self.listspec.model.ObjectToItem(self.listspec.data[0]))
+        del(self.listspec.data[0])
+
+    def edit_form(self):
+        helpstr = """
+        This is the FlexGrid Sizer demo 
+        specify  which columns or rows should grow
+        grow flexibly in either direction meaning,
+        you can specify proportional amounts for child elements
+        and specify behaviour in the non flexible direction
+        growable row means in the vertical direction
+        growable col means in the horizontal direction
+        use the proportion argument in the Add method to make cell grow at different amount """
+
+        person_form = frm.form(self, "frmDemo", "Form Demo", helpstr, [
+            frm.edit_line("Name", [frm.TextField(name_column, frm.large(), validator=self.name_validator)]),
+            frm.edit_line("Age", [frm.TextField(age_column, frm.small(), validator=self.age_validator)]),
+            frm.edit_line("Member", [frm.CheckboxField(member_column, validator=self.member_validator)]),
+            frm.edit_line("Address", [frm.TextField(address1_column, frm.large(), validator=self.address1_validator)]),
+            frm.edit_line(None, [frm.TextField(address2_column, frm.large(), validator=self.address2_validator)]),
+            frm.edit_line("City, State, Zip", [
+                frm.TextField(city_column, frm.large(), validator=self.city_validator),
+                frm.ComboField(state_column, frm.medium(), states, validator=self.state_validator),
+                frm.TextField(zip_column, frm.small(), validator=self.zip_validator)
+            ]),
+            frm.edit_line("Phone", [frm.TextField(phone_column, frm.small(), validator=self.phone_validator)]),
+            frm.edit_line("Email", [frm.TextField(email_column, frm.medium(), validator=self.email_validator)])
+        ])
+
+        person_form.build(ok_handler=self.on_ok, cancel_handler=self.on_cancel)
+
 
 class PlaygroundForm(wx.Dialog):
 
@@ -162,7 +266,7 @@ class PlaygroundForm(wx.Dialog):
             frm.edit_line("Email", [frm.TextField(email_column, frm.medium(), validator=self.email_validator)])
         ])
 
-        panel = person_form.build(ok_handler=self.on_ok, cancel_handler=self.on_cancel)
+        panel = person_form.build(display_type=frm.DisplayType.DIALOG, ok_handler=self.on_ok, cancel_handler=self.on_cancel)
         return panel
 
     def seesaw_style_test(self):

@@ -5,6 +5,7 @@ from lists import ListItem
 import wx
 
 EditFieldWidth = Enum('EditFieldWidth', 'LARGE MEDIUM SMALL DEFAULT')
+DisplayType = Enum('DisplayType', 'DIALOG PANEL')
 
 font_header = None
 font_help = None
@@ -66,7 +67,7 @@ class FormSpec():
         self.name = name
         self.sizer = vsizer()
 
-    def build(self, ok_handler=None, cancel_handler=None):
+    def build(self, display_type = DisplayType.PANEL, ok_handler=None, cancel_handler=None):
 
         lbl_header = wx.StaticText(self.parent, 0, self.title)
         lbl_help = wx.StaticText(self.parent, 0, self.helpstr.lstrip())
@@ -99,19 +100,20 @@ class FormSpec():
         # btnSizer.AddSpacer(20)
         # box.Add(btnSizer, 0, wx.EXPAND | wx.BOTTOM | wx.ALIGN_RIGHT, 10)
 
-        stdButtonSizer = wx.StdDialogButtonSizer()
-        stdButtonSizerOK = wx.Button(self.parent, wx.ID_OK, name="btnOK")
-        stdButtonSizerOK.SetDefault()
-        if ok_handler is not None:
-            bind_button(stdButtonSizerOK, ok_handler)
+        if display_type == DisplayType.DIALOG:
+            stdButtonSizer = wx.StdDialogButtonSizer()
+            stdButtonSizerOK = wx.Button(self.parent, wx.ID_OK, name="btnOK")
+            stdButtonSizerOK.SetDefault()
+            if ok_handler is not None:
+                bind_button(stdButtonSizerOK, ok_handler)
 
-        stdButtonSizer.AddButton(stdButtonSizerOK)
-        stdButtonSizerCancel = wx.Button(self.parent, wx.ID_CANCEL, name="btnCancel")
-        stdButtonSizer.AddButton(stdButtonSizerCancel)
-        if cancel_handler is not None:
-            bind_button(stdButtonSizerCancel, cancel_handler)
-        stdButtonSizer.Realize()
-        self.sizer.Add(stdButtonSizer, 0, wx.EXPAND, 5)
+            stdButtonSizer.AddButton(stdButtonSizerOK)
+            stdButtonSizerCancel = wx.Button(self.parent, wx.ID_CANCEL, name="btnCancel")
+            stdButtonSizer.AddButton(stdButtonSizerCancel)
+            if cancel_handler is not None:
+                bind_button(stdButtonSizerCancel, cancel_handler)
+            stdButtonSizer.Realize()
+            self.sizer.Add(stdButtonSizer, 0, wx.EXPAND, 5)
         self.parent.Sizer.Add(self.sizer, wx.SizerFlags(1).Expand())
 
 

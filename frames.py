@@ -46,11 +46,15 @@ class AppFrame(wx.Frame):
 
     def handle_menu_playground(self, event):
         logging.warning("Playground")
-        with playground.PlaygroundForm(self) as dlg:
-            if dlg.ShowModal() == wx.ID_OK:
-                # save the data perhaps
-                logging.warning("save the data here perhaps")
-                dlg.Close()
+        # testing panel style crud
+        self.m_auiShelf.AddPage(playground.PlaygroundPanel(self), "Playground")
+
+        # testing dialog style crud
+        # with playground.PlaygroundForm(self) as dlg:
+        #     if dlg.ShowModal() == wx.ID_OK:
+        #         # save the data perhaps
+        #         logging.warning("save the data here perhaps")
+        #         dlg.Close()
 
 
     def OnNotebookPageChanged(self, event):
