@@ -1,6 +1,7 @@
 import wx
 import wx.xrc
 import wx.aui
+import wx.py as py
 
 from SettingsDialogImp import SettingsDialogImp
 from fn_app import make_icon
@@ -28,6 +29,9 @@ class AppFrame(wx.Frame):
         self.m_btnAddShelf.SetBitmap(make_icon('Add.png'))
         self.m_btnDeleteShelf.SetBitmap(make_icon('Cancel.png'))
 
+    def on_save(self, event):
+        active_page = self.m_auiShelf.GetCurrentPage()
+        py.dispatcher.send(signal='Interpreter.save', sender=self, command='save', more=active_page)
 
     def FileExportOnMenuSelection(self, event):
         event.Skip()
@@ -114,8 +118,10 @@ class AppFrame(wx.Frame):
         self.menuFileExport = wx.MenuItem(self.menuFile, wx.ID_ANY, u"&Export", wx.EmptyString, wx.ITEM_NORMAL)
         self.menuFile.Append(self.menuFileExport)
 
+        self.menuFileSave = wx.MenuItem(self.menuFile, wx.ID_SAVE, u"&Save" + u"\t" + u"CTRL+S", wx.EmptyString, wx.ITEM_NORMAL)
         self.menuFileQuit = wx.MenuItem(self.menuFile, wx.ID_QUIT, u"&Quit" + u"\t" + u"CTRL+Q", wx.EmptyString,
                                         wx.ITEM_NORMAL)
+        self.menuFile.Append(self.menuFileSave)
         self.menuFile.Append(self.menuFileQuit)
 
         self.m_menubar1.Append(self.menuFile, u"&File")
@@ -339,6 +345,7 @@ class AppFrame(wx.Frame):
 
         # Connect Events
         self.Bind(wx.EVT_MENU, self.FileExportOnMenuSelection, id=self.menuFileExport.GetId())
+        self.Bind(wx.EVT_MENU, self.on_save, id=self.menuFileSave.GetId())
         self.Bind(wx.EVT_MENU, self.menuFileQuitOnMenuSelection, id=self.menuFileQuit.GetId())
         self.Bind(wx.EVT_MENU, self.menuEditSettingsOnMenuSelection, id=self.menuEditSettings.GetId())
         self.Bind(wx.EVT_MENU, self.handle_menu_playground, id=self.mnuEditPlayground.GetId())

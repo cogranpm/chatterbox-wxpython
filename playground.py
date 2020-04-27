@@ -53,6 +53,7 @@ class PlaygroundPanel(wx.Panel):
         ], create_data())
         self.list = self.listspec.build(self, self.list_selection_change)
         wx.py.dispatcher.connect(receiver=self.push, signal='Interpreter.push')
+        wx.py.dispatcher.connect(receiver=self.save, signal='Interpreter.save')
 
         # declare the validators
         # make as declarative as possible
@@ -73,6 +74,14 @@ class PlaygroundPanel(wx.Panel):
         tool_sizer = frm.hsizer([btn_add, btn_delete])
         main_sizer.Add(tool_sizer, wx.SizerFlags(0))
         self.edit_form()
+
+    def save(self, command, more):
+        if more is self:
+            print("this is the active tab")
+            self.TransferDataFromWindow()
+            selected_item = self.list.GetSelection()
+            record = self.listspec.model.ItemToObject(selected_item)
+            print(record)
 
     def on_ok(self, event):
         # pass
