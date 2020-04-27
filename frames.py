@@ -47,7 +47,7 @@ class AppFrame(wx.Frame):
     def handle_menu_playground(self, event):
         logging.warning("Playground")
         # testing panel style crud
-        self.m_auiShelf.AddPage(playground.PlaygroundPanel(self), "Playground")
+        self.m_auiShelf.AddPage(playground.PlaygroundPanel(self), "Playground", True)
 
         # testing dialog style crud
         # with playground.PlaygroundForm(self) as dlg:
@@ -140,7 +140,7 @@ class AppFrame(wx.Frame):
 
         bSizerNotebookMain = wx.BoxSizer(wx.VERTICAL)
 
-        self.m_auiShelf = wx.aui.AuiNotebook(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0)
+        self.m_auiShelf = wx.aui.AuiNotebook(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize,  style=wx.aui.AUI_NB_CLOSE_BUTTON)
         self.m_panelNotes = wx.Panel(self.m_auiShelf, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         self.m_panelNotes.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
 
