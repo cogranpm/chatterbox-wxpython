@@ -1,6 +1,7 @@
 # a dialog for just about anything
 import wx
 import logging
+import chatterbox_constants as c
 import fn_widget as w
 import wx.dataview as dv
 import forms as frm
@@ -53,7 +54,9 @@ class PlaygroundPanel(wx.Panel):
         ], create_data())
         self.list = self.listspec.build(self, self.list_selection_change)
         wx.py.dispatcher.connect(receiver=self.push, signal='Interpreter.push')
-        wx.py.dispatcher.connect(receiver=self.save, signal='Interpreter.save')
+        wx.py.dispatcher.connect(receiver=self.save, signal=c.SIGNAL_SAVE)
+        wx.py.dispatcher.connect(receiver=self.add, signal=c.SIGNAL_ADD)
+        wx.py.dispatcher.connect(receiver=self.delete, signal=c.SIGNAL_DELETE)
 
         # declare the validators
         # make as declarative as possible
@@ -77,11 +80,20 @@ class PlaygroundPanel(wx.Panel):
 
     def save(self, command, more):
         if more is self:
-            print("this is the active tab")
             self.TransferDataFromWindow()
             selected_item = self.list.GetSelection()
             record = self.listspec.model.ItemToObject(selected_item)
             print(record)
+
+    def add(self, command, more):
+        """ prepares for an add by asking to save changes if dirty, then cleaning out the controls for new entry """
+        if more is self:
+            pass
+
+    def delete(self, command, more):
+        if more is self:
+            pass
+
 
     def on_ok(self, event):
         # pass
@@ -93,7 +105,7 @@ class PlaygroundPanel(wx.Panel):
 
     def push(self, command, more):
         """ just an example of dispatcher in action """
-        print('got a push')
+        logging.info('got a push')
 
     # this could possibly be moved to the listspec class
     # after all it knows the parent which is the only variant needed

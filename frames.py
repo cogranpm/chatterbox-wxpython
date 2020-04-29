@@ -3,6 +3,7 @@ import wx.xrc
 import wx.aui
 import wx.py as py
 
+import chatterbox_constants as c
 from SettingsDialogImp import SettingsDialogImp
 from fn_app import make_icon
 import logging
@@ -15,11 +16,12 @@ wx.ID_DELETE_SHELF = 1002
 wx.ID_EDIT_SHELF = 1003
 wx.ID_ADDPUBLICATION = 1004
 
+
 class AppFrame(wx.Frame):
 
     def __init__(self):
         super().__init__(None, wx.ID_ANY, "Chatterbox", pos = wx.DefaultPosition,
-                         size = wx.Size( 1133,716 ), style = wx.DEFAULT_FRAME_STYLE|wx.MAXIMIZE|wx.TAB_TRAVERSAL, name = u"MainFrame")
+                         size = wx.Size(1133,716 ), style = wx.DEFAULT_FRAME_STYLE|wx.MAXIMIZE|wx.TAB_TRAVERSAL, name = u"MainFrame")
         self.SetSizeHints(wx.DefaultSize, wx.DefaultSize)
         self.setup()
         ico = wx.Icon('icons/disconnect2.ico', wx.BITMAP_TYPE_ICO)
@@ -31,7 +33,15 @@ class AppFrame(wx.Frame):
 
     def on_save(self, event):
         active_page = self.m_auiShelf.GetCurrentPage()
-        py.dispatcher.send(signal='Interpreter.save', sender=self, command='save', more=active_page)
+        py.dispatcher.send(signal=c.SIGNAL_SAVE, sender=self, command=c.COMMAND_SAVE, more=active_page)
+
+    def on_add(self, event):
+        active_page = self.m_auiShelf.GetCurrentPage()
+        py.dispatcher.send(signal=c.SIGNAL_ADD, sender=self, command=c.COMMAND_ADD, more=active_page)
+
+    def on_delete(self, event):
+        active_page = self.m_auiShelf.GetCurrentPage()
+        py.dispatcher.send(signal=c.SIGNAL_DELETE, sender=self, command=c.COMMAND_DELETE, more=active_page)
 
     def FileExportOnMenuSelection(self, event):
         event.Skip()
@@ -111,6 +121,28 @@ class AppFrame(wx.Frame):
         self.m_splitter2.SetSashPosition(0)
         self.m_splitter2.Unbind(wx.EVT_IDLE)
 
+    def setup_toolbars(self):
+        self.toolbar = self.CreateToolBar()
+
+
+        tsize = (24, 24)
+        new_bmp = wx.ArtProvider.GetBitmap(wx.ART_NEW, wx.ART_TOOLBAR, tsize)
+        save_bmp = wx.ArtProvider.GetBitmap(wx.ART_FILE_SAVE, wx.ART_TOOLBAR, tsize)
+        delete_bmp = wx.ArtProvider.GetBitmap(wx.ART_DELETE, wx.ART_TOOLBAR, tsize)
+        self.toolbar.SetToolBitmapSize(tsize)
+        self.toolbar.AddTool(wx.ID_ADD, "New", new_bmp, wx.NullBitmap, wx.ITEM_NORMAL, "New", "Long help for 'New'", None)
+        self.toolbar.AddTool(wx.ID_SAVE, "Save", save_bmp, wx.NullBitmap, wx.ITEM_NORMAL, "Save",
+                             "Long help for 'Save'", None)
+        self.toolbar.AddTool(wx.ID_DELETE, "Delete", delete_bmp, wx.NullBitmap, wx.ITEM_NORMAL, "Delete",
+                             "Long help for 'Delete'", None)
+        self.Bind(wx.EVT_TOOL, self.on_add, id=wx.ID_ADD)
+        self.Bind(wx.EVT_TOOL, self.on_save, id=wx.ID_SAVE)
+        self.Bind(wx.EVT_TOOL, self.on_delete, id=wx.ID_DELETE)
+
+        #tool_save = self.toolbar.AddTool(wx.NewId(), 'Save', make_icon('SaveHS.png'), 'Save current item')
+        #tool_add = self.toolbar.AddTool(wx.NewId(), 'New', make_icon('Add.png'), 'Add a new item')
+
+        self.toolbar.Realize()
 
     def setup_menus(self):
         self.m_menubar1 = wx.MenuBar(0)
@@ -380,6 +412,7 @@ class AppFrame(wx.Frame):
 
     def setup(self):
         self.setup_menus()
+        self.setup_toolbars()
         self.setup_statusbar()
         self.setup_shelf()
         self.setup_handlers()
