@@ -111,8 +111,8 @@ class AppFrame(wx.Frame):
         self.m_splitter2.SetSashPosition(0)
         self.m_splitter2.Unbind(wx.EVT_IDLE)
 
-    def setup(self):
 
+    def setup_menus(self):
         self.m_menubar1 = wx.MenuBar(0)
         self.menuFile = wx.Menu()
         self.menuFileExport = wx.MenuItem(self.menuFile, wx.ID_ANY, u"&Export", wx.EmptyString, wx.ITEM_NORMAL)
@@ -141,9 +141,35 @@ class AppFrame(wx.Frame):
 
         self.SetMenuBar(self.m_menubar1)
 
+    def setup_statusbar(self):
         self.m_statusBar1 = self.CreateStatusBar(1, wx.STB_SIZEGRIP, wx.ID_ANY)
-        bSizer1 = wx.BoxSizer(wx.HORIZONTAL)
 
+
+    def setup_handlers(self):
+        # Connect Events
+        self.Bind(wx.EVT_MENU, self.FileExportOnMenuSelection, id=self.menuFileExport.GetId())
+        self.Bind(wx.EVT_MENU, self.on_save, id=self.menuFileSave.GetId())
+        self.Bind(wx.EVT_MENU, self.menuFileQuitOnMenuSelection, id=self.menuFileQuit.GetId())
+        self.Bind(wx.EVT_MENU, self.menuEditSettingsOnMenuSelection, id=self.menuEditSettings.GetId())
+        self.Bind(wx.EVT_MENU, self.handle_menu_playground, id=self.mnuEditPlayground.GetId())
+        self.m_auiShelf.Bind(wx.aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.OnNotebookPageChanged)
+        self.m_auiShelf.Bind(wx.aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.OnNotebookPageClose)
+        self.m_btnAddShelf.Bind(wx.EVT_BUTTON, self.AddShelfOnButtonClick)
+        self.m_btnDeleteShelf.Bind(wx.EVT_BUTTON, self.DeleteShelfOnButtonClick)
+        self.m_btnEditShelf.Bind(wx.EVT_BUTTON, self.EditShelfOnButtonClick)
+        self.btnAddSubject.Bind(wx.EVT_BUTTON, self.AddSubjectOnButtonClick)
+        self.btnDeleteSubject.Bind(wx.EVT_BUTTON, self.DeleteSubjectOnButtonClick)
+        self.btnEditSubject.Bind(wx.EVT_BUTTON, self.EditSubjectOnButtonClick)
+        self.btnAddPublication.Bind(wx.EVT_BUTTON, self.AddPublicationOnButtonClick)
+        self.btnAddPublication.Bind(wx.EVT_UPDATE_UI, self.AddPublicationOnUpdateUI)
+        self.btnDeletePublication.Bind(wx.EVT_BUTTON, self.DeletePublicationOnButtonClick)
+        self.btnDeletePublication.Bind(wx.EVT_UPDATE_UI, self.DeletePublicationOnUpdateUI)
+        self.btnEditPublication.Bind(wx.EVT_BUTTON, self.EditPublicationOnButtonClick)
+        self.btnEditPublication.Bind(wx.EVT_UPDATE_UI, self.EditPublicationOnUpdateUI)
+
+
+    def setup_shelf(self):
+        bSizer1 = wx.BoxSizer(wx.HORIZONTAL)
         bSizerNotebookMain = wx.BoxSizer(wx.VERTICAL)
 
         self.m_auiShelf = wx.aui.AuiNotebook(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize,  style=wx.aui.AUI_NB_CLOSE_BUTTON)
@@ -214,6 +240,33 @@ class AppFrame(wx.Frame):
                                              wx.SP_3D)
         self.m_splitter2.Bind(wx.EVT_IDLE, self.m_splitter2OnIdle)
 
+        self.setup_subject()
+        self.setup_publication()
+
+        bSizer8.Add(self.m_splitter2, 1, wx.EXPAND, 5)
+
+        self.pnlShelfChildren.SetSizer(bSizer8)
+        self.pnlShelfChildren.Layout()
+        bSizer8.Fit(self.pnlShelfChildren)
+        self.m_splitter1.SplitVertically(self.pnlShelf, self.pnlShelfChildren, 248)
+        splitterSizer.Add(self.m_splitter1, 1, wx.EXPAND, 5)
+
+        self.m_panelNotes.SetSizer(splitterSizer)
+        self.m_panelNotes.Layout()
+        splitterSizer.Fit(self.m_panelNotes)
+        self.m_auiShelf.AddPage(self.m_panelNotes, u"Home", False, wx.NullBitmap)
+
+        bSizerNotebookMain.Add(self.m_auiShelf, 1, wx.EXPAND | wx.ALL, 5)
+
+        bSizer1.Add(bSizerNotebookMain, 1, wx.EXPAND, 5)
+
+        self.SetSizer(bSizer1)
+        self.Layout()
+
+        self.Centre(wx.BOTH)
+
+
+    def setup_subject(self):
         self.pnlSubject = wx.Panel(self.m_splitter2, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         bSizer12 = wx.BoxSizer(wx.VERTICAL)
 
@@ -268,6 +321,8 @@ class AppFrame(wx.Frame):
         self.pnlSubject.SetSizer(bSizer12)
         self.pnlSubject.Layout()
         bSizer12.Fit(self.pnlSubject)
+
+    def setup_publication(self):
         self.pnlPublication = wx.Panel(self.m_splitter2, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize,
                                        wx.TAB_TRAVERSAL)
         bSizer9 = wx.BoxSizer(wx.VERTICAL)
@@ -321,48 +376,15 @@ class AppFrame(wx.Frame):
         self.pnlPublication.Layout()
         bSizer9.Fit(self.pnlPublication)
         self.m_splitter2.SplitHorizontally(self.pnlSubject, self.pnlPublication, 0)
-        bSizer8.Add(self.m_splitter2, 1, wx.EXPAND, 5)
 
-        self.pnlShelfChildren.SetSizer(bSizer8)
-        self.pnlShelfChildren.Layout()
-        bSizer8.Fit(self.pnlShelfChildren)
-        self.m_splitter1.SplitVertically(self.pnlShelf, self.pnlShelfChildren, 248)
-        splitterSizer.Add(self.m_splitter1, 1, wx.EXPAND, 5)
 
-        self.m_panelNotes.SetSizer(splitterSizer)
-        self.m_panelNotes.Layout()
-        splitterSizer.Fit(self.m_panelNotes)
-        self.m_auiShelf.AddPage(self.m_panelNotes, u"Home", False, wx.NullBitmap)
+    def setup(self):
+        self.setup_menus()
+        self.setup_statusbar()
+        self.setup_shelf()
+        self.setup_handlers()
 
-        bSizerNotebookMain.Add(self.m_auiShelf, 1, wx.EXPAND | wx.ALL, 5)
 
-        bSizer1.Add(bSizerNotebookMain, 1, wx.EXPAND, 5)
-
-        self.SetSizer(bSizer1)
-        self.Layout()
-
-        self.Centre(wx.BOTH)
-
-        # Connect Events
-        self.Bind(wx.EVT_MENU, self.FileExportOnMenuSelection, id=self.menuFileExport.GetId())
-        self.Bind(wx.EVT_MENU, self.on_save, id=self.menuFileSave.GetId())
-        self.Bind(wx.EVT_MENU, self.menuFileQuitOnMenuSelection, id=self.menuFileQuit.GetId())
-        self.Bind(wx.EVT_MENU, self.menuEditSettingsOnMenuSelection, id=self.menuEditSettings.GetId())
-        self.Bind(wx.EVT_MENU, self.handle_menu_playground, id=self.mnuEditPlayground.GetId())
-        self.m_auiShelf.Bind(wx.aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.OnNotebookPageChanged)
-        self.m_auiShelf.Bind(wx.aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.OnNotebookPageClose)
-        self.m_btnAddShelf.Bind(wx.EVT_BUTTON, self.AddShelfOnButtonClick)
-        self.m_btnDeleteShelf.Bind(wx.EVT_BUTTON, self.DeleteShelfOnButtonClick)
-        self.m_btnEditShelf.Bind(wx.EVT_BUTTON, self.EditShelfOnButtonClick)
-        self.btnAddSubject.Bind(wx.EVT_BUTTON, self.AddSubjectOnButtonClick)
-        self.btnDeleteSubject.Bind(wx.EVT_BUTTON, self.DeleteSubjectOnButtonClick)
-        self.btnEditSubject.Bind(wx.EVT_BUTTON, self.EditSubjectOnButtonClick)
-        self.btnAddPublication.Bind(wx.EVT_BUTTON, self.AddPublicationOnButtonClick)
-        self.btnAddPublication.Bind(wx.EVT_UPDATE_UI, self.AddPublicationOnUpdateUI)
-        self.btnDeletePublication.Bind(wx.EVT_BUTTON, self.DeletePublicationOnButtonClick)
-        self.btnDeletePublication.Bind(wx.EVT_UPDATE_UI, self.DeletePublicationOnUpdateUI)
-        self.btnEditPublication.Bind(wx.EVT_BUTTON, self.EditPublicationOnButtonClick)
-        self.btnEditPublication.Bind(wx.EVT_UPDATE_UI, self.EditPublicationOnUpdateUI)
 
 
 
