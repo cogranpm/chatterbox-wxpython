@@ -150,9 +150,12 @@ class AppFrame(wx.Frame):
         self.menuFileExport = wx.MenuItem(self.menuFile, wx.ID_ANY, u"&Export", wx.EmptyString, wx.ITEM_NORMAL)
         self.menuFile.Append(self.menuFileExport)
 
+        self.menuFileNew = wx.MenuItem(self.menuFile, wx.ID_ADD, u"&New" + u"\t" + u"CTRL+N", wx.EmptyString,
+                                        wx.ITEM_NORMAL)
         self.menuFileSave = wx.MenuItem(self.menuFile, wx.ID_SAVE, u"&Save" + u"\t" + u"CTRL+S", wx.EmptyString, wx.ITEM_NORMAL)
         self.menuFileQuit = wx.MenuItem(self.menuFile, wx.ID_QUIT, u"&Quit" + u"\t" + u"CTRL+Q", wx.EmptyString,
                                         wx.ITEM_NORMAL)
+        self.menuFile.Append(self.menuFileNew)
         self.menuFile.Append(self.menuFileSave)
         self.menuFile.Append(self.menuFileQuit)
 

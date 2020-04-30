@@ -6,7 +6,6 @@ import fn_widget as w
 import wx.dataview as dv
 import forms as frm
 from lists import states, ColumnSpec, ColumnType, ListSpec
-from models import PyTestModel
 from validators import FieldValidator, CheckboxValidator, ComboValidator, not_empty
 import wx.py as py
 
@@ -33,6 +32,10 @@ def create_data():
              'city': 'Melbourne', 'zip': '33452', 'state': 'WA', 'phone': '1234567890', 'email': 'email@email.com'},
             {'name': 'Anne', 'age': 4, 'member': False, 'address1': "4 The Alter Place", 'address2': "C/O Anne",
              'city': 'Melbourne', 'zip': '33451', 'state': 'TAS', 'phone': '1234567890', 'email': 'email@email.com'}]
+
+def add_record():
+    return {'name': '', 'age': None, 'member': False, 'address1': "", 'address2': "",
+             'city': '', 'zip': '', 'state': '', 'phone': '', 'email': ''}
 
 class PlaygroundPanel(wx.Panel):
 
@@ -88,7 +91,7 @@ class PlaygroundPanel(wx.Panel):
     def add(self, command, more):
         """ prepares for an add by asking to save changes if dirty, then cleaning out the controls for new entry """
         if more is self:
-            pass
+            self.form.reset_fields()
 
     def delete(self, command, more):
         if more is self:
@@ -107,8 +110,6 @@ class PlaygroundPanel(wx.Panel):
         """ just an example of dispatcher in action """
         logging.info('got a push')
 
-    # this could possibly be moved to the listspec class
-    # after all it knows the parent which is the only variant needed
     def list_selection_change(self, event: dv.DataViewEvent):
         # testing dispatcher stuff
         py.dispatcher.send(signal='Interpreter.push', sender=self, command='listchange', more=event)
@@ -141,7 +142,7 @@ class PlaygroundPanel(wx.Panel):
         growable col means in the horizontal direction
         use the proportion argument in the Add method to make cell grow at different amount """
 
-        person_form = frm.form(self, "frmDemo", "Form Demo", helpstr, [
+        self.form = frm.form(self, "frmDemo", "Form Demo", helpstr, [
             frm.edit_line("Name", [frm.TextField(name_column, frm.large(), validator=self.name_validator)]),
             frm.edit_line("Age", [frm.TextField(age_column, frm.small(), validator=self.age_validator)]),
             frm.edit_line("Member", [frm.CheckboxField(member_column, validator=self.member_validator)]),
@@ -156,7 +157,7 @@ class PlaygroundPanel(wx.Panel):
             frm.edit_line("Email", [frm.TextField(email_column, frm.medium(), validator=self.email_validator)])
         ])
 
-        person_form.build(ok_handler=self.on_ok, cancel_handler=self.on_cancel)
+        self.form.build(ok_handler=self.on_ok, cancel_handler=self.on_cancel)
 
 
 class PlaygroundForm(wx.Dialog):

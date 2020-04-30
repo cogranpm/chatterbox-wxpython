@@ -116,6 +116,11 @@ class FormSpec():
             self.sizer.Add(stdButtonSizer, 0, wx.EXPAND, 5)
         self.parent.Sizer.Add(self.sizer, wx.SizerFlags(1).Expand())
 
+    def reset_fields(self):
+        for line in self.edit_lines:
+            for edit_field in line.edit_fields:
+                edit_field.reset()
+
 
 class FormLineSpec():
     """ can be made up of multiple edit fields or a single, such as zip, state, city on a single line """
@@ -184,16 +189,21 @@ class TextField(EditFieldSpec):
     def __init__(self, name, width: EditFieldWidth, validator: wx.PyValidator = None):
         super().__init__(name, width)
         self.validator = validator
+        self.control = None
 
     def build(self, parent, multi_column: bool = False):
         size = self.get_size(multi_column)
         if size is None:
-            control = wx.TextCtrl(parent, -1, "", name=self.name, validator=self.validator)
+            self.control = wx.TextCtrl(parent, -1, "", name=self.name, validator=self.validator)
         else:
-            control = wx.TextCtrl(parent, -1, "", size=size, name=self.name, validator=self.validator)
+            self.control = wx.TextCtrl(parent, -1, "", size=size, name=self.name, validator=self.validator)
         # if self.validator is not None:
         #     control.Validator = self.validator
-        return control
+        return self.control
+
+    def reset(self):
+        self.control.SetValue('')
+
 
 
 class ComboField(EditFieldSpec):
@@ -219,6 +229,9 @@ class ComboField(EditFieldSpec):
         # self.control.Bind(wx.EVT_COMBOBOX, self.on_select)
         return self.control
 
+    def reset(self):
+        self.control.SetSelection(0)
+
     #def on_select(self, event):
         # an example of how to get the selected item data
         #listitem = self.control.GetClientData(self.control.GetSelection())
@@ -227,9 +240,14 @@ class CheckboxField(EditFieldSpec):
     def __init__(self, name, validator: wx.PyValidator = None):
         super().__init__(name, None)
         self.validator = validator
+        self.control = None
 
     def build(self, parent, multi_column: bool = False):
-        return wx.CheckBox(parent, -1, "", name=self.name, validator=self.validator)
+        self.control = wx.CheckBox(parent, -1, "", name=self.name, validator=self.validator)
+        return self.control
+
+    def reset(self):
+        self.control.SetValue(False)
 
 
 
