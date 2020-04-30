@@ -91,6 +91,7 @@ class PlaygroundPanel(wx.Panel):
     def add(self, command, more):
         """ prepares for an add by asking to save changes if dirty, then cleaning out the controls for new entry """
         if more is self:
+            self.listspec.model.adding = True
             self.form.reset_fields()
 
     def delete(self, command, more):
@@ -128,7 +129,7 @@ class PlaygroundPanel(wx.Panel):
         self.listspec.model.ItemAdded(dv.NullDataViewItem, self.listspec.model.ObjectToItem(new_person))
 
     def delete_button_click(self, event):
-        self.model.ItemDeleted(dv.NullDataViewItem, self.listspec.model.ObjectToItem(self.listspec.data[0]))
+        self.listspec.model.ItemDeleted(dv.NullDataViewItem, self.listspec.model.ObjectToItem(self.listspec.data[0]))
         del(self.listspec.data[0])
 
     def edit_form(self):
