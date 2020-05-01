@@ -92,7 +92,8 @@ class PlaygroundPanel(wx.Panel):
         """ prepares for an add by asking to save changes if dirty, then cleaning out the controls for new entry """
         if more is self:
             self.listspec.model.adding = True
-            self.form.reset_fields()
+            self.form.view_state = ViewState.adding
+            # self.form.reset_fields()
 
     def delete(self, command, more):
         if more is self:

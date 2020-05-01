@@ -3,6 +3,7 @@ from typing import List, Dict
 from dataclasses import dataclass
 from enum import Enum
 
+ViewState = Enum('ViewState', 'adding dirty loaded empty')
 
 # not sure how to do date time
 ColumnType = Enum('ColumnType', 'str bool float int date')
@@ -34,8 +35,6 @@ class PyTestModel(dv.PyDataViewModel):
         super().__init__()
         self.data = data
         self.columns = columns
-        self.dirty = False
-        self.adding = False
 
     def get_column_by_index(self, index):
         # return list(self.columns.values())[index]

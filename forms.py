@@ -2,6 +2,7 @@
 from enum import Enum, auto
 from typing import List, Tuple
 from lists import ListItem
+from models import ViewState
 import wx
 
 EditFieldWidth = Enum('EditFieldWidth', 'LARGE MEDIUM SMALL DEFAULT')
@@ -66,6 +67,7 @@ class FormSpec():
         self.edit_lines = edit_lines
         self.name = name
         self.sizer = vsizer()
+        self.view_state = ViewState.empty
 
     def build(self, display_type = DisplayType.PANEL, ok_handler=None, cancel_handler=None):
 
@@ -121,6 +123,11 @@ class FormSpec():
             for edit_field in line.edit_fields:
                 edit_field.reset()
 
+    def enable_fields(self, flag):
+        for line in self.edit_lines:
+            for edit_field in line.edit_fields:
+                edit_field.enable(flag)
+
 
 class FormLineSpec():
     """ can be made up of multiple edit fields or a single, such as zip, state, city on a single line """
@@ -166,6 +173,7 @@ class EditFieldSpec():
     def __init__(self, name: str, width: EditFieldWidth = EditFieldWidth.DEFAULT):
         self.name = name
         self.width = width
+        self.control = None
 
     def get_size(self, multi_column: bool = False):
         size = None
@@ -183,13 +191,16 @@ class EditFieldSpec():
             size = wx.Size(txt_width, -1)
         return size
 
+    def enable(self, flag):
+        if self.control is not None:
+            self.control.Disable()
 
 class TextField(EditFieldSpec):
 
     def __init__(self, name, width: EditFieldWidth, validator: wx.PyValidator = None):
         super().__init__(name, width)
         self.validator = validator
-        self.control = None
+        #self.control = None
 
     def build(self, parent, multi_column: bool = False):
         size = self.get_size(multi_column)
