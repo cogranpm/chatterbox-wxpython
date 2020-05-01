@@ -121,6 +121,24 @@ class FormSpec():
     def set_viewstate(self, state: ViewState):
         if state == ViewState.adding:
             self.reset_fields()
+            self.enable_fields(True)
+            self.setfocusfirst()
+        elif state == ViewState.empty:
+            self.reset_fields()
+            self.enable_fields(False)
+        elif state == ViewState.loaded:
+            self.enable_fields(True)
+            self.setfocusfirst()
+        else:
+            pass
+        self.view_state = state
+
+    def setfocusfirst(self):
+        first_line = self.edit_lines[0]
+        if first_line is not None:
+            first_control = first_line.edit_fields[0]
+            if first_control is not None:
+                first_control.focus()
 
     def reset_fields(self):
         for line in self.edit_lines:
@@ -195,9 +213,16 @@ class EditFieldSpec():
             size = wx.Size(txt_width, -1)
         return size
 
+    def focus(self):
+        if self.control is not None:
+            self.control.SetFocus()
+
     def enable(self, flag):
         if self.control is not None:
-            self.control.Disable()
+            if flag:
+                self.control.Enable()
+            else:
+                self.control.Disable()
 
 class TextField(EditFieldSpec):
 

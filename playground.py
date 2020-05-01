@@ -81,6 +81,7 @@ class PlaygroundPanel(wx.Panel):
         tool_sizer = frm.hsizer([btn_add, btn_delete])
         main_sizer.Add(tool_sizer, wx.SizerFlags(0))
         self.edit_form()
+        self.form.set_viewstate(ViewState.empty)
 
     def save(self, command, more):
         if more is self:
@@ -97,7 +98,7 @@ class PlaygroundPanel(wx.Panel):
 
     def delete(self, command, more):
         if more is self:
-            pass
+            self.form.set_viewstate(ViewState.empty)
 
 
     def on_ok(self, event):
@@ -123,6 +124,7 @@ class PlaygroundPanel(wx.Panel):
                 control.Validator.set_data(record)
 
         self.TransferDataToWindow()
+        self.form.set_viewstate(ViewState.loaded)
 
     def add_button_click(self, event):
         new_person = {'name': 'Peter', 'age': 33, 'address1': '14 Angel Terrace'}
