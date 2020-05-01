@@ -118,6 +118,10 @@ class FormSpec():
             self.sizer.Add(stdButtonSizer, 0, wx.EXPAND, 5)
         self.parent.Sizer.Add(self.sizer, wx.SizerFlags(1).Expand())
 
+    def set_viewstate(self, state: ViewState):
+        if state == ViewState.adding:
+            self.reset_fields()
+
     def reset_fields(self):
         for line in self.edit_lines:
             for edit_field in line.edit_fields:

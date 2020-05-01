@@ -8,6 +8,7 @@ import forms as frm
 from lists import states, ColumnSpec, ColumnType, ListSpec
 from validators import FieldValidator, CheckboxValidator, ComboValidator, not_empty
 import wx.py as py
+from models import ViewState
 
 from typing import List, Dict
 
@@ -92,8 +93,7 @@ class PlaygroundPanel(wx.Panel):
         """ prepares for an add by asking to save changes if dirty, then cleaning out the controls for new entry """
         if more is self:
             self.listspec.model.adding = True
-            self.form.view_state = ViewState.adding
-            # self.form.reset_fields()
+            self.form.set_viewstate(ViewState.adding)
 
     def delete(self, command, more):
         if more is self:
