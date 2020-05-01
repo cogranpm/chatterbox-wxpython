@@ -30,10 +30,42 @@ class AppFrame(wx.Frame):
         self.m_btnEditShelf.SetBitmap(make_icon('Edit.png'))
         self.m_btnAddShelf.SetBitmap(make_icon('Add.png'))
         self.m_btnDeleteShelf.SetBitmap(make_icon('Cancel.png'))
+        wx.py.dispatcher.connect(receiver=self.on_viewstate, signal=c.SIGNAL_VIEWSTATE)
+        wx.py.dispatcher.connect(receiver=self.on_view_activated, signal=c.SIGNAL_VIEW_ACTIVATED)
+        self.Bind(wx.EVT_UPDATE_UI, self.on_updateui)
+
+    def on_updateui(self, event):
+        """ this gets called at regular intervals, can be useful for polling type logic """
+        pass
+
+    def on_view_activated(self, command, more):
+        self.menuFileNew.Enable(True)
+        self.toolbar.EnableTool(wx.ID_NEW, True)
+
+    def on_viewstate(self, command, more):
+        if command == c.COMMAND_ADDING:
+            self.menuFileSave.Enable(True)
+            self.toolbar.EnableTool(wx.ID_SAVE, True)
+        elif command == c.COMMAND_EMPTY:
+            self.menuEditDelete.Enable(False)
+            self.toolbar.EnableTool(wx.ID_DELETE, False)
+            self.menuFileSave.Enable(False)
+            self.toolbar.EnableTool(wx.ID_SAVE, False)
+        elif command == c.COMMAND_LOADED:
+            self.menuEditDelete.Enable(True)
+            self.toolbar.EnableTool(wx.ID_DELETE, True)
+        elif command == c.COMMAND_DIRTY:
+            # this does not quite work, also fires
+            # when selection of item in list is made
+            self.menuFileSave.Enable(True)
+            self.toolbar.EnableTool(wx.ID_SAVE, True)
+
 
     def on_save(self, event):
         active_page = self.m_auiShelf.GetCurrentPage()
         py.dispatcher.send(signal=c.SIGNAL_SAVE, sender=self, command=c.COMMAND_SAVE, more=active_page)
+        self.menuFileSave.Enable(False)
+        self.toolbar.EnableTool(wx.ID_SAVE, False)
 
     def on_add(self, event):
         active_page = self.m_auiShelf.GetCurrentPage()
@@ -123,18 +155,20 @@ class AppFrame(wx.Frame):
 
     def setup_toolbars(self):
         self.toolbar = self.CreateToolBar()
-
-
         tsize = (24, 24)
         new_bmp = wx.ArtProvider.GetBitmap(wx.ART_NEW, wx.ART_TOOLBAR, tsize)
         save_bmp = wx.ArtProvider.GetBitmap(wx.ART_FILE_SAVE, wx.ART_TOOLBAR, tsize)
         delete_bmp = wx.ArtProvider.GetBitmap(wx.ART_DELETE, wx.ART_TOOLBAR, tsize)
         self.toolbar.SetToolBitmapSize(tsize)
-        self.toolbar.AddTool(wx.ID_ADD, "New", new_bmp, wx.NullBitmap, wx.ITEM_NORMAL, "New", "Long help for 'New'", None)
+        self.toolbar.AddTool(wx.ID_ADD, "New", new_bmp, wx.NullBitmap, wx.ITEM_NORMAL, "New",
+                             "Long help for 'New'", None)
+        self.toolbar.EnableTool(wx.ID_NEW, False)
         self.toolbar.AddTool(wx.ID_SAVE, "Save", save_bmp, wx.NullBitmap, wx.ITEM_NORMAL, "Save",
                              "Long help for 'Save'", None)
+        self.toolbar.EnableTool(wx.ID_SAVE, False)
         self.toolbar.AddTool(wx.ID_DELETE, "Delete", delete_bmp, wx.NullBitmap, wx.ITEM_NORMAL, "Delete",
                              "Long help for 'Delete'", None)
+        self.toolbar.EnableTool(wx.ID_DELETE, False)
         self.Bind(wx.EVT_TOOL, self.on_add, id=wx.ID_ADD)
         self.Bind(wx.EVT_TOOL, self.on_save, id=wx.ID_SAVE)
         self.Bind(wx.EVT_TOOL, self.on_delete, id=wx.ID_DELETE)
@@ -145,15 +179,17 @@ class AppFrame(wx.Frame):
         self.toolbar.Realize()
 
     def setup_menus(self):
+
         self.m_menubar1 = wx.MenuBar(0)
         self.menuFile = wx.Menu()
         self.menuFileExport = wx.MenuItem(self.menuFile, wx.ID_ANY, u"&Export", wx.EmptyString, wx.ITEM_NORMAL)
         self.menuFile.Append(self.menuFileExport)
 
-        self.menuFileNew = wx.MenuItem(self.menuFile, wx.ID_ADD, u"&New" + u"\t" + u"CTRL+N", wx.EmptyString,
+        self.menuFileNew = wx.MenuItem(self.menuFile, wx.ID_ADD, u"&New", wx.EmptyString,
                                         wx.ITEM_NORMAL)
-        self.menuFileSave = wx.MenuItem(self.menuFile, wx.ID_SAVE, u"&Save" + u"\t" + u"CTRL+S", wx.EmptyString, wx.ITEM_NORMAL)
-        self.menuFileQuit = wx.MenuItem(self.menuFile, wx.ID_QUIT, u"&Quit" + u"\t" + u"CTRL+Q", wx.EmptyString,
+        self.menuFileNew.Enable(False)
+        self.menuFileSave = wx.MenuItem(self.menuFile, wx.ID_SAVE, u"&Save", wx.EmptyString, wx.ITEM_NORMAL)
+        self.menuFileQuit = wx.MenuItem(self.menuFile, wx.ID_QUIT, u"&Quit", wx.EmptyString,
                                         wx.ITEM_NORMAL)
         self.menuFile.Append(self.menuFileNew)
         self.menuFile.Append(self.menuFileSave)
@@ -164,16 +200,29 @@ class AppFrame(wx.Frame):
         self.menuEdit = wx.Menu()
         self.menuEdit.AppendSeparator()
 
+        self.menuEditDelete = wx.MenuItem(self.menuEdit, wx.ID_DELETE, u"Delete", wx.EmptyString,
+                                            wx.ITEM_NORMAL)
+        self.menuEditDelete.Enable(False)
+        self.menuEdit.Append(self.menuEditDelete)
+
         self.menuEditSettings = wx.MenuItem(self.menuEdit, wx.ID_PREFERENCES, u"&Settings", wx.EmptyString,
                                             wx.ITEM_NORMAL)
         self.menuEdit.Append(self.menuEditSettings)
 
-        self.mnuEditPlayground = wx.MenuItem(self.menuEdit, wx.ID_ANY, u"Playground" + u"\t" + u"CTRL-P",
+        self.mnuEditPlayground = wx.MenuItem(self.menuEdit, wx.ID_ANY, u"Playground",
                                              wx.EmptyString, wx.ITEM_NORMAL)
         self.menuEdit.Append(self.mnuEditPlayground)
 
         self.m_menubar1.Append(self.menuEdit, u"&Edit")
 
+        accelerator_tbl = wx.AcceleratorTable([
+            (wx.ACCEL_CTRL, ord('Q'), self.menuFileQuit.GetId()),
+            (wx.ACCEL_CTRL, ord('S'), self.menuFileSave.GetId()),
+            (wx.ACCEL_CTRL, ord('N'), self.menuFileNew.GetId()),
+            (wx.ACCEL_CTRL, ord('P'), self.mnuEditPlayground.GetId()),
+            (wx.ACCEL_NORMAL, wx.WXK_DELETE, self.menuEditDelete.GetId())
+        ])
+        self.AcceleratorTable = accelerator_tbl
         self.SetMenuBar(self.m_menubar1)
 
     def setup_statusbar(self):
@@ -187,6 +236,7 @@ class AppFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.menuFileQuitOnMenuSelection, id=self.menuFileQuit.GetId())
         self.Bind(wx.EVT_MENU, self.menuEditSettingsOnMenuSelection, id=self.menuEditSettings.GetId())
         self.Bind(wx.EVT_MENU, self.handle_menu_playground, id=self.mnuEditPlayground.GetId())
+        self.Bind(wx.EVT_MENU, self.on_delete, id=self.menuEditDelete.GetId())
         self.m_auiShelf.Bind(wx.aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.OnNotebookPageChanged)
         self.m_auiShelf.Bind(wx.aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.OnNotebookPageClose)
         self.m_btnAddShelf.Bind(wx.EVT_BUTTON, self.AddShelfOnButtonClick)

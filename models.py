@@ -3,7 +3,7 @@ from typing import List, Dict
 from dataclasses import dataclass
 from enum import Enum
 
-ViewState = Enum('ViewState', 'adding dirty loaded empty')
+ViewState = Enum('ViewState', 'adding dirty loaded loading empty')
 
 # not sure how to do date time
 ColumnType = Enum('ColumnType', 'str bool float int date')

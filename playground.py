@@ -57,7 +57,6 @@ class PlaygroundPanel(wx.Panel):
             ColumnSpec(email_column, ColumnType.str, 'Email', 145, True)
         ], create_data())
         self.list = self.listspec.build(self, self.list_selection_change)
-        wx.py.dispatcher.connect(receiver=self.push, signal='Interpreter.push')
         wx.py.dispatcher.connect(receiver=self.save, signal=c.SIGNAL_SAVE)
         wx.py.dispatcher.connect(receiver=self.add, signal=c.SIGNAL_ADD)
         wx.py.dispatcher.connect(receiver=self.delete, signal=c.SIGNAL_DELETE)
@@ -82,6 +81,7 @@ class PlaygroundPanel(wx.Panel):
         main_sizer.Add(tool_sizer, wx.SizerFlags(0))
         self.edit_form()
         self.form.set_viewstate(ViewState.empty)
+        py.dispatcher.send(signal=c.SIGNAL_VIEW_ACTIVATED, sender=self, command=c.COMMAND_VIEW_ACTIVATED, more=self)
 
     def save(self, command, more):
         if more is self:
@@ -109,13 +109,9 @@ class PlaygroundPanel(wx.Panel):
     def on_cancel(self, event):
         event.Skip()
 
-    def push(self, command, more):
-        """ just an example of dispatcher in action """
-        logging.info('got a push')
-
     def list_selection_change(self, event: dv.DataViewEvent):
         # testing dispatcher stuff
-        py.dispatcher.send(signal='Interpreter.push', sender=self, command='listchange', more=event)
+        self.form.set_viewstate(ViewState.loading)
         selected_item = self.list.GetSelection()
         record = self.listspec.model.ItemToObject(selected_item)
         for column in self.listspec.columns:

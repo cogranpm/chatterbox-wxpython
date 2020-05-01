@@ -3,7 +3,9 @@ from enum import Enum, auto
 from typing import List, Tuple
 from lists import ListItem
 from models import ViewState
+import chatterbox_constants as c
 import wx
+import wx.py as py
 
 EditFieldWidth = Enum('EditFieldWidth', 'LARGE MEDIUM SMALL DEFAULT')
 DisplayType = Enum('DisplayType', 'DIALOG PANEL')
@@ -123,14 +125,19 @@ class FormSpec():
             self.reset_fields()
             self.enable_fields(True)
             self.setfocusfirst()
+            py.dispatcher.send(signal=c.SIGNAL_VIEWSTATE, sender=self, command=c.COMMAND_ADDING, more=self)
         elif state == ViewState.empty:
             self.reset_fields()
             self.enable_fields(False)
+            py.dispatcher.send(signal=c.SIGNAL_VIEWSTATE, sender=self, command=c.COMMAND_EMPTY, more=self)
         elif state == ViewState.loaded:
             self.enable_fields(True)
             self.setfocusfirst()
-        else:
-            pass
+            py.dispatcher.send(signal=c.SIGNAL_VIEWSTATE, sender=self, command=c.COMMAND_LOADED, more=self)
+            self.pause_dirty_events(False)
+        elif state == ViewState.loading:
+            self.pause_dirty_events(True)
+
         self.view_state = state
 
     def setfocusfirst(self):
@@ -149,6 +156,11 @@ class FormSpec():
         for line in self.edit_lines:
             for edit_field in line.edit_fields:
                 edit_field.enable(flag)
+
+    def pause_dirty_events(self, flag):
+        for line in self.edit_lines:
+            for edit_field in line.edit_fields:
+                edit_field.pause_dirty_events = flag
 
 
 class FormLineSpec():
@@ -196,6 +208,7 @@ class EditFieldSpec():
         self.name = name
         self.width = width
         self.control = None
+        self.pause_dirty_events = False
 
     def get_size(self, multi_column: bool = False):
         size = None
@@ -239,10 +252,17 @@ class TextField(EditFieldSpec):
             self.control = wx.TextCtrl(parent, -1, "", size=size, name=self.name, validator=self.validator)
         # if self.validator is not None:
         #     control.Validator = self.validator
+        self.control.Bind(wx.EVT_TEXT, self.on_change_text)
         return self.control
 
     def reset(self):
         self.control.SetValue('')
+
+    def on_change_text(self, event):
+        """ this is the place to raise a dirty message """
+        # need to not fire this if the form I belong too is in the loading state
+        if not self.pause_dirty_events:
+            py.dispatcher.send(signal=c.SIGNAL_VIEWSTATE, sender=self, command=c.COMMAND_DIRTY, more=self)
 
 
 
@@ -266,13 +286,18 @@ class ComboField(EditFieldSpec):
         if self.contents is not None:
             for item in self.contents:
                 self.control.Append(item.label, item.code )
-        # self.control.Bind(wx.EVT_COMBOBOX, self.on_select)
+
+        self.control.Bind(wx.EVT_COMBOBOX, self.on_select)
         return self.control
 
     def reset(self):
         self.control.SetSelection(0)
 
-    #def on_select(self, event):
+    def on_select(self, event):
+        """ this is the place to raise the dirty message """
+        # need to not fire this if the form I belong too is in the loading state
+        if not self.pause_dirty_events:
+            py.dispatcher.send(signal=c.SIGNAL_VIEWSTATE, sender=self, command=c.COMMAND_DIRTY, more=self)
         # an example of how to get the selected item data
         #listitem = self.control.GetClientData(self.control.GetSelection())
 
@@ -284,10 +309,18 @@ class CheckboxField(EditFieldSpec):
 
     def build(self, parent, multi_column: bool = False):
         self.control = wx.CheckBox(parent, -1, "", name=self.name, validator=self.validator)
+        self.control.Bind(wx.EVT_CHECKBOX, self.on_select)
         return self.control
 
     def reset(self):
         self.control.SetValue(False)
+
+    def on_select(self, event):
+        """ this is the place to raise the dirty message """
+        # need to not fire this if the form I belong too is in the loading state
+        if not self.pause_dirty_events:
+            py.dispatcher.send(signal=c.SIGNAL_VIEWSTATE, sender=self, command=c.COMMAND_DIRTY, more=self)
+
 
 
 
