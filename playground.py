@@ -114,10 +114,13 @@ class PlaygroundPanel(wx.Panel):
         self.form.set_viewstate(ViewState.loading)
         selected_item = self.list.GetSelection()
         record = self.listspec.model.ItemToObject(selected_item)
-        for column in self.listspec.columns:
-            control: wx.Window = wx.Window.FindWindowByName(column.key, self)
-            if control is not None and control.Validator is not None:
-                control.Validator.set_data(record)
+        self.form.bind(record)
+
+        # change this to use the form
+        # for column in self.listspec.columns:
+        #     control: wx.Window = wx.Window.FindWindowByName(column.key, self)
+        #     if control is not None and control.Validator is not None:
+        #         control.Validator.set_data(record)
 
         self.TransferDataToWindow()
         self.form.set_viewstate(ViewState.loaded)

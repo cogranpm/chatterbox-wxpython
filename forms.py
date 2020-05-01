@@ -162,6 +162,12 @@ class FormSpec():
             for edit_field in line.edit_fields:
                 edit_field.pause_dirty_events = flag
 
+    def bind(self, record):
+        for line in self.edit_lines:
+            for edit_field in line.edit_fields:
+                if edit_field.control is not None and edit_field.control.Validator is not None:
+                    edit_field.control.Validator.set_data(record)
+
 
 class FormLineSpec():
     """ can be made up of multiple edit fields or a single, such as zip, state, city on a single line """
