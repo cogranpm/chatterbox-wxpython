@@ -42,8 +42,13 @@ class PlaygroundPanel(wx.Panel):
 
     def __init__(self, parent=None):
         super().__init__(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+
+        # goes into base class
         main_sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(main_sizer)
+
+        # this should be parameter of the class perhaps
+        # create_data would be call to database
         self.listspec = ListSpec([
             ColumnSpec(name_column, ColumnType.str, 'Name', 100, True),
             ColumnSpec(age_column, ColumnType.int, 'Age', 40, True),
@@ -56,6 +61,8 @@ class PlaygroundPanel(wx.Panel):
             ColumnSpec(phone_column, ColumnType.str, 'Phone', 145, True),
             ColumnSpec(email_column, ColumnType.str, 'Email', 145, True)
         ], create_data())
+
+        # base class
         self.list = self.listspec.build(self, self.list_selection_change)
         wx.py.dispatcher.connect(receiver=self.save, signal=c.SIGNAL_SAVE)
         wx.py.dispatcher.connect(receiver=self.add, signal=c.SIGNAL_ADD)
@@ -63,6 +70,7 @@ class PlaygroundPanel(wx.Panel):
 
         # declare the validators
         # make as declarative as possible
+        # these really do not need to be named
         self.name_validator = FieldValidator(None, name_column, [not_empty])
         self.age_validator = FieldValidator(None, age_column, [not_empty])
         self.address1_validator = FieldValidator(None, address1_column, [])
@@ -75,10 +83,8 @@ class PlaygroundPanel(wx.Panel):
         self.zip_validator = FieldValidator(None, zip_column, [])
 
         main_sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
-        btn_add = frm.tool_button(self, id=wx.ID_ANY, text="Add", handler=self.add_button_click)
-        btn_delete = frm.tool_button(self, id=wx.ID_ANY, text="Del", handler=self.delete_button_click)
-        tool_sizer = frm.hsizer([btn_add, btn_delete])
-        main_sizer.Add(tool_sizer, wx.SizerFlags(0))
+
+        # parameterize this somehow maybe in derived class an an override
         self.edit_form()
         self.form.set_viewstate(ViewState.empty)
         py.dispatcher.send(signal=c.SIGNAL_VIEW_ACTIVATED, sender=self, command=c.COMMAND_VIEW_ACTIVATED, more=self)
@@ -114,16 +120,10 @@ class PlaygroundPanel(wx.Panel):
 
     def delete(self, command, more):
         if more is self:
+            self.listspec.model.ItemDeleted(dv.NullDataViewItem,
+            self.listspec.model.ObjectToItem(self.listspec.data[0]))
+            del (self.listspec.data[0])
             self.form.set_viewstate(ViewState.empty)
-
-
-    def on_ok(self, event):
-        # pass
-        # self.EndModal()
-        event.Skip()
-
-    def on_cancel(self, event):
-        event.Skip()
 
     def list_selection_change(self, event: dv.DataViewEvent):
         # testing dispatcher stuff
@@ -131,24 +131,8 @@ class PlaygroundPanel(wx.Panel):
         selected_item = self.list.GetSelection()
         record = self.listspec.model.ItemToObject(selected_item)
         self.form.bind(record)
-
-        # change this to use the form
-        # for column in self.listspec.columns:
-        #     control: wx.Window = wx.Window.FindWindowByName(column.key, self)
-        #     if control is not None and control.Validator is not None:
-        #         control.Validator.set_data(record)
-
         self.TransferDataToWindow()
         self.form.set_viewstate(ViewState.loaded)
-
-    def add_button_click(self, event):
-        new_person = {'name': 'Peter', 'age': 33, 'address1': '14 Angel Terrace'}
-        self.listspec.data.append(new_person)
-        self.listspec.model.ItemAdded(dv.NullDataViewItem, self.listspec.model.ObjectToItem(new_person))
-
-    def delete_button_click(self, event):
-        self.listspec.model.ItemDeleted(dv.NullDataViewItem, self.listspec.model.ObjectToItem(self.listspec.data[0]))
-        del(self.listspec.data[0])
 
     def edit_form(self):
         helpstr = """
@@ -176,7 +160,7 @@ class PlaygroundPanel(wx.Panel):
             frm.edit_line("Email", [frm.TextField(email_column, frm.medium(), validator=self.email_validator)])
         ])
 
-        self.form.build(ok_handler=self.on_ok, cancel_handler=self.on_cancel)
+        self.form.build()
 
 
 class PlaygroundForm(wx.Dialog):
