@@ -25,17 +25,17 @@ email_column = 'email'
 
 # contrived, to be removed
 def create_data():
-    return [{'name': 'Fred', 'age': 22, 'member': False, 'address1': "44 Jones lane", 'address2': "C/O Jean",
+    return [{'id': 0, 'name': 'Fred', 'age': 22, 'member': False, 'address1': "44 Jones lane", 'address2': "C/O Jean",
              'city': 'Melbourne', 'zip': '33458', 'state': 'VIC', 'phone': '1234567890', 'email': 'email@email.com'},
-            {'name': 'Peter', 'age': 76, 'member': True, 'address1': "22 Honeysuckle Avenue", 'address2': "C/O Medelle",
+            {'id': 0, 'name': 'Peter', 'age': 76, 'member': True, 'address1': "22 Honeysuckle Avenue", 'address2': "C/O Medelle",
              'city': 'Melbourne', 'zip': '33454', 'state': 'NSW', 'phone': '1234567890', 'email': 'email@email.com'},
-            {'name': 'Beltran', 'age': 22, 'member': True, 'address1': "223 Brigard Stree", 'address2': "C/O Arther",
+            {'id': 0, 'name': 'Beltran', 'age': 22, 'member': True, 'address1': "223 Brigard Stree", 'address2': "C/O Arther",
              'city': 'Melbourne', 'zip': '33452', 'state': 'WA', 'phone': '1234567890', 'email': 'email@email.com'},
-            {'name': 'Anne', 'age': 4, 'member': False, 'address1': "4 The Alter Place", 'address2': "C/O Anne",
+            {'id': 0, 'name': 'Anne', 'age': 4, 'member': False, 'address1': "4 The Alter Place", 'address2': "C/O Anne",
              'city': 'Melbourne', 'zip': '33451', 'state': 'TAS', 'phone': '1234567890', 'email': 'email@email.com'}]
 
 def add_record():
-    return {'name': '', 'age': None, 'member': False, 'address1': "", 'address2': "",
+    return {'id': 0, 'name': '', 'age': None, 'member': False, 'address1': "", 'address2': "",
              'city': '', 'zip': '', 'state': '', 'phone': '', 'email': ''}
 
 class PlaygroundPanel(wx.Panel):
@@ -85,15 +85,31 @@ class PlaygroundPanel(wx.Panel):
 
     def save(self, command, more):
         if more is self:
-            self.TransferDataFromWindow()
-            selected_item = self.list.GetSelection()
-            record = self.listspec.model.ItemToObject(selected_item)
-            print(record)
+            if self.form.view_state == ViewState.adding:
+                record = add_record()
+                self.form.bind(record)
+            #else:
+            #    selected_item = self.list.GetSelection()
+            #    record = self.listspec.model.ItemToObject(selected_item)
+            is_valid = self.Validate()
+            if is_valid:
+                # save to backend
+                self.TransferDataFromWindow()
+                if self.form.view_state != ViewState.adding:
+                    selected_item = self.list.GetSelection()
+                    record = self.listspec.model.ItemToObject(selected_item)
+
+                if self.form.view_state == ViewState.adding:
+                    self.listspec.data.append(record)
+                    self.listspec.model.ItemAdded(dv.NullDataViewItem, self.listspec.model.ObjectToItem(record))
+
+                self.form.set_viewstate(ViewState.loaded)
+                # record has been updated, now save it
+                print(record)
 
     def add(self, command, more):
         """ prepares for an add by asking to save changes if dirty, then cleaning out the controls for new entry """
         if more is self:
-            self.listspec.model.adding = True
             self.form.set_viewstate(ViewState.adding)
 
     def delete(self, command, more):
