@@ -8,13 +8,15 @@ from SettingsDialogImp import SettingsDialogImp
 from fn_app import make_icon
 import logging
 import playground
+import copyfiles
 
 
-wx.ID_QUIT = 1000
+#wx.ID_QUIT = 1000
 wx.ID_ADD_SHELF = 1001
 wx.ID_DELETE_SHELF = 1002
 wx.ID_EDIT_SHELF = 1003
 wx.ID_ADDPUBLICATION = 1004
+wx.ID_VIEW_COPYFILES = 1005
 
 
 class AppFrame(wx.Frame):
@@ -74,6 +76,9 @@ class AppFrame(wx.Frame):
     def on_delete(self, event):
         active_page = self.m_auiShelf.GetCurrentPage()
         py.dispatcher.send(signal=c.SIGNAL_DELETE, sender=self, command=c.COMMAND_DELETE, more=active_page)
+
+    def on_copyfiles(self, event):
+        self.m_auiShelf.AddPage(copyfiles.CopyFilesPanel(self), "Copy Files", True)
 
     def FileExportOnMenuSelection(self, event):
         event.Skip()
@@ -189,7 +194,7 @@ class AppFrame(wx.Frame):
                                         wx.ITEM_NORMAL)
         self.menuFileNew.Enable(False)
         self.menuFileSave = wx.MenuItem(self.menuFile, wx.ID_SAVE, u"&Save", wx.EmptyString, wx.ITEM_NORMAL)
-        self.menuFileQuit = wx.MenuItem(self.menuFile, wx.ID_QUIT, u"&Quit", wx.EmptyString,
+        self.menuFileQuit = wx.MenuItem(self.menuFile, wx.ID_EXIT, u"&Quit", wx.EmptyString,
                                         wx.ITEM_NORMAL)
         self.menuFile.Append(self.menuFileNew)
         self.menuFile.Append(self.menuFileSave)
@@ -209,17 +214,25 @@ class AppFrame(wx.Frame):
                                             wx.ITEM_NORMAL)
         self.menuEdit.Append(self.menuEditSettings)
 
-        self.mnuEditPlayground = wx.MenuItem(self.menuEdit, wx.ID_ANY, u"Playground",
-                                             wx.EmptyString, wx.ITEM_NORMAL)
-        self.menuEdit.Append(self.mnuEditPlayground)
 
         self.m_menubar1.Append(self.menuEdit, u"&Edit")
+
+        menuView = wx.Menu()
+        menuViewCopyFiles = wx.MenuItem(menuView, wx.ID_VIEW_COPYFILES, '&Copy Files')
+        self.m_menubar1.Append(menuView, "&View")
+        self.Bind(wx.EVT_MENU, self.on_copyfiles, id=menuViewCopyFiles.GetId())
+
+        self.mnuEditPlayground = wx.MenuItem(menuView, wx.ID_ANY, u"Playground",
+                                             wx.EmptyString, wx.ITEM_NORMAL)
+        menuView.Append(self.mnuEditPlayground)
+        menuView.Append(menuViewCopyFiles)
 
         accelerator_tbl = wx.AcceleratorTable([
             (wx.ACCEL_CTRL, ord('Q'), self.menuFileQuit.GetId()),
             (wx.ACCEL_CTRL, ord('S'), self.menuFileSave.GetId()),
             (wx.ACCEL_CTRL, ord('N'), self.menuFileNew.GetId()),
             (wx.ACCEL_CTRL, ord('P'), self.mnuEditPlayground.GetId()),
+            (wx.ACCEL_CTRL, ord('C'), menuViewCopyFiles.GetId()),
             (wx.ACCEL_NORMAL, wx.WXK_DELETE, self.menuEditDelete.GetId())
         ])
         self.AcceleratorTable = accelerator_tbl
@@ -237,6 +250,7 @@ class AppFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.menuEditSettingsOnMenuSelection, id=self.menuEditSettings.GetId())
         self.Bind(wx.EVT_MENU, self.handle_menu_playground, id=self.mnuEditPlayground.GetId())
         self.Bind(wx.EVT_MENU, self.on_delete, id=self.menuEditDelete.GetId())
+
         self.m_auiShelf.Bind(wx.aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.OnNotebookPageChanged)
         self.m_auiShelf.Bind(wx.aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.OnNotebookPageClose)
         self.m_btnAddShelf.Bind(wx.EVT_BUTTON, self.AddShelfOnButtonClick)

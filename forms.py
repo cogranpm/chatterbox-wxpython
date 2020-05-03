@@ -333,19 +333,41 @@ class CheckboxField(EditFieldSpec):
 def edit_line(labelstr, edit_fields):
     return FormLineSpec(labelstr, edit_fields)
 
+
+
 def form(parent, name, title, helpstr, edit_lines):
     return FormSpec(parent, name, title, helpstr, edit_lines)
+
+
+def label(parent, caption, name):
+    lbl = wx.StaticText(parent, id=wx.ID_ANY, label=caption, name=name)
+    return lbl
 
 def tool_button(parent, id, text, handler):
     btn = wx.Button(parent, id, text, wx.DefaultPosition, wx.Size(40, 40), 0)
     btn.Bind(wx.EVT_BUTTON, handler)
     return btn
 
+def command_button(parent, id, text, handler):
+    btn = wx.Button(parent, id, text, wx.DefaultPosition, wx.Size(220, 30), 0)
+    bind_button(btn, handler)
+    return btn
+
+def single_edit(parent):
+    return wx.TextCtrl(parent, -1, "", size=(-1, -1))
+
+def multi_edit(parent):
+    return wx.TextCtrl(parent, -1, "",
+                       style=wx.TE_MULTILINE|wx.TE_PROCESS_ENTER)
+
 
 def hsizer(items):
     sizer = wx.BoxSizer(wx.HORIZONTAL)
+    flag = wx.SizerFlags().Expand()
     for item in items:
-        sizer.Add(item)
+        if type(item) == wx.TextCtrl:
+            flag.Proportion(1)
+        sizer.Add(item, flag)
     return sizer
 
 
