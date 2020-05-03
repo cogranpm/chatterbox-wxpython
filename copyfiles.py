@@ -4,6 +4,8 @@ import chatterbox_constants as c
 import wx.py as py
 from models import ViewState
 import forms as frm
+
+
 class CopyFilesPanel(wx.Panel):
 
     def __init__(self, parent=None):
@@ -20,6 +22,8 @@ class CopyFilesPanel(wx.Panel):
         self.txt_dest = frm.single_edit(self)
         btn_copy = frm.command_button(self, wx.ID_ANY, "Copy", self.on_copy)
         self.txt_feedback = frm.multi_edit(self)
+        self.txt_source.SetValue(c.read_config(c.COPY_FILE_SOURCE_DIR))
+        self.txt_dest.SetValue(c.read_config(c.COPY_FILE_DEST_DIR))
 
         source_sizer = frm.hsizer([btn_source, self.txt_source])
         dest_sizer = frm.hsizer([btn_dest, self.txt_dest])
@@ -34,19 +38,20 @@ class CopyFilesPanel(wx.Panel):
         self.SetSizer(main_sizer)
 
     def on_copy(self, event):
-        self.txt_feedback.AppendText("I clicked copy")
+        self.txt_feedback.AppendText("I clicked copy\n")
+        self.txt_feedback.AppendText("Source %s \n" % self.txt_source.Value)
 
     def on_source(self, event):
         path, modal_result = self.select_folder("Choose Source Directory:")
         if modal_result == wx.ID_OK:
-            self.source_path = path
-            self.txt_source.SetValue(self.source_path)
+            self.txt_source.SetValue(path)
+            c.set_config(c.COPY_FILE_SOURCE_DIR, path)
 
     def on_dest(self, event):
         path, modal_result = self.select_folder("Choose Desintation Directory:")
         if modal_result == wx.ID_OK:
-            self.dest_path = path
-            self.txt_dest.SetValue(self.dest_path)
+            self.txt_dest.SetValue(path)
+            c.set_config(c.COPY_FILE_DEST_DIR, path)
 
     def select_folder(self, label: str):
         path = ""

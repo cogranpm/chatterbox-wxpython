@@ -34,6 +34,7 @@ class ChatterboxApp(wx.App):
 
     def OnExit(self) -> int:
         # cleanup tasks here
+        cc.write_config()
         return 0
 
 

@@ -1,3 +1,5 @@
+from configobj import ConfigObj
+
 APPLICATION_NAME = "chatterbox"
 CONFIG_KEY_DATA_DIRECTORY = "datadirectory"
 PATH_AUDIO_DIR = "Audio"
@@ -17,4 +19,19 @@ COMMAND_ADDING = 'adding'
 COMMAND_EMPTY = 'empty'
 COMMAND_LOADED = 'loaded'
 COMMAND_VIEW_ACTIVATED = 'activated'
+
+COPY_FILE_SOURCE_DIR = 'copy_file_source'
+COPY_FILE_DEST_DIR = 'copy_file_dest'
+
+
+config = ConfigObj("chatterbox.ini")
+
+def read_config(key: str):
+    return config[key]
+
+def set_config(key: str, value):
+    config[key] = value
+
+def write_config():
+    config.write()
 
