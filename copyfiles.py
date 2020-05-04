@@ -1,4 +1,5 @@
 import wx
+import os
 import logging
 import chatterbox_constants as c
 import wx.py as py
@@ -40,22 +41,34 @@ class CopyFilesPanel(wx.Panel):
     def on_copy(self, event):
         self.txt_feedback.AppendText("I clicked copy\n")
         self.txt_feedback.AppendText("Source %s \n" % self.txt_source.Value)
+        source_path = self.txt_source.Value.strip()
+        if not os.path.isdir(self.txt_source.Value):
+            self.txt_feedback.AppendText("Path %s does not exist: " % source_path)
+
+        for path, files, dirs in os.walk(source_path):
+            pass
+            #self.txt_feedback.AppendText("%s\n" % path)
+            #for name in files:
+
+
 
     def on_source(self, event):
-        path, modal_result = self.select_folder("Choose Source Directory:")
+        path, modal_result = self.select_folder("Choose Source Directory:", self.txt_source.Value)
         if modal_result == wx.ID_OK:
             self.txt_source.SetValue(path)
             c.set_config(c.COPY_FILE_SOURCE_DIR, path)
 
     def on_dest(self, event):
-        path, modal_result = self.select_folder("Choose Desintation Directory:")
+        path, modal_result = self.select_folder("Choose Destination Directory:", self.txt_dest.Value)
         if modal_result == wx.ID_OK:
             self.txt_dest.SetValue(path)
             c.set_config(c.COPY_FILE_DEST_DIR, path)
 
-    def select_folder(self, label: str):
+    def select_folder(self, label: str, default: str = None):
+        if default is None:
+            default = os.getcwd()
         path = ""
-        dlg = wx.DirDialog(self, label,
+        dlg = wx.DirDialog(self, label, defaultPath=default,
                            style=wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST)
         modal_result = dlg.ShowModal()
         if modal_result == wx.ID_OK:
