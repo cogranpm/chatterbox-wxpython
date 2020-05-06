@@ -1,6 +1,7 @@
 import wx
 import os
 from pathlib import Path, PurePath
+import shutil
 import logging
 import chatterbox_constants as c
 import wx.py as py
@@ -39,6 +40,20 @@ class CopyFilesPanel(wx.Panel):
         main_sizer.Add(feedback_sizer, wx.SizerFlags().Expand().Proportion(1))
         self.SetSizer(main_sizer)
 
+    def get_dest_folder(self, foldername, subfolder, num_parts_in_sourcepath
+                        , source_folder, dest_path):
+        full_source = os.path.join(foldername, subfolder)
+        full_source_pure = PurePath(full_source)
+        seperated_source = os.sep.join(
+            full_source_pure.parts[num_parts_in_sourcepath: len(full_source_pure.parts)])
+        last_part_prefixed = os.path.join(dest_path, source_folder, seperated_source)
+        return last_part_prefixed
+
+
+    def copy_file(self, source, target):
+        if not os.path.exists(target):
+            shutil.copy(source, target)
+
     def on_copy(self, event):
         self.txt_feedback.Clear()
         self.txt_feedback.AppendText("I clicked copy\n")
@@ -63,26 +78,32 @@ class CopyFilesPanel(wx.Panel):
         for foldername, subfolders, filenames in os.walk(source_path):
             #self.txt_feedback.AppendText("%s\n" % path)
             for name in filenames:
-                all_files.append(os.path.join(foldername, name))
+                dest_file = self.get_dest_folder(foldername, name
+                                                     , num_parts, last_part, dest_path)
+                source_file = os.path.join(foldername, name)
+                all_files.append((source_file, dest_file))
 
             for subfolder in subfolders:
-                full_source = os.path.join(foldername, subfolder)
-                full_source_pure = PurePath(full_source)
-                seperated_source = os.sep.join(full_source_pure.parts[num_parts : len(full_source_pure.parts)])
-                last_part_prefixed = os.path.join(dest_path, last_part, seperated_source)
-                all_dirs.append(last_part_prefixed)
+                all_dirs.append(self.get_dest_folder(foldername, subfolder
+                                                     , num_parts, last_part, dest_path))
 
 
         all_dir_names = "\n".join(all_dirs)
-        all_file_names = "\n".join(all_files)
         self.txt_feedback.AppendText("%i\n" % len(all_files))
         self.txt_feedback.AppendText("%i\n" % len(all_dirs))
         self.txt_feedback.AppendText("%s\n" % all_dir_names)
-        # self.txt_feedback.AppendText("%s\n" % all_file_names)
 
-        # for dir in all_dir_names:
-            # Path(dir).mkdir(parents=True, exist_ok=True)
+        for dir in all_dirs:
+            Path(dir).mkdir(parents=True, exist_ok=True)
 
+        #for source, target in all_files:
+            #shutil.copy(source, target)
+            #print("%s::%s" % (source, target))
+
+        self.copy_file(all_files[0][0], all_files[0][1])
+
+
+        self.txt_feedback.AppendText("Complete\n")
 
 
     def on_source(self, event):
