@@ -1,5 +1,6 @@
 import wx
 import os
+from pathlib import Path, PurePath
 import logging
 import chatterbox_constants as c
 import wx.py as py
@@ -16,12 +17,12 @@ class CopyFilesPanel(wx.Panel):
         self.dest_path = ''
         main_sizer = wx.BoxSizer(wx.VERTICAL)
 
-        btn_source = frm.command_button(self, wx.ID_ANY, "Source Dir", self.on_source)
+        btn_source = frm.command_button(self, wx.ID_ANY, "&Source Dir", self.on_source)
         self.txt_source = frm.single_edit(self)
 
-        btn_dest = frm.command_button(self, wx.ID_ANY, "Dest Dir", self.on_dest)
+        btn_dest = frm.command_button(self, wx.ID_ANY, "&Dest Dir", self.on_dest)
         self.txt_dest = frm.single_edit(self)
-        btn_copy = frm.command_button(self, wx.ID_ANY, "Copy", self.on_copy)
+        btn_copy = frm.command_button(self, wx.ID_ANY, "&Copy", self.on_copy)
         self.txt_feedback = frm.multi_edit(self)
         self.txt_source.SetValue(c.read_config(c.COPY_FILE_SOURCE_DIR))
         self.txt_dest.SetValue(c.read_config(c.COPY_FILE_DEST_DIR))
@@ -39,16 +40,48 @@ class CopyFilesPanel(wx.Panel):
         self.SetSizer(main_sizer)
 
     def on_copy(self, event):
+        self.txt_feedback.Clear()
         self.txt_feedback.AppendText("I clicked copy\n")
         self.txt_feedback.AppendText("Source %s \n" % self.txt_source.Value)
         source_path = self.txt_source.Value.strip()
-        if not os.path.isdir(self.txt_source.Value):
+        if not os.path.isdir(source_path):
             self.txt_feedback.AppendText("Path %s does not exist: " % source_path)
+            return
 
-        for path, files, dirs in os.walk(source_path):
-            pass
+        dest_path = self.txt_dest.Value.strip()
+        if not os.path.isdir(dest_path):
+            self.txt_feedback.AppendText("Path %s does not exist: " % dest_path)
+            return
+
+        all_files = []
+        all_dirs = []
+        source_path_pure = PurePath(source_path)
+
+        last_part = source_path_pure.parts[-1]
+        num_parts = len(source_path_pure.parts)
+
+        for foldername, subfolders, filenames in os.walk(source_path):
             #self.txt_feedback.AppendText("%s\n" % path)
-            #for name in files:
+            for name in filenames:
+                all_files.append(os.path.join(foldername, name))
+
+            for subfolder in subfolders:
+                full_source = os.path.join(foldername, subfolder)
+                full_source_pure = PurePath(full_source)
+                seperated_source = os.sep.join(full_source_pure.parts[num_parts : len(full_source_pure.parts)])
+                last_part_prefixed = os.path.join(dest_path, last_part, seperated_source)
+                all_dirs.append(last_part_prefixed)
+
+
+        all_dir_names = "\n".join(all_dirs)
+        all_file_names = "\n".join(all_files)
+        self.txt_feedback.AppendText("%i\n" % len(all_files))
+        self.txt_feedback.AppendText("%i\n" % len(all_dirs))
+        self.txt_feedback.AppendText("%s\n" % all_dir_names)
+        # self.txt_feedback.AppendText("%s\n" % all_file_names)
+
+        # for dir in all_dir_names:
+            # Path(dir).mkdir(parents=True, exist_ok=True)
 
 
 
