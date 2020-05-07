@@ -2,6 +2,8 @@ import wx
 import os
 from pathlib import Path, PurePath
 import shutil
+import threading, _thread
+import time
 import logging
 import chatterbox_constants as c
 import wx.py as py
@@ -9,11 +11,28 @@ from models import ViewState
 import forms as frm
 
 
+
+def copy_file(source, target):
+    if not os.path.exists(target):
+        shutil.copy2(source, target)
+
+def copy_files(files, parent):
+    for file_def in files:
+        if parent.is_cancelled:
+            wx.CallAfter(parent.post_feedback, "cancelled")
+            return
+        src, dest = file_def
+        copy_file(src, dest)
+        time.sleep(0.01)
+        wx.CallAfter(parent.post_feedback, "copied " + src)
+    wx.CallAfter(parent.post_feedback, "Finished")
+
+
 class CopyFilesPanel(wx.Panel):
 
     def __init__(self, parent=None):
         super().__init__(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
-
+        self.is_cancelled = False
         self.source_path = ''
         self.dest_path = ''
         main_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -24,6 +43,7 @@ class CopyFilesPanel(wx.Panel):
         btn_dest = frm.command_button(self, wx.ID_ANY, "&Dest Dir", self.on_dest)
         self.txt_dest = frm.single_edit(self)
         btn_copy = frm.command_button(self, wx.ID_ANY, "&Copy", self.on_copy)
+        btn_cancel = frm.command_button(self, wx.ID_ANY, "Cance&l", self.on_cancel)
         self.txt_feedback = frm.multi_edit(self)
         self.txt_source.SetValue(c.read_config(c.COPY_FILE_SOURCE_DIR))
         self.txt_dest.SetValue(c.read_config(c.COPY_FILE_DEST_DIR))
@@ -32,6 +52,7 @@ class CopyFilesPanel(wx.Panel):
         dest_sizer = frm.hsizer([btn_dest, self.txt_dest])
         feedback_sizer = frm.vsizer()
         feedback_sizer.Add(btn_copy, wx.SizerFlags())
+        feedback_sizer.Add(btn_cancel, wx.SizerFlags())
         feedback_sizer.Add(self.txt_feedback, wx.SizerFlags(1).Expand())
         source_flags = wx.SizerFlags().Expand()
 
@@ -50,9 +71,11 @@ class CopyFilesPanel(wx.Panel):
         return last_part_prefixed
 
 
-    def copy_file(self, source, target):
-        if not os.path.exists(target):
-            shutil.copy(source, target)
+    def post_feedback(self, message: str):
+        self.txt_feedback.AppendText(message + '\n')
+
+    def on_cancel(self):
+        self.is_cancelled = True
 
     def on_copy(self, event):
         self.txt_feedback.Clear()
@@ -60,12 +83,12 @@ class CopyFilesPanel(wx.Panel):
         self.txt_feedback.AppendText("Source %s \n" % self.txt_source.Value)
         source_path = self.txt_source.Value.strip()
         if not os.path.isdir(source_path):
-            self.txt_feedback.AppendText("Path %s does not exist: " % source_path)
+            self.post_feedback("Path %s does not exist: " % source_path)
             return
 
         dest_path = self.txt_dest.Value.strip()
         if not os.path.isdir(dest_path):
-            self.txt_feedback.AppendText("Path %s does not exist: " % dest_path)
+            self.post_feedback("Path %s does not exist: " % dest_path)
             return
 
         all_files = []
@@ -87,23 +110,21 @@ class CopyFilesPanel(wx.Panel):
                 all_dirs.append(self.get_dest_folder(foldername, subfolder
                                                      , num_parts, last_part, dest_path))
 
+        self.post_feedback("Files: %i" % len(all_files))
+        self.post_feedback("Directories: %i" % len(all_dirs))
 
-        all_dir_names = "\n".join(all_dirs)
-        self.txt_feedback.AppendText("%i\n" % len(all_files))
-        self.txt_feedback.AppendText("%i\n" % len(all_dirs))
-        self.txt_feedback.AppendText("%s\n" % all_dir_names)
-
+        # make all the directories first
         for dir in all_dirs:
             Path(dir).mkdir(parents=True, exist_ok=True)
 
-        #for source, target in all_files:
-            #shutil.copy(source, target)
-            #print("%s::%s" % (source, target))
+        # _thread.start_new_thread(copy_files, (all_files[:2],))
+        # or
+        first_thread = threading.Thread(target=copy_files, args=(all_files[:3], self))
+        first_thread.start()
+        # could split up among multiple threads, makes it slower though
+        # _thread.start_new_thread(copy_files, (all_files[2:5],))
 
-        self.copy_file(all_files[0][0], all_files[0][1])
-
-
-        self.txt_feedback.AppendText("Complete\n")
+        self.post_feedback("Started copying..")
 
 
     def on_source(self, event):
