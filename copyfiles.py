@@ -11,6 +11,69 @@ from models import ViewState
 import forms as frm
 
 
+def cancel(parent):
+    wx.CallAfter(parent.post_feedback, "Cancelled by user")
+    _thread.exit()
+
+def get_dest_folder(foldername, subfolder, num_parts_in_sourcepath
+                    , source_folder, dest_path):
+    full_source = os.path.join(foldername, subfolder)
+    full_source_pure = PurePath(full_source)
+    seperated_source = os.sep.join(
+        full_source_pure.parts[num_parts_in_sourcepath: len(full_source_pure.parts)])
+    last_part_prefixed = os.path.join(dest_path, source_folder, seperated_source)
+    return last_part_prefixed
+
+def copy(parent, source_path, dest_path):
+    all_files = []
+    all_dirs = []
+    source_path_pure = PurePath(source_path)
+
+    last_part = source_path_pure.parts[-1]
+    num_parts = len(source_path_pure.parts)
+    if parent.is_cancelled:
+        cancel(parent)
+
+    for foldername, subfolders, filenames in os.walk(source_path):
+        # self.txt_feedback.AppendText("%s\n" % path)
+
+        if parent.is_cancelled:
+            cancel(parent)
+
+        for name in filenames:
+            if parent.is_cancelled:
+                cancel(parent)
+            dest_file = get_dest_folder(foldername, name
+                                             , num_parts, last_part, dest_path)
+            source_file = os.path.join(foldername, name)
+            all_files.append((source_file, dest_file))
+
+        for subfolder in subfolders:
+            if parent.is_cancelled:
+                cancel(parent)
+            all_dirs.append(get_dest_folder(foldername, subfolder
+                                                 , num_parts, last_part, dest_path))
+
+    wx.CallAfter(parent.post_feedback, "Files: %i" % len(all_files))
+    wx.CallAfter(parent.post_feedback, "Directories: %i" % len(all_dirs))
+
+    # make all the directories first
+    for dir in all_dirs:
+        try:
+            Path(dir).mkdir(parents=True, exist_ok=True)
+        except:
+            wx.CallAfter(parent.post_feedback, "Error creating directory: " + dir)
+
+
+    # _thread.start_new_thread(copy_files, (all_files[:2],))
+    # or
+    first_thread = threading.Thread(target=copy_files, args=(all_files[:3], parent))
+    first_thread.start()
+    # could split up among multiple threads, makes it slower though
+    # _thread.start_new_thread(copy_files, (all_files[2:5],))
+
+    wx.CallAfter(parent.post_feedback, "Started copying..")
+
 
 def copy_file(source, target):
     if not os.path.exists(target):
@@ -19,8 +82,7 @@ def copy_file(source, target):
 def copy_files(files, parent):
     for file_def in files:
         if parent.is_cancelled:
-            wx.CallAfter(parent.post_feedback, "Cancelled by user")
-            _thread.exit()
+            cancel(parent)
         src, dest = file_def
         copy_file(src, dest)
         time.sleep(0.01)
@@ -61,14 +123,7 @@ class CopyFilesPanel(wx.Panel):
         main_sizer.Add(feedback_sizer, wx.SizerFlags().Expand().Proportion(1))
         self.SetSizer(main_sizer)
 
-    def get_dest_folder(self, foldername, subfolder, num_parts_in_sourcepath
-                        , source_folder, dest_path):
-        full_source = os.path.join(foldername, subfolder)
-        full_source_pure = PurePath(full_source)
-        seperated_source = os.sep.join(
-            full_source_pure.parts[num_parts_in_sourcepath: len(full_source_pure.parts)])
-        last_part_prefixed = os.path.join(dest_path, source_folder, seperated_source)
-        return last_part_prefixed
+
 
 
     def post_feedback(self, message: str):
@@ -79,7 +134,6 @@ class CopyFilesPanel(wx.Panel):
 
     def on_copy(self, event):
         self.txt_feedback.Clear()
-        self.txt_feedback.AppendText("I clicked copy\n")
         self.txt_feedback.AppendText("Source %s \n" % self.txt_source.Value)
         source_path = self.txt_source.Value.strip()
         if not os.path.isdir(source_path):
@@ -91,40 +145,6 @@ class CopyFilesPanel(wx.Panel):
             self.post_feedback("Path %s does not exist: " % dest_path)
             return
 
-        all_files = []
-        all_dirs = []
-        source_path_pure = PurePath(source_path)
-
-        last_part = source_path_pure.parts[-1]
-        num_parts = len(source_path_pure.parts)
-
-        for foldername, subfolders, filenames in os.walk(source_path):
-            #self.txt_feedback.AppendText("%s\n" % path)
-            for name in filenames:
-                dest_file = self.get_dest_folder(foldername, name
-                                                     , num_parts, last_part, dest_path)
-                source_file = os.path.join(foldername, name)
-                all_files.append((source_file, dest_file))
-
-            for subfolder in subfolders:
-                all_dirs.append(self.get_dest_folder(foldername, subfolder
-                                                     , num_parts, last_part, dest_path))
-
-        self.post_feedback("Files: %i" % len(all_files))
-        self.post_feedback("Directories: %i" % len(all_dirs))
-
-        # make all the directories first
-        for dir in all_dirs:
-            Path(dir).mkdir(parents=True, exist_ok=True)
-
-        # _thread.start_new_thread(copy_files, (all_files[:2],))
-        # or
-        first_thread = threading.Thread(target=copy_files, args=(all_files[:3], self))
-        first_thread.start()
-        # could split up among multiple threads, makes it slower though
-        # _thread.start_new_thread(copy_files, (all_files[2:5],))
-
-        self.post_feedback("Started copying..")
 
 
     def on_source(self, event):
