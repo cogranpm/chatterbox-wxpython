@@ -19,8 +19,8 @@ def copy_file(source, target):
 def copy_files(files, parent):
     for file_def in files:
         if parent.is_cancelled:
-            wx.CallAfter(parent.post_feedback, "cancelled")
-            return
+            wx.CallAfter(parent.post_feedback, "Cancelled by user")
+            _thread.exit()
         src, dest = file_def
         copy_file(src, dest)
         time.sleep(0.01)
@@ -74,7 +74,7 @@ class CopyFilesPanel(wx.Panel):
     def post_feedback(self, message: str):
         self.txt_feedback.AppendText(message + '\n')
 
-    def on_cancel(self):
+    def on_cancel(self, event):
         self.is_cancelled = True
 
     def on_copy(self, event):
