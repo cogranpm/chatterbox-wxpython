@@ -51,18 +51,18 @@ def copy(parent, source_path, dest_path):
         for subfolder in subfolders:
             if parent.is_cancelled:
                 cancel(parent)
-            all_dirs.append(get_dest_folder(foldername, subfolder
-                                                 , num_parts, last_part, dest_path))
-
-    wx.CallAfter(parent.post_feedback, "Files: %i" % len(all_files))
-    wx.CallAfter(parent.post_feedback, "Directories: %i" % len(all_dirs))
+            target_folder_name = get_dest_folder(foldername, subfolder, num_parts, last_part, dest_path)
+            if not os.path.exists(target_folder_name):
+                all_dirs.append(target_folder_name)
 
     # make all the directories first
+    wx.CallAfter(parent.post_feedback, "Creating Directories %i of %i" % (1, len(all_dirs)))
     for dir in all_dirs:
         try:
             Path(dir).mkdir(parents=True, exist_ok=True)
-        except:
-            wx.CallAfter(parent.post_feedback, "Error creating directory: " + dir)
+        except Exception as err :
+            wx.CallAfter(parent.post_feedback, "Error creating directory: " + dir
+                         + " Error: " + err)
 
 
     # _thread.start_new_thread(copy_files, (all_files[:2],))
@@ -72,12 +72,14 @@ def copy(parent, source_path, dest_path):
     # could split up among multiple threads, makes it slower though
     # _thread.start_new_thread(copy_files, (all_files[2:5],))
 
-    wx.CallAfter(parent.post_feedback, "Started copying..")
-    copy_files(all_files[:3], parent)
+    wx.CallAfter(parent.post_feedback, "Copying Files: %i of %i" % (1, len(all_files)))
+    copy_files(all_files[:700], parent)
+    wx.CallAfter(parent.post_feedback, "Finished")
 
 
-def copy_file(source, target):
+def copy_file(parent, source, target):
     if not os.path.exists(target):
+        wx.CallAfter(parent.post_feedback, "copied " + source)
         shutil.copy2(source, target)
 
 def copy_files(files, parent):
@@ -85,10 +87,8 @@ def copy_files(files, parent):
         if parent.is_cancelled:
             cancel(parent)
         src, dest = file_def
-        copy_file(src, dest)
+        copy_file(parent, src, dest)
         time.sleep(0.01)
-        wx.CallAfter(parent.post_feedback, "copied " + src)
-    wx.CallAfter(parent.post_feedback, "Finished")
 
 
 class CopyFilesPanel(wx.Panel):
@@ -135,7 +135,7 @@ class CopyFilesPanel(wx.Panel):
 
     def on_copy(self, event):
         self.txt_feedback.Clear()
-        self.txt_feedback.AppendText("Source %s \n" % self.txt_source.Value)
+
         source_path = self.txt_source.Value.strip()
         if not os.path.isdir(source_path):
             self.post_feedback("Path %s does not exist: " % source_path)
@@ -146,6 +146,7 @@ class CopyFilesPanel(wx.Panel):
             self.post_feedback("Path %s does not exist: " % dest_path)
             return
 
+        self.txt_feedback.AppendText("Locating files in %s \n" % self.txt_source.Value)
         first_thread = threading.Thread(target=copy, args=(self, source_path, dest_path))
         first_thread.start()
 
