@@ -67,12 +67,13 @@ def copy(parent, source_path, dest_path):
 
     # _thread.start_new_thread(copy_files, (all_files[:2],))
     # or
-    first_thread = threading.Thread(target=copy_files, args=(all_files[:3], parent))
-    first_thread.start()
+    #first_thread = threading.Thread(target=copy_files, args=(all_files[:3], parent))
+    #first_thread.start()
     # could split up among multiple threads, makes it slower though
     # _thread.start_new_thread(copy_files, (all_files[2:5],))
 
     wx.CallAfter(parent.post_feedback, "Started copying..")
+    copy_files(all_files[:3], parent)
 
 
 def copy_file(source, target):
@@ -145,6 +146,8 @@ class CopyFilesPanel(wx.Panel):
             self.post_feedback("Path %s does not exist: " % dest_path)
             return
 
+        first_thread = threading.Thread(target=copy, args=(self, source_path, dest_path))
+        first_thread.start()
 
 
     def on_source(self, event):
