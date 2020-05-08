@@ -73,14 +73,17 @@ def copy(parent, source_path, dest_path):
     # _thread.start_new_thread(copy_files, (all_files[2:5],))
 
     wx.CallAfter(parent.post_feedback, "Copying Files: %i of %i" % (1, len(all_files)))
-    copy_files(all_files[:700], parent)
+    copy_files(all_files, parent)
     wx.CallAfter(parent.post_feedback, "Finished")
 
 
 def copy_file(parent, source, target):
     if not os.path.exists(target):
         wx.CallAfter(parent.post_feedback, "copied " + source)
-        shutil.copy2(source, target)
+        try:
+            shutil.copy2(source, target)
+        except IOError as e:
+            wx.CallAfter(parent.post_feedback, "Error: " + str(e))
 
 def copy_files(files, parent):
     for file_def in files:
