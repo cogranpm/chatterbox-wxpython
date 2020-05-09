@@ -4,6 +4,7 @@ from frames import AppFrame
 import chatterbox_constants as cc
 from fn_app import load_default_settings, set_default_paths, config_logging
 import logging
+import datastore
 
 class ChatterboxApp(wx.App):
 
@@ -27,6 +28,7 @@ class ChatterboxApp(wx.App):
             pass
 
         # load images
+        self.datastore = datastore.DataStore()
         self.frame = AppFrame()
         self.frame.Show()
         self.SetTopWindow(self.frame)
@@ -34,6 +36,7 @@ class ChatterboxApp(wx.App):
 
     def OnExit(self) -> int:
         # cleanup tasks here
+        wx.py.dispatcher.send(signal=cc.SIGNAL_SHUTDOWN, sender=self, command=None, more=None)
         cc.write_config()
         return 0
 

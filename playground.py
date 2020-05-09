@@ -12,6 +12,7 @@ from models import ViewState
 
 from typing import List, Dict
 
+collection_name = 'playground'
 name_column = 'name'
 age_column = 'age'
 member_column = 'member'
@@ -24,24 +25,32 @@ phone_column = 'phone'
 email_column = 'email'
 
 # contrived, to be removed
-def create_data():
-    return [{'id': 0, 'name': 'Fred', 'age': 22, 'member': False, 'address1': "44 Jones lane", 'address2': "C/O Jean",
-             'city': 'Melbourne', 'zip': '33458', 'state': 'VIC', 'phone': '1234567890', 'email': 'email@email.com'},
-            {'id': 0, 'name': 'Peter', 'age': 76, 'member': True, 'address1': "22 Honeysuckle Avenue", 'address2': "C/O Medelle",
-             'city': 'Melbourne', 'zip': '33454', 'state': 'NSW', 'phone': '1234567890', 'email': 'email@email.com'},
-            {'id': 0, 'name': 'Beltran', 'age': 22, 'member': True, 'address1': "223 Brigard Stree", 'address2': "C/O Arther",
-             'city': 'Melbourne', 'zip': '33452', 'state': 'WA', 'phone': '1234567890', 'email': 'email@email.com'},
-            {'id': 0, 'name': 'Anne', 'age': 4, 'member': False, 'address1': "4 The Alter Place", 'address2': "C/O Anne",
-             'city': 'Melbourne', 'zip': '33451', 'state': 'TAS', 'phone': '1234567890', 'email': 'email@email.com'}]
+def create_data(db):
+    records = db.all(collection_name)
+    list = []
+    for record in records:
+        list.append(record)
+    return list
+    # return [{'id': 0, 'name': 'Fred', 'age': 22, 'member': False, 'address1': "44 Jones lane", 'address2': "C/O Jean",
+    #          'city': 'Melbourne', 'zip': '33458', 'state': 'VIC', 'phone': '1234567890', 'email': 'email@email.com'},
+    #         {'id': 0, 'name': 'Peter', 'age': 76, 'member': True, 'address1': "22 Honeysuckle Avenue", 'address2': "C/O Medelle",
+    #          'city': 'Melbourne', 'zip': '33454', 'state': 'NSW', 'phone': '1234567890', 'email': 'email@email.com'},
+    #         {'id': 0, 'name': 'Beltran', 'age': 22, 'member': True, 'address1': "223 Brigard Stree", 'address2': "C/O Arther",
+    #          'city': 'Melbourne', 'zip': '33452', 'state': 'WA', 'phone': '1234567890', 'email': 'email@email.com'},
+    #         {'id': 0, 'name': 'Anne', 'age': 4, 'member': False, 'address1': "4 The Alter Place", 'address2': "C/O Anne",
+    #          'city': 'Melbourne', 'zip': '33451', 'state': 'TAS', 'phone': '1234567890', 'email': 'email@email.com'}]
 
 def add_record():
-    return {'id': 0, 'name': '', 'age': None, 'member': False, 'address1': "", 'address2': "",
+    return {'id': None, 'name': '', 'age': None, 'member': False, 'address1': "", 'address2': "",
              'city': '', 'zip': '', 'state': '', 'phone': '', 'email': ''}
 
 class PlaygroundPanel(wx.Panel):
 
     def __init__(self, parent=None):
         super().__init__(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        self.db = wx.GetApp().datastore
+        py.dispatcher.send(signal=c.SIGNAL_CREATE_ENTITY, sender=self,
+                           command=None, more=collection_name)
 
         # goes into base class
         main_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -60,7 +69,7 @@ class PlaygroundPanel(wx.Panel):
             ColumnSpec(state_column, ColumnType.str, 'State', 45, True),
             ColumnSpec(phone_column, ColumnType.str, 'Phone', 145, True),
             ColumnSpec(email_column, ColumnType.str, 'Email', 145, True)
-        ], create_data())
+        ], create_data(self.db))
 
         # base class
         self.list = self.listspec.build(self, self.list_selection_change)
@@ -101,17 +110,22 @@ class PlaygroundPanel(wx.Panel):
             if is_valid:
                 # save to backend
                 self.TransferDataFromWindow()
-                if self.form.view_state != ViewState.adding:
-                    selected_item = self.list.GetSelection()
-                    record = self.listspec.model.ItemToObject(selected_item)
 
                 if self.form.view_state == ViewState.adding:
                     self.listspec.data.append(record)
                     self.listspec.model.ItemAdded(dv.NullDataViewItem, self.listspec.model.ObjectToItem(record))
+                    self.db.add(collection_name, record)
+                    #py.dispatcher.send(signal=c.SIGNAL_STORE, sender=self, command=c.COMMAND_ADD,
+                    #                   more=record)
+                else:
+                    selected_item = self.list.GetSelection()
+                    record = self.listspec.model.ItemToObject(selected_item)
+                    self.db.update(collection_name, record)
+                    #py.dispatcher.send(signal=c.SIGNAL_STORE, sender=self, command=c.COMMAND_SAVE,
+                    #                   more=record)
 
                 self.form.set_viewstate(ViewState.loaded)
-                # record has been updated, now save it
-                print(record)
+
 
     def add(self, command, more):
         """ prepares for an add by asking to save changes if dirty, then cleaning out the controls for new entry """
