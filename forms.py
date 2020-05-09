@@ -403,3 +403,13 @@ def vsizer():
     sizer = wx.BoxSizer(wx.VERTICAL)
     return sizer
 
+def confirm_delete(parent):
+    dlg = wx.MessageDialog(parent, 'Delete, are you sure?',
+                           'Delete', wx.OK | wx.CANCEL | wx.CANCEL_DEFAULT | wx.ICON_EXCLAMATION)
+    result = dlg.ShowModal()
+    dlg.Destroy()
+    if result == wx.ID_OK:
+        return True
+    else:
+        return False
+

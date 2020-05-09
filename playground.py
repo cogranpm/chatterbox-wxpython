@@ -49,8 +49,9 @@ class PlaygroundPanel(wx.Panel):
     def __init__(self, parent=None):
         super().__init__(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         self.db = wx.GetApp().datastore
-        py.dispatcher.send(signal=c.SIGNAL_CREATE_ENTITY, sender=self,
-                           command=None, more=collection_name)
+        #py.dispatcher.send(signal=c.SIGNAL_CREATE_ENTITY, sender=self,
+        #                   command=None, more=collection_name)
+        self.db.create_entity(collection_name)
 
         # goes into base class
         main_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -134,10 +135,15 @@ class PlaygroundPanel(wx.Panel):
 
     def delete(self, command, more):
         if more is self:
-            self.listspec.model.ItemDeleted(dv.NullDataViewItem,
-            self.listspec.model.ObjectToItem(self.listspec.data[0]))
-            del (self.listspec.data[0])
-            self.form.set_viewstate(ViewState.empty)
+            selected_item = self.list.GetSelection()
+            if selected_item is not None:
+                if frm.confirm_delete(self):
+                    self.listspec.model.ItemDeleted(dv.NullDataViewItem, selected_item)
+                    record = self.listspec.model.ItemToObject(selected_item)
+                    self.db.remove(collection_name, record)
+                    # del (self.listspec.data[0])
+                    self.listspec.data.remove(record)
+                    self.form.set_viewstate(ViewState.empty)
 
     def list_selection_change(self, event: dv.DataViewEvent):
         # testing dispatcher stuff
