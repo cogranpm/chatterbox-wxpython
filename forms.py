@@ -330,22 +330,25 @@ class CheckboxField(EditFieldSpec):
 
 class FormDialog(wx.Dialog):
 
-    def __init__(self, parent, form: FormSpec):
-        super().__init__(parent, id=wx.ID_ANY, title=u"Form Demo", pos=wx.DefaultPosition,
+    def __init__(self, parent, title, record):
+        super().__init__(parent, id=wx.ID_ANY, title=title, pos=wx.DefaultPosition,
                            size=wx.Size(600, 800), style=wx.DEFAULT_DIALOG_STYLE | wx.WS_EX_VALIDATE_RECURSIVELY)
+        self.record = record
+        self.Bind(wx.EVT_INIT_DIALOG, self.OnInitDialog)
 
+
+    def build(self, form: FormSpec):
         self.SetSizeHints(wx.DefaultSize, wx.DefaultSize)
 
         main_sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(main_sizer)
 
-        panel = form.build(display_type=DisplayType.DIALOG, ok_handler=self.on_ok, cancel_handler=self.on_cancel)
+        form.build(display_type=DisplayType.DIALOG, ok_handler=self.on_ok, cancel_handler=self.on_cancel)
 
         self.Layout()
         self.Centre(wx.BOTH)
         main_sizer.Fit(self)
-        # Connect Events
-        self.Bind(wx.EVT_INIT_DIALOG, self.OnInitDialog)
+        self.TransferDataToWindow()
 
     def OnInitDialog(self, event):
         pass

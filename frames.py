@@ -9,6 +9,8 @@ from fn_app import make_icon
 import logging
 import playground
 import copyfiles
+from forms import FormSpec, FormDialog, FormLineSpec, edit_line, large, TextField
+from validators import not_empty, FieldValidator
 
 
 #wx.ID_QUIT = 1000
@@ -115,7 +117,16 @@ class AppFrame(wx.Frame):
         event.Skip()
 
     def AddShelfOnButtonClick(self, event):
-        event.Skip()
+        record = dict(name='fred')
+        dlg: FormDialog = FormDialog(self, "Add Shelf", record)
+        form: FormSpec = FormSpec(dlg, "frmDemo", "Shelf", "Add Shelf", [
+            edit_line("Name", [TextField("name", large(), validator=FieldValidator(record, "name", [not_empty]))])
+        ])
+        dlg.build(form)
+        result = dlg.ShowModal()
+        if result == wx.ID_OK:
+            print(record)
+
 
     def DeleteShelfOnButtonClick(self, event):
         event.Skip()
