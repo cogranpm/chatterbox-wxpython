@@ -23,10 +23,6 @@ class AppFrame(wx.Frame):
         self.setup()
         ico = wx.Icon('icons/disconnect2.ico', wx.BITMAP_TYPE_ICO)
         self.SetIcon(ico)
-        # self.m_btnEditShelf.SetBitmap(wx.Bitmap('icons/Edit.png', wx.BITMAP_TYPE_PNG))
-        self.m_btnEditShelf.SetBitmap(make_icon('Edit.png'))
-        self.m_btnAddShelf.SetBitmap(make_icon('Add.png'))
-        self.m_btnDeleteShelf.SetBitmap(make_icon('Cancel.png'))
         wx.py.dispatcher.connect(receiver=self.on_viewstate, signal=c.SIGNAL_VIEWSTATE)
         wx.py.dispatcher.connect(receiver=self.on_view_activated, signal=c.SIGNAL_VIEW_ACTIVATED)
         self.Bind(wx.EVT_UPDATE_UI, self.on_updateui)
@@ -249,9 +245,11 @@ class AppFrame(wx.Frame):
 
         self.m_auiShelf.Bind(wx.aui.EVT_AUINOTEBOOK_PAGE_CHANGED, self.OnNotebookPageChanged)
         self.m_auiShelf.Bind(wx.aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.OnNotebookPageClose)
-        self.m_btnAddShelf.Bind(wx.EVT_BUTTON, self.AddShelfOnButtonClick)
-        self.m_btnDeleteShelf.Bind(wx.EVT_BUTTON, self.DeleteShelfOnButtonClick)
-        self.m_btnEditShelf.Bind(wx.EVT_BUTTON, self.EditShelfOnButtonClick)
+
+        # self.m_btnAddShelf.Bind(wx.EVT_BUTTON, self.AddShelfOnButtonClick)
+        # self.m_btnDeleteShelf.Bind(wx.EVT_BUTTON, self.DeleteShelfOnButtonClick)
+        # self.m_btnEditShelf.Bind(wx.EVT_BUTTON, self.EditShelfOnButtonClick)
+
         self.btnAddSubject.Bind(wx.EVT_BUTTON, self.AddSubjectOnButtonClick)
         self.btnDeleteSubject.Bind(wx.EVT_BUTTON, self.DeleteSubjectOnButtonClick)
         self.btnEditSubject.Bind(wx.EVT_BUTTON, self.EditSubjectOnButtonClick)
@@ -279,51 +277,6 @@ class AppFrame(wx.Frame):
         self.pnlShelf = wx.Panel(self.m_splitter1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         bSizer5 = wx.BoxSizer(wx.VERTICAL)
 
-        self.pnlShelfHeader = wx.Panel(self.pnlShelf, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
-        bSizer6 = wx.BoxSizer(wx.HORIZONTAL)
-
-        self.m_staticText5 = wx.StaticText(self.pnlShelfHeader, wx.ID_ANY, u"Shelves", wx.DefaultPosition,
-                                           wx.DefaultSize, 0)
-        self.m_staticText5.Wrap(-1)
-
-        bSizer6.Add(self.m_staticText5, 0, wx.ALL, 5)
-
-        self.m_btnAddShelf = wx.Button(self.pnlShelfHeader, c.ID_ADD_SHELF, wx.EmptyString, wx.DefaultPosition,
-                                       wx.Size(20, 20), 0)
-        self.m_btnAddShelf.SetMaxSize(wx.Size(25, -1))
-
-        bSizer6.Add(self.m_btnAddShelf, 0, wx.ALIGN_LEFT, 5)
-
-        self.m_btnDeleteShelf = wx.Button(self.pnlShelfHeader, c.ID_DELETE_SHELF, wx.EmptyString, wx.DefaultPosition,
-                                          wx.Size(20, 20), 0)
-        self.m_btnDeleteShelf.Enable(False)
-        self.m_btnDeleteShelf.SetMaxSize(wx.Size(25, -1))
-
-        bSizer6.Add(self.m_btnDeleteShelf, 0, 0, 5)
-
-        self.m_btnEditShelf = wx.Button(self.pnlShelfHeader, c.ID_EDIT_SHELF, wx.EmptyString, wx.DefaultPosition,
-                                        wx.Size(20, 20), 0)
-        self.m_btnEditShelf.Enable(False)
-        self.m_btnEditShelf.SetMaxSize(wx.Size(60, -1))
-
-        bSizer6.Add(self.m_btnEditShelf, 0, 0, 5)
-
-        self.pnlShelfHeader.SetSizer(bSizer6)
-        self.pnlShelfHeader.Layout()
-        bSizer6.Fit(self.pnlShelfHeader)
-        bSizer5.Add(self.pnlShelfHeader, 0, 0, 5)
-
-        self.pnlShelfList = wx.Panel(self.pnlShelf, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
-        bSizer7 = wx.BoxSizer(wx.VERTICAL)
-
-
-        self.m_textCtrl1 = wx.TextCtrl(self.pnlShelfList, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0)
-        bSizer7.Add(self.m_textCtrl1, 0, wx.ALL, 5)
-
-        self.pnlShelfList.SetSizer(bSizer7)
-        self.pnlShelfList.Layout()
-        bSizer7.Fit(self.pnlShelfList)
-        bSizer5.Add(self.pnlShelfList, 1, wx.EXPAND, 5)
 
         self.pnlShelf.SetSizer(bSizer5)
         self.pnlShelf.Layout()
