@@ -8,17 +8,10 @@ from SettingsDialogImp import SettingsDialogImp
 from fn_app import make_icon
 import logging
 import playground
+import shelf
 import copyfiles
-from forms import FormSpec, FormDialog, FormLineSpec, edit_line, large, TextField
-from validators import not_empty, FieldValidator
 
 
-#wx.ID_QUIT = 1000
-wx.ID_ADD_SHELF = 1001
-wx.ID_DELETE_SHELF = 1002
-wx.ID_EDIT_SHELF = 1003
-wx.ID_ADDPUBLICATION = 1004
-wx.ID_VIEW_COPYFILES = 1005
 
 
 class AppFrame(wx.Frame):
@@ -98,16 +91,10 @@ class AppFrame(wx.Frame):
 
 
     def handle_menu_playground(self, event):
-        logging.warning("Playground")
-        # testing panel style crud
         self.m_auiShelf.AddPage(playground.PlaygroundPanel(self), "Playground", True)
 
-        # testing dialog style crud
-        # with playground.PlaygroundForm(self) as dlg:
-        #     if dlg.ShowModal() == wx.ID_OK:
-        #         # save the data perhaps
-        #         logging.warning("save the data here perhaps")
-        #         dlg.Close()
+    def handle_menu_shelf(self, event):
+        self.m_auiShelf.AddPage(shelf.ShelfPanel(self), "Shelf", True)
 
 
     def OnNotebookPageChanged(self, event):
@@ -117,16 +104,7 @@ class AppFrame(wx.Frame):
         event.Skip()
 
     def AddShelfOnButtonClick(self, event):
-        record = dict(name='fred')
-        dlg: FormDialog = FormDialog(self, "Add Shelf", record)
-        form: FormSpec = FormSpec(dlg, "frmDemo", "Shelf", "Add Shelf", [
-            edit_line("Name", [TextField("name", large(), validator=FieldValidator(record, "name", [not_empty]))])
-        ])
-        dlg.build(form)
-        result = dlg.ShowModal()
-        if result == wx.ID_OK:
-            print(record)
-
+        event.Skip()
 
     def DeleteShelfOnButtonClick(self, event):
         event.Skip()
@@ -229,20 +207,27 @@ class AppFrame(wx.Frame):
         self.m_menubar1.Append(self.menuEdit, u"&Edit")
 
         menuView = wx.Menu()
-        menuViewCopyFiles = wx.MenuItem(menuView, wx.ID_VIEW_COPYFILES, '&Copy Files')
         self.m_menubar1.Append(menuView, "&View")
+
+        menuViewCopyFiles = wx.MenuItem(menuView, c.ID_VIEW_COPYFILES, '&Copy Files')
         self.Bind(wx.EVT_MENU, self.on_copyfiles, id=menuViewCopyFiles.GetId())
 
         self.mnuEditPlayground = wx.MenuItem(menuView, wx.ID_ANY, u"Playground",
                                              wx.EmptyString, wx.ITEM_NORMAL)
+
+        menuViewShelf = wx.MenuItem(menuView, c.ID_VIEW_SHELF, '&Shelf')
+        self.Bind(wx.EVT_MENU, self.handle_menu_shelf, id=menuViewShelf.GetId())
+
         menuView.Append(self.mnuEditPlayground)
         menuView.Append(menuViewCopyFiles)
+        menuView.Append(menuViewShelf)
 
         accelerator_tbl = wx.AcceleratorTable([
             (wx.ACCEL_CTRL, ord('Q'), self.menuFileQuit.GetId()),
             (wx.ACCEL_CTRL, ord('S'), self.menuFileSave.GetId()),
             (wx.ACCEL_CTRL, ord('N'), self.menuFileNew.GetId()),
             (wx.ACCEL_CTRL, ord('P'), self.mnuEditPlayground.GetId()),
+            (wx.ACCEL_CTRL, ord('V'), menuViewShelf.GetId()),
             (wx.ACCEL_CTRL, ord('C'), menuViewCopyFiles.GetId()),
             (wx.ACCEL_NORMAL, wx.WXK_DELETE, self.menuEditDelete.GetId())
         ])
@@ -303,20 +288,20 @@ class AppFrame(wx.Frame):
 
         bSizer6.Add(self.m_staticText5, 0, wx.ALL, 5)
 
-        self.m_btnAddShelf = wx.Button(self.pnlShelfHeader, wx.ID_ADD_SHELF, wx.EmptyString, wx.DefaultPosition,
+        self.m_btnAddShelf = wx.Button(self.pnlShelfHeader, c.ID_ADD_SHELF, wx.EmptyString, wx.DefaultPosition,
                                        wx.Size(20, 20), 0)
         self.m_btnAddShelf.SetMaxSize(wx.Size(25, -1))
 
         bSizer6.Add(self.m_btnAddShelf, 0, wx.ALIGN_LEFT, 5)
 
-        self.m_btnDeleteShelf = wx.Button(self.pnlShelfHeader, wx.ID_DELETE_SHELF, wx.EmptyString, wx.DefaultPosition,
+        self.m_btnDeleteShelf = wx.Button(self.pnlShelfHeader, c.ID_DELETE_SHELF, wx.EmptyString, wx.DefaultPosition,
                                           wx.Size(20, 20), 0)
         self.m_btnDeleteShelf.Enable(False)
         self.m_btnDeleteShelf.SetMaxSize(wx.Size(25, -1))
 
         bSizer6.Add(self.m_btnDeleteShelf, 0, 0, 5)
 
-        self.m_btnEditShelf = wx.Button(self.pnlShelfHeader, wx.ID_EDIT_SHELF, wx.EmptyString, wx.DefaultPosition,
+        self.m_btnEditShelf = wx.Button(self.pnlShelfHeader, c.ID_EDIT_SHELF, wx.EmptyString, wx.DefaultPosition,
                                         wx.Size(20, 20), 0)
         self.m_btnEditShelf.Enable(False)
         self.m_btnEditShelf.SetMaxSize(wx.Size(60, -1))
@@ -447,7 +432,7 @@ class AppFrame(wx.Frame):
 
         bSizer10.Add(self.m_staticText6, 0, wx.ALL, 5)
 
-        self.btnAddPublication = wx.Button(self.pnlPublicationHeader, wx.ID_ADDPUBLICATION, wx.EmptyString,
+        self.btnAddPublication = wx.Button(self.pnlPublicationHeader, c.ID_ADDPUBLICATION, wx.EmptyString,
                                            wx.DefaultPosition, wx.Size(20, 20), 0)
         self.btnAddPublication.Enable(False)
         self.btnAddPublication.SetMaxSize(wx.Size(25, -1))

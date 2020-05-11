@@ -6,6 +6,7 @@ from models import ViewState
 import chatterbox_constants as c
 import wx
 import wx.py as py
+from fn_app import make_icon
 
 EditFieldWidth = Enum('EditFieldWidth', 'LARGE MEDIUM SMALL DEFAULT')
 DisplayType = Enum('DisplayType', 'DIALOG PANEL')
@@ -330,10 +331,11 @@ class CheckboxField(EditFieldSpec):
 
 class FormDialog(wx.Dialog):
 
-    def __init__(self, parent, title, record):
+    def __init__(self, parent, title, record, collection_name):
         super().__init__(parent, id=wx.ID_ANY, title=title, pos=wx.DefaultPosition,
                            size=wx.Size(600, 800), style=wx.DEFAULT_DIALOG_STYLE | wx.WS_EX_VALIDATE_RECURSIVELY)
         self.record = record
+        self.collection_name = collection_name
         self.Bind(wx.EVT_INIT_DIALOG, self.OnInitDialog)
 
 
@@ -374,15 +376,22 @@ def label(parent, caption, name):
     lbl = wx.StaticText(parent, id=wx.ID_ANY, label=caption, name=name)
     return lbl
 
-def tool_button(parent, id, text, handler):
-    btn = wx.Button(parent, id, text, wx.DefaultPosition, wx.Size(40, 40), 0)
-    btn.Bind(wx.EVT_BUTTON, handler)
+def generic_button(parent, id, text, handler, size, icon=None):
+    btn = wx.Button(parent, id, text, wx.DefaultPosition,size, 0)
+    bind_button(btn, handler)
+    if not icon is None:
+        btn.SetBitmap(make_icon(icon))
     return btn
 
+def panel_tool_button(parent, id, text, handler, icon):
+    return generic_button(parent, id, text, handler, wx.Size(20, 20), icon)
+
+def tool_button(parent, id, text, handler):
+    return generic_button(parent, id, text, handler, wx.Size(40, 40))
+
 def command_button(parent, id, text, handler):
-    btn = wx.Button(parent, id, text, wx.DefaultPosition, wx.Size(220, 30), 0)
-    bind_button(btn, handler)
-    return btn
+    return generic_button(parent, id, text, handler, wx.Size(220, 30))
+
 
 def single_edit(parent):
     return wx.TextCtrl(parent, -1, "", size=(-1, -1))

@@ -24,6 +24,19 @@ COMMAND_VIEW_ACTIVATED = 'activated'
 COPY_FILE_SOURCE_DIR = 'copy_file_source'
 COPY_FILE_DEST_DIR = 'copy_file_dest'
 
+COLLECTION_NAME_SHELF = 'shelf'
+
+
+ID_ADD_SHELF = 1001
+ID_DELETE_SHELF = 1002
+ID_EDIT_SHELF = 1003
+ID_ADDPUBLICATION = 1004
+ID_VIEW_COPYFILES = 1005
+ID_VIEW_SHELF = 1006
+
+ICON_EDIT = 'Edit.png'
+ICON_ADD = 'Add.png'
+ICON_CANCEL = 'Cancel.png'
 
 config = ConfigObj("chatterbox.ini")
 

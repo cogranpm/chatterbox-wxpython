@@ -24,7 +24,6 @@ zip_column = 'zip'
 phone_column = 'phone'
 email_column = 'email'
 
-# contrived, to be removed
 def create_data(db):
     records = db.all(collection_name)
     list = []
