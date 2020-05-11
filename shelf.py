@@ -50,30 +50,8 @@ class ShelfPanel(wx.Panel):
         main_sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(main_sizer)
 
-        shelf_header_panel = wx.Panel(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
-        shelf_caption = wx.StaticText(shelf_header_panel, wx.ID_ANY, u"Shelves", wx.DefaultPosition,
-                                           wx.DefaultSize, 0)
-        shelf_caption.Wrap(-1)
-        btn_add_shelf = frm.panel_tool_button(shelf_header_panel, c.ID_ADD_SHELF, wx.EmptyString,
-                                              self.add_shelf, c.ICON_ADD)
-
-        btn_add_shelf.SetMaxSize(wx.Size(25, -1))
-        btn_delete_shelf = wx.Button(shelf_header_panel, c.ID_DELETE_SHELF, wx.EmptyString, wx.DefaultPosition,
-                                          wx.Size(20, 20), 0)
-        btn_delete_shelf.Enable(False)
-        btn_delete_shelf.SetMaxSize(wx.Size(25, -1))
-        btn_edit_shelf = wx.Button(shelf_header_panel, c.ID_EDIT_SHELF, wx.EmptyString, wx.DefaultPosition,
-                                        wx.Size(20, 20), 0)
-        btn_edit_shelf.Enable(False)
-        btn_edit_shelf.SetMaxSize(wx.Size(60, -1))
-
-
-
-        header_sizer = frm.hsizer([shelf_caption, btn_add_shelf, btn_delete_shelf, btn_edit_shelf])
-        shelf_header_panel.SetSizer(header_sizer)
-        shelf_header_panel.Layout()
-        header_sizer.Fit(shelf_header_panel)
-        main_sizer.Add(shelf_header_panel, 0, 0, 5)
+        shelf_panel = frm.panel_header(self, "pnlShelf", "Shelf", self.add_shelf, self.delete_shelf, self.edit_shelf)
+        main_sizer.Add(shelf_panel, 0, 0, 5)
 
 
         # this should be parameter of the class perhaps
@@ -131,3 +109,9 @@ class ShelfPanel(wx.Panel):
         if result == wx.ID_OK:
             db = wx.GetApp().datastore
             db.add(c.COLLECTION_NAME_SHELF, record)
+
+    def delete_shelf(self, event):
+        pass
+
+    def edit_shelf(self, event):
+        pass

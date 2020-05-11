@@ -371,6 +371,8 @@ def edit_line(labelstr, edit_fields):
 def form(parent, name, title, helpstr, edit_lines):
     return FormSpec(parent, name, title, helpstr, edit_lines)
 
+def panel(parent, name):
+    return wx.Panel(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL, name)
 
 def label(parent, caption, name):
     lbl = wx.StaticText(parent, id=wx.ID_ANY, label=caption, name=name)
@@ -392,6 +394,25 @@ def tool_button(parent, id, text, handler):
 def command_button(parent, id, text, handler):
     return generic_button(parent, id, text, handler, wx.Size(220, 30))
 
+def panel_header(parent, name, caption, add_handler, delete_handler, edit_handler):
+    header_panel = panel(parent, name)
+    shelf_caption = label(header_panel, caption, "lbl" + name)
+    shelf_caption.Wrap(-1)
+    btn_add_shelf = panel_tool_button(header_panel, c.ID_ADD_SHELF, wx.EmptyString,
+                                      add_handler, c.ICON_ADD)
+
+    btn_delete_shelf = panel_tool_button(header_panel, c.ID_DELETE_SHELF, wx.EmptyString,
+                                         delete_handler, c.ICON_CANCEL)
+    btn_delete_shelf.Enable(False)
+    btn_edit_shelf = panel_tool_button(header_panel, c.ID_EDIT_SHELF, wx.EmptyString,
+                                       edit_handler, c.ICON_EDIT)
+    btn_edit_shelf.Enable(False)
+
+    header_sizer = hsizer([shelf_caption, btn_add_shelf, btn_delete_shelf, btn_edit_shelf])
+    header_panel.SetSizer(header_sizer)
+    header_panel.Layout()
+    header_sizer.Fit(header_panel)
+    return header_panel
 
 def single_edit(parent):
     return wx.TextCtrl(parent, -1, "", size=(-1, -1))

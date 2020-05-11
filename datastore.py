@@ -15,7 +15,7 @@ class DataStore:
         self.db = dataset.connect('sqlite:///store.db')
 
     def shutdown(self, command, more):
-        print(self.db.tables)
+        # print(self.db.tables)
         self.db.close()
 
     def create_entity(self, name):
