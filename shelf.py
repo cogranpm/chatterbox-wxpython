@@ -47,11 +47,15 @@ class ShelfPanel(wx.Panel):
         self.db.create_entity(collection_name)
 
         # goes into base class
-        main_sizer = wx.BoxSizer(wx.VERTICAL)
+        main_sizer = frm.vsizer()
         self.SetSizer(main_sizer)
+        splitter = frm.splitter(self)
 
-        shelf_panel = frm.panel_header(self, "pnlShelf", "Shelf", self.add_shelf, self.delete_shelf, self.edit_shelf)
-        main_sizer.Add(shelf_panel, 0, 0, 5)
+        shelf_panel = frm.panel(splitter, "pnlShelf")
+        shelf_panel_sizer = frm.vsizer()
+        shelf_panel.SetSizer(shelf_panel_sizer)
+        shelf_header_panel = frm.panel_header(shelf_panel, "pnlShelfHeader", "Shelf", self.add_shelf, self.delete_shelf, self.edit_shelf)
+        shelf_panel_sizer.Add(shelf_header_panel, 0, 0, 5)
 
 
         # this should be parameter of the class perhaps
@@ -61,14 +65,25 @@ class ShelfPanel(wx.Panel):
         ], create_data(self.db))
 
         # base class
-        self.list = self.listspec.build(self, self.list_selection_change)
+        self.list = self.listspec.build(shelf_panel, self.list_selection_change)
         wx.py.dispatcher.connect(receiver=self.save, signal=c.SIGNAL_SAVE)
         wx.py.dispatcher.connect(receiver=self.add, signal=c.SIGNAL_ADD)
         wx.py.dispatcher.connect(receiver=self.delete, signal=c.SIGNAL_DELETE)
 
-        main_sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
-
+        shelf_panel_sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
         py.dispatcher.send(signal=c.SIGNAL_VIEW_ACTIVATED, sender=self, command=c.COMMAND_VIEW_ACTIVATED, more=self)
+
+        subject_panel = frm.panel(splitter, "pnlSubject")
+        subject_panel_sizer = frm.vsizer()
+        subject_panel.SetSizer(subject_panel_sizer)
+        subject_header_panel = frm.panel_header(subject_panel, "pnlSubjectHeader", "Subject", self.add_shelf, self.delete_shelf, self.edit_shelf)
+        subject_panel_sizer.Add(subject_header_panel, 0, 0, 5)
+
+        splitter.SplitVertically(shelf_panel, subject_panel, 248)
+        # splitter.SetMinimumPaneSize(200)
+        # splitter.SetSashGravity(0.5)
+        main_sizer.Add(splitter, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
+        #main_sizer.Add(shelf_panel, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
 
     def save(self, command, more):
         pass

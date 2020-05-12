@@ -394,6 +394,9 @@ def tool_button(parent, id, text, handler):
 def command_button(parent, id, text, handler):
     return generic_button(parent, id, text, handler, wx.Size(220, 30))
 
+def splitter(parent):
+    return wx.SplitterWindow(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.SP_3D)
+
 def panel_header(parent, name, caption, add_handler, delete_handler, edit_handler):
     header_panel = panel(parent, name)
     shelf_caption = label(header_panel, caption, "lbl" + name)
