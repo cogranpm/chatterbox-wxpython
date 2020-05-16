@@ -25,7 +25,7 @@ COPY_FILE_SOURCE_DIR = 'copy_file_source'
 COPY_FILE_DEST_DIR = 'copy_file_dest'
 
 COLLECTION_NAME_SHELF = 'shelf'
-
+COLLECTION_NAME_SUBJECT = 'subject'
 
 ID_ADD_SHELF = 1001
 ID_DELETE_SHELF = 1002
