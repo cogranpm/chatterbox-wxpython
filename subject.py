@@ -24,7 +24,7 @@ def add_record():
     return {'id': None, 'name': ''}
 
 class SubjectPanel(wx.Panel):
-    """ shows a list of shelves and all the children """
+    """ shows a list of panels and all the children """
     def __init__(self, parent=None):
         super().__init__(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         self.db = wx.GetApp().datastore
