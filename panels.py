@@ -20,7 +20,12 @@ class PanelSpec:
 class BasePanel(wx.Panel):
     """ shows a list of panels and all the children """
     def __init__(self, spec: PanelSpec):
-        super().__init__(spec.parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        super().__init__(parent=spec.parent,
+                         id=wx.ID_ANY,
+                         pos=wx.DefaultPosition,
+                         size=wx.DefaultSize,
+                         style=wx.TAB_TRAVERSAL,
+                         name=spec.name)
         self.collection_name = spec.collection_name
         self.db = wx.GetApp().datastore
         if not spec.collection_name is None:
@@ -33,7 +38,7 @@ class BasePanel(wx.Panel):
                                               spec.add_handler, spec.delete_handler,
                                               spec.edit_handler)
         main_sizer.Add(shelf_header_panel, 0, 0, 5)
-        # self.list = spec.listspec.build(self, self.list_selection_change)
+        self.list = spec.listspec.build(self, self.list_selection_change)
         wx.py.dispatcher.connect(receiver=self.save, signal=c.SIGNAL_SAVE)
         wx.py.dispatcher.connect(receiver=self.add, signal=c.SIGNAL_ADD)
         wx.py.dispatcher.connect(receiver=self.delete, signal=c.SIGNAL_DELETE)
@@ -43,6 +48,5 @@ class BasePanel(wx.Panel):
 
 
 def build_panel(spec: PanelSpec, listspec: ListSpec):
-    panel = BasePanel(spec.parent, wx.ID_ANY, wx.DefaultPosition,
-                     wx.DefaultSize, wx.TAB_TRAVERSAL, name=spec.name)
+    panel = BasePanel(spec.parent, listspec)
 
