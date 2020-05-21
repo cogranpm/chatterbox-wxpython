@@ -19,12 +19,13 @@ def create_list_column(index: int, dvc: dv.DataViewCtrl, column_spec: ColumnSpec
 
 class ListSpec:
 
-    def __init__(self, columns: List[ColumnSpec], data):
+    def __init__(self, columns: List[ColumnSpec], selection_handler, data):
         self.columns = columns
         self.data = data
         self.model = PyTestModel(self.data, self.columns)
+        self.selection_handler = selection_handler
 
-    def build(self, parent, handler):
+    def build(self, parent):
         dvc = dv.DataViewCtrl(parent, wx.ID_ANY, style=wx.BORDER_THEME)
         dvc.AssociateModel(self.model)
         self.model.DecRef()
@@ -36,7 +37,7 @@ class ListSpec:
         for c in dvc.Columns:
             c.Sortable = True
 
-        dvc.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, handler)
+        dvc.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.selection_handler)
         return dvc
 
 

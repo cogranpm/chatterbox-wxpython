@@ -38,7 +38,7 @@ class BasePanel(wx.Panel):
                                               spec.add_handler, spec.delete_handler,
                                               spec.edit_handler)
         main_sizer.Add(shelf_header_panel, 0, 0, 5)
-        self.list = spec.listspec.build(self, self.list_selection_change)
+        self.list = spec.listspec.build(self)
         wx.py.dispatcher.connect(receiver=self.save, signal=c.SIGNAL_SAVE)
         wx.py.dispatcher.connect(receiver=self.add, signal=c.SIGNAL_ADD)
         wx.py.dispatcher.connect(receiver=self.delete, signal=c.SIGNAL_DELETE)

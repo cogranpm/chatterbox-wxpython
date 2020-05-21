@@ -69,10 +69,10 @@ class PlaygroundPanel(wx.Panel):
             ColumnSpec(state_column, ColumnType.str, 'State', 45, True),
             ColumnSpec(phone_column, ColumnType.str, 'Phone', 145, True),
             ColumnSpec(email_column, ColumnType.str, 'Email', 145, True)
-        ], create_data(self.db))
+        ], self.list_selection_change, create_data(self.db))
 
         # base class
-        self.list = self.listspec.build(self, self.list_selection_change)
+        self.list = self.listspec.build(self)
         wx.py.dispatcher.connect(receiver=self.save, signal=c.SIGNAL_SAVE)
         wx.py.dispatcher.connect(receiver=self.add, signal=c.SIGNAL_ADD)
         wx.py.dispatcher.connect(receiver=self.delete, signal=c.SIGNAL_DELETE)
@@ -207,8 +207,8 @@ class PlaygroundForm(wx.Dialog):
             ColumnSpec(state_column, ColumnType.str, 'State', 45, True),
             ColumnSpec(phone_column, ColumnType.str, 'Phone', 145, True),
             ColumnSpec(email_column, ColumnType.str, 'Email', 145, True)
-        ], create_data())
-        self.list = self.listspec.build(self, self.list_selection_change)
+        ], self.list_selection_change, create_data())
+        self.list = self.listspec.build(self)
 
         # self.columns = {self.name_column.key: self.name_column, self.age_column.key: self.age_column, self.member_column.key: self.member_column,
         #                self.address1_column.key: self.address1_column, self.address2_column.key: self.address2_column}

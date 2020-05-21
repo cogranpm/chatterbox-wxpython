@@ -41,10 +41,10 @@ class SubjectPanel(wx.Panel):
         # create_data would be call to database
         self.listspec = ListSpec([
             ColumnSpec(name_column, ColumnType.str, 'Name', 100, True)
-        ], create_data(self.db))
+        ], self.list_selection_change, create_data(self.db))
 
         # base class
-        self.list = self.listspec.build(self, self.list_selection_change)
+        self.list = self.listspec.build(self)
         wx.py.dispatcher.connect(receiver=self.save, signal=c.SIGNAL_SAVE)
         wx.py.dispatcher.connect(receiver=self.add, signal=c.SIGNAL_ADD)
         wx.py.dispatcher.connect(receiver=self.delete, signal=c.SIGNAL_DELETE)
