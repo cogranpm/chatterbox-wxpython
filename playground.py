@@ -5,7 +5,7 @@ import chatterbox_constants as c
 import fn_widget as w
 import wx.dataview as dv
 import forms as frm
-from lists import states, ColumnSpec, ColumnType, ListSpec
+from lists import states, ColumnSpec, ColumnType, ListSpec, create_data
 from validators import FieldValidator, CheckboxValidator, ComboValidator, not_empty
 import wx.py as py
 from models import ViewState
@@ -24,20 +24,6 @@ zip_column = 'zip'
 phone_column = 'phone'
 email_column = 'email'
 
-def create_data(db):
-    records = db.all(collection_name)
-    list = []
-    for record in records:
-        list.append(record)
-    return list
-    # return [{'id': 0, 'name': 'Fred', 'age': 22, 'member': False, 'address1': "44 Jones lane", 'address2': "C/O Jean",
-    #          'city': 'Melbourne', 'zip': '33458', 'state': 'VIC', 'phone': '1234567890', 'email': 'email@email.com'},
-    #         {'id': 0, 'name': 'Peter', 'age': 76, 'member': True, 'address1': "22 Honeysuckle Avenue", 'address2': "C/O Medelle",
-    #          'city': 'Melbourne', 'zip': '33454', 'state': 'NSW', 'phone': '1234567890', 'email': 'email@email.com'},
-    #         {'id': 0, 'name': 'Beltran', 'age': 22, 'member': True, 'address1': "223 Brigard Stree", 'address2': "C/O Arther",
-    #          'city': 'Melbourne', 'zip': '33452', 'state': 'WA', 'phone': '1234567890', 'email': 'email@email.com'},
-    #         {'id': 0, 'name': 'Anne', 'age': 4, 'member': False, 'address1': "4 The Alter Place", 'address2': "C/O Anne",
-    #          'city': 'Melbourne', 'zip': '33451', 'state': 'TAS', 'phone': '1234567890', 'email': 'email@email.com'}]
 
 def add_record():
     return {'id': None, 'name': '', 'age': None, 'member': False, 'address1': "", 'address2': "",

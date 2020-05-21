@@ -33,20 +33,13 @@ class BasePanel(wx.Panel):
 
         main_sizer = frm.vsizer()
         self.SetSizer(main_sizer)
-
-        shelf_header_panel = frm.panel_header(self, spec.name + "Header", spec.title,
+        header_panel = frm.panel_header(self, spec.name + "Header", spec.title,
                                               spec.add_handler, spec.delete_handler,
                                               spec.edit_handler)
-        main_sizer.Add(shelf_header_panel, 0, 0, 5)
+        main_sizer.Add(header_panel, 0, 0, 5)
         self.list = spec.listspec.build(self)
-        wx.py.dispatcher.connect(receiver=self.save, signal=c.SIGNAL_SAVE)
-        wx.py.dispatcher.connect(receiver=self.add, signal=c.SIGNAL_ADD)
-        wx.py.dispatcher.connect(receiver=self.delete, signal=c.SIGNAL_DELETE)
-
         main_sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
-        py.dispatcher.send(signal=c.SIGNAL_VIEW_ACTIVATED, sender=self, command=c.COMMAND_VIEW_ACTIVATED, more=self)
 
 
-def build_panel(spec: PanelSpec, listspec: ListSpec):
-    panel = BasePanel(spec.parent, listspec)
+
 
