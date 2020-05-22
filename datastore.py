@@ -1,5 +1,5 @@
 import dataset
-import wx
+import wx.py as py
 import chatterbox_constants as c
 from typing import Dict
 
@@ -11,7 +11,7 @@ class DataStore:
 
     def __init__(self):
         self.collections = dict()
-        wx.py.dispatcher.connect(receiver=self.shutdown, signal=c.SIGNAL_SHUTDOWN)
+        py.dispatcher.connect(receiver=self.shutdown, signal=c.SIGNAL_SHUTDOWN)
         self.db = dataset.connect('sqlite:///store.db')
 
     def shutdown(self, command, more):

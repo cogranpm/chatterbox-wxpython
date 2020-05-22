@@ -26,7 +26,6 @@ name_column = 'name'
 def add_record():
     return {'id': None, 'name': ''}
 
-
 class MainPanel(wx.Panel):
     """ shows a list of shelves and all the children """
     def __init__(self, parent=None):
