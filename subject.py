@@ -6,8 +6,8 @@ from validators import not_empty, FieldValidator
 from datastore import DataStore
 import wx
 import wx.dataview as dv
+from fn_app import get_data_store
 
-collection_name = c.COLLECTION_NAME_SUBJECT
 name_column = 'name'
 
 shelf_id: int = None
@@ -52,8 +52,7 @@ def add(self, event):
     dlg.build(form)
     result = dlg.ShowModal()
     if result == wx.ID_OK:
-        db = wx.GetApp().datastore
-        db.add(c.COLLECTION_NAME_SUBJECT, record)
+        get_data_store().add(c.COLLECTION_NAME_SUBJECT, record)
 
 def delete(self, event):
     pass

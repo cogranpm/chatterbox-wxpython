@@ -12,6 +12,7 @@ import wx
 import logging
 import chatterbox_constants as c
 import wx.dataview as dv
+from fn_app import get_data_store
 import forms as frm
 from lists import states, ColumnSpec, ColumnType, ListSpec, create_data
 from validators import FieldValidator, CheckboxValidator, ComboValidator, not_empty
@@ -30,8 +31,9 @@ class MainPanel(wx.Panel):
     """ shows a list of shelves and all the children """
     def __init__(self, parent=None):
         super().__init__(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
-        self.db = wx.GetApp().datastore
-
+        self.db = get_data_store()
+        self.db.create_entity(c.COLLECTION_NAME_SHELF)
+        self.db.create_entity(c.COLLECTION_NAME_SUBJECT)
         main_sizer = frm.vsizer()
         self.SetSizer(main_sizer)
         splitter = frm.splitter(self)
@@ -61,7 +63,7 @@ class MainPanel(wx.Panel):
     def selection_change(self, event: dv.DataViewEvent):
         selected_item = self.panel.list.GetSelection()
         record = self.list_spec.model.ItemToObject(selected_item)
-        print(record)
+        sb.shelf_id = record['id']
 
 
     def add(self, event):

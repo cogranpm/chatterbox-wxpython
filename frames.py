@@ -83,6 +83,7 @@ class AppFrame(wx.Frame):
             if dlg.ShowModal() == wx.ID_OK:
                 if dlg.dirty:
                     # more than this needs to happen
+                    print(dlg.data_directory)
                     app.data_directory = dlg.data_directory
 
 

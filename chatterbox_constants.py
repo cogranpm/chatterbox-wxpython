@@ -1,4 +1,5 @@
 from configobj import ConfigObj
+import os, sys
 
 APPLICATION_NAME = "chatterbox"
 CONFIG_KEY_DATA_DIRECTORY = "datadirectory"
@@ -50,4 +51,9 @@ def set_config(key: str, value):
 
 def write_config():
     config.write()
+
+def get_current_path():
+    return os.path.abspath(os.path.dirname(sys.argv[0]))
+
+
 

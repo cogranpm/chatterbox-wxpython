@@ -5,6 +5,7 @@ import chatterbox_constants as cc
 from fn_app import load_default_settings, set_default_paths, config_logging
 import logging
 import datastore
+import os, sys
 
 class ChatterboxApp(wx.App):
 
@@ -20,15 +21,17 @@ class ChatterboxApp(wx.App):
         """ System, Toolkit and WxWidgets fully initialized"""
         super().OnInit()
         config_logging()
-        wx.ConfigBase.Set(wx.Config(cc.APPLICATION_NAME))
-        self.data_directory = load_default_settings()
+         # cc.set_config(cc.CONFIG_KEY_DATA_DIRECTORY, cc.get_current_path())
+        # print(cc.read_config(cc.CONFIG_KEY_DATA_DIRECTORY))
+         # wx.ConfigBase.Set(wx.Config(cc.APPLICATION_NAME))
+        self.data_directory = cc.read_config(cc.CONFIG_KEY_DATA_DIRECTORY)
         is_valid = set_default_paths(self.data_directory)
         if not is_valid:
             # give user a chance to select a new path
             pass
 
         # load images
-        self.datastore = datastore.DataStore()
+        self.datastore = datastore.DataStore(self.data_directory)
         self.frame = AppFrame()
         self.frame.Show()
         self.SetTopWindow(self.frame)

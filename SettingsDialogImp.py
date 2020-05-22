@@ -25,7 +25,6 @@ class SettingsDialogImp( SettingsDialog.DlgSettings ):
 
 	# Handlers for DlgSettings events.
 	def OnInitDialog( self, event ):
-		# TODO: Implement OnInitDialog
 		self.dataDirPicker.SetPath(self.data_directory)
 
 	def DataDirectoryOnDirChanged( self, event ):

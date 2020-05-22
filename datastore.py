@@ -9,10 +9,11 @@ class DataStore:
     db: dataset.Database
     collections: Dict[str,  dataset.Table]
 
-    def __init__(self):
+    def __init__(self, data_dir: str):
         self.collections = dict()
         py.dispatcher.connect(receiver=self.shutdown, signal=c.SIGNAL_SHUTDOWN)
-        self.db = dataset.connect('sqlite:///store.db')
+        data_path = 'sqlite:///' + data_dir + '/store.db'
+        self.db = dataset.connect(data_path)
 
     def shutdown(self, command, more):
         # print(self.db.tables)
