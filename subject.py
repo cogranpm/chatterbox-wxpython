@@ -1,53 +1,62 @@
-import wx
-import logging
 import chatterbox_constants as c
+from lists import ListSpec, ColumnType, ColumnSpec, create_data
+from panels import PanelSpec, BasePanel
+from forms import FormDialog, FormSpec, TextField, edit_line, large
+from validators import not_empty, FieldValidator
+from datastore import DataStore
+import wx
 import wx.dataview as dv
-import forms as frm
-from lists import states, ColumnSpec, ColumnType, ListSpec
-from validators import FieldValidator, CheckboxValidator, ComboValidator, not_empty
-import wx.py as py
-from models import ViewState
-from forms import FormSpec, FormDialog, FormLineSpec, edit_line, large, TextField
 
 collection_name = c.COLLECTION_NAME_SUBJECT
 name_column = 'name'
 
-def create_data(db):
-    records = db.all(collection_name)
-    list = []
-    for record in records:
-        list.append(record)
-    return list
+shelf_id: int = None
+panel: BasePanel = None
+list_spec: ListSpec = None
+panel_spec: PanelSpec = None
 
 
-def add_record():
-    return {'id': None, 'name': ''}
+def add_record(shelf_id: int):
+    return {'id': None, 'shelf_id': shelf_id, 'name': ''}
 
-class SubjectPanel(wx.Panel):
-    """ shows a list of panels and all the children """
-    def __init__(self, parent=None):
-        super().__init__(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
-        self.db = wx.GetApp().datastore
-        self.db.create_entity(collection_name)
+def make_list_spec(datastore):
+    return ListSpec([
+        ColumnSpec(name_column, ColumnType.str, 'Name', 100, True)
+    ], selection_change, create_data(datastore, c.COLLECTION_NAME_SUBJECT))
 
-        # goes into base class
-        main_sizer = frm.vsizer()
-        self.SetSizer(main_sizer)
 
-        shelf_header_panel = frm.panel_header(self, "pnlShelfHeader", "Shelf", self.add_shelf, self.delete_shelf, self.edit_shelf)
-        main_sizer.Add(shelf_header_panel, 0, 0, 5)
+def make_panel_spec(parent):
+    return PanelSpec(parent, "pnlSubject", "Subject",
+                     c.COLLECTION_NAME_SUBJECT, list_spec, add, delete, edit)
 
-        # this should be parameter of the class perhaps
-        # create_data would be call to database
-        self.listspec = ListSpec([
-            ColumnSpec(name_column, ColumnType.str, 'Name', 100, True)
-        ], self.list_selection_change, create_data(self.db))
 
-        # base class
-        self.list = self.listspec.build(self)
-        wx.py.dispatcher.connect(receiver=self.save, signal=c.SIGNAL_SAVE)
-        wx.py.dispatcher.connect(receiver=self.add, signal=c.SIGNAL_ADD)
-        wx.py.dispatcher.connect(receiver=self.delete, signal=c.SIGNAL_DELETE)
+def make_panel(spec: PanelSpec):
+    return BasePanel(spec)
 
-        main_sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
-        py.dispatcher.send(signal=c.SIGNAL_VIEW_ACTIVATED, sender=self, command=c.COMMAND_VIEW_ACTIVATED, more=self)
+
+def selection_change(self, event: dv.DataViewEvent):
+    global panel, list_spec
+    selected_item = panel.list.GetSelection()
+    record = list_spec.model.ItemToObject(selected_item)
+    print(record)
+
+
+def add(self, event):
+    global shelf_id
+    record = add_record(shelf_id)
+    # redundance on Title and record
+    dlg: FormDialog = FormDialog(self, "Add Subject", record, c.COLLECTION_NAME_SHELF)
+    form: FormSpec = FormSpec(dlg, "frmDemo", "Subject", "Add Subject", [
+        edit_line("Name", [TextField("name", large(), validator=FieldValidator(record, "name", [not_empty]))])
+    ])
+    dlg.build(form)
+    result = dlg.ShowModal()
+    if result == wx.ID_OK:
+        db = wx.GetApp().datastore
+        db.add(c.COLLECTION_NAME_SUBJECT, record)
+
+def delete(self, event):
+    pass
+
+def edit(self, event):
+    pass

@@ -90,7 +90,7 @@ class AppFrame(wx.Frame):
         self.m_auiShelf.AddPage(playground.PlaygroundPanel(self), "Playground", True)
 
     def handle_menu_shelf(self, event):
-        self.m_auiShelf.AddPage(shelf.ShelfPanel(self), "Shelf", True)
+        self.m_auiShelf.AddPage(shelf.MainPanel(self), c.NOTEBOOK_TITLE_SHELF, True)
 
 
     def OnNotebookPageChanged(self, event):
