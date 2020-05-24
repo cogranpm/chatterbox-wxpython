@@ -25,6 +25,20 @@ width_small_multi = 70
 
 field_border_width = 5
 
+
+def is_child_of(widgets, child_widget):
+    """ recursive function to find out if the child_widget is an
+    ancestor of any widget in widgets,
+    if so return that widget """
+    if child_widget.Parent is None:
+        return None
+    else:
+        for item in widgets:
+            if child_widget.Parent is item:
+                return item
+        return is_child_of(widgets, child_widget.Parent)
+
+
 def header_font():
     global font_header
     if font_header is None:

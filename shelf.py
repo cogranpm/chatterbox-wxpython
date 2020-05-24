@@ -72,9 +72,13 @@ class MainPanel(wx.Panel):
         sb.shelf_id = record['id']
 
     def handle_tool_add(self):
-        logging.info("adding")
-        focusesed_item = wx.Window.FindFocus()
-        logging.info(focusesed_item.Parent.Name)
+        focussed_item = wx.Window.FindFocus()
+        match = frm.is_child_of([self.panel, sb.panel], focussed_item)
+        if match is not None:
+            if match is sb.panel:
+                logging.info("subject")
+            elif match is self.panel:
+                logging.info("shelf")
 
     def handle_tool_delete(self):
         logging.info("delete tool item clicked")
