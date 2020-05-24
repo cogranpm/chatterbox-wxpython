@@ -59,6 +59,12 @@ class MainPanel(wx.Panel):
         # splitter.SetSashGravity(0.5)
         main_sizer.Add(splitter, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
 
+        # no save required
+        # wx.py.dispatcher.connect(receiver=self.save, signal=c.SIGNAL_SAVE)
+        wx.py.dispatcher.connect(receiver=self.add, signal=c.SIGNAL_ADD)
+        wx.py.dispatcher.connect(receiver=self.delete, signal=c.SIGNAL_DELETE)
+        py.dispatcher.send(signal=c.SIGNAL_VIEW_ACTIVATED, sender=self, command=c.COMMAND_VIEW_ACTIVATED, more=self)
+
 
     def selection_change(self, event: dv.DataViewEvent):
         selected_item = self.panel.list.GetSelection()
@@ -70,13 +76,15 @@ class MainPanel(wx.Panel):
         record = add_record()
         dlg: FormDialog = FormDialog(self, "Add Shelf", record, c.COLLECTION_NAME_SHELF)
         form: FormSpec = FormSpec(dlg, "frmDemo", "Shelf", "Add Shelf", [
-            edit_line("Name", [TextField("name", large(), validator=FieldValidator(record, "name", [not_empty]))])
+            edit_line("Name", [TextField(name_column, large(), validator=FieldValidator(record, name_column, [not_empty]))])
         ])
         dlg.build(form)
         result = dlg.ShowModal()
         if result == wx.ID_OK:
             db = wx.GetApp().datastore
             db.add(c.COLLECTION_NAME_SHELF, record)
+            self.list_spec.data.append(record)
+            self.list_spec.model.ItemAdded(dv.NullDataViewItem, self.list_spec.model.ObjectToItem(record))
 
     def delete(self, event):
         pass
