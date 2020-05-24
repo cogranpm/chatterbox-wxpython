@@ -61,8 +61,8 @@ class MainPanel(wx.Panel):
 
         # no save required
         # wx.py.dispatcher.connect(receiver=self.save, signal=c.SIGNAL_SAVE)
-        wx.py.dispatcher.connect(receiver=self.add, signal=c.SIGNAL_ADD)
-        wx.py.dispatcher.connect(receiver=self.delete, signal=c.SIGNAL_DELETE)
+        wx.py.dispatcher.connect(receiver=self.handle_tool_add, signal=c.SIGNAL_ADD)
+        wx.py.dispatcher.connect(receiver=self.handle_tool_delete, signal=c.SIGNAL_DELETE)
         py.dispatcher.send(signal=c.SIGNAL_VIEW_ACTIVATED, sender=self, command=c.COMMAND_VIEW_ACTIVATED, more=self)
 
 
@@ -71,6 +71,13 @@ class MainPanel(wx.Panel):
         record = self.list_spec.model.ItemToObject(selected_item)
         sb.shelf_id = record['id']
 
+    def handle_tool_add(self):
+        logging.info("adding")
+        focusesed_item = wx.Window.FindFocus()
+        logging.info(focusesed_item.Parent.Name)
+
+    def handle_tool_delete(self):
+        logging.info("delete tool item clicked")
 
     def add(self, event):
         record = add_record()
@@ -87,7 +94,7 @@ class MainPanel(wx.Panel):
             self.list_spec.model.ItemAdded(dv.NullDataViewItem, self.list_spec.model.ObjectToItem(record))
 
     def delete(self, event):
-        pass
+        selected_item = self.panel.list.GetSelection()
 
     def edit(self, event):
         pass
