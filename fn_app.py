@@ -39,3 +39,6 @@ def config_logging():
     logging.basicConfig(filename=cc.LOG_FILE_NAME, level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 
 
+def get_data_store():
+    return wx.GetApp().datastore
+

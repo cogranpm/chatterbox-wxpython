@@ -1,9 +1,15 @@
 # classes etc that help define a form and related controls
 from enum import Enum, auto
-from typing import List
+from typing import List, Tuple
+from lists import ListItem
+from models import ViewState
+import chatterbox_constants as c
 import wx
+import wx.py as py
+from fn_app import make_icon
 
 EditFieldWidth = Enum('EditFieldWidth', 'LARGE MEDIUM SMALL DEFAULT')
+DisplayType = Enum('DisplayType', 'DIALOG PANEL')
 
 font_header = None
 font_help = None
@@ -18,6 +24,20 @@ width_medium_multi = 100
 width_small_multi = 70
 
 field_border_width = 5
+
+
+def is_child_of(widgets, child_widget):
+    """ recursive function to find out if the child_widget is an
+    ancestor of any widget in widgets,
+    if so return that widget """
+    if child_widget.Parent is None:
+        return None
+    else:
+        for item in widgets:
+            if child_widget.Parent is item:
+                return item
+        return is_child_of(widgets, child_widget.Parent)
+
 
 def header_font():
     global font_header
@@ -43,6 +63,10 @@ def small():
 def default():
     return EditFieldWidth.DEFAULT
 
+def bind_button(btn, handler):
+    btn.Bind(wx.EVT_BUTTON, handler)
+
+
 class FormSpec():
     """ for specifiying the contents of a form, a function will use this information to build up
     a 'form' and all it's contents
@@ -53,52 +77,112 @@ class FormSpec():
     FormLine has multiple EditFields
     """
 
-    def __init__(self, parent, title: str, helpstr: str, edit_lines: List['FormLineSpec']):
+    def __init__(self, parent, name: str, title: str, helpstr: str, edit_lines: List['FormLineSpec']):
         self.parent = parent
         self.title = title
         self.helpstr = helpstr
         self.edit_lines = edit_lines
+        self.name = name
+        self.sizer = vsizer()
+        self.view_state = ViewState.empty
 
-    def build(self):
-        panel = wx.Panel(self.parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
-        box = wx.BoxSizer(wx.VERTICAL)
-        lbl_header = wx.StaticText(panel, 0, self.title)
-        lbl_help = wx.StaticText(panel, 0, self.helpstr.lstrip())
+    def build(self, display_type = DisplayType.PANEL, ok_handler=None, cancel_handler=None):
+
+        lbl_header = wx.StaticText(self.parent, 0, self.title)
+        lbl_help = wx.StaticText(self.parent, 0, self.helpstr.lstrip())
         lbl_header.SetFont(header_font())
         lbl_help.SetFont(help_font())
-        box.Add(lbl_header, 0, wx.ALL, 5)
+        self.sizer.Add(lbl_header, 0, wx.ALL, 5)
         # add a static line
-        box.Add(wx.StaticLine(panel), 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-        box.Add(lbl_help, 0, wx.ALL, 5)
-        box.Add(wx.StaticLine(panel), 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        self.sizer.Add(wx.StaticLine(self.parent), 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
+        self.sizer.Add(lbl_help, 0, wx.ALL, 5)
+        self.sizer.Add(wx.StaticLine(self.parent), 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
 
         gridsizer = wx.FlexGridSizer(cols=2, hgap=5, vgap=5)
         gridsizer.AddGrowableCol(1)
 
         for line in self.edit_lines:
-            line.build(panel, gridsizer)
+            line.build(self.parent, gridsizer)
 
         # can add a sizer to a sizer, not just add widget to sizer, creates a nested sizer
-        box.Add(gridsizer, 0, wx.EXPAND | wx.ALL, 10)
+        self.sizer.Add(gridsizer, 1, wx.EXPAND | wx.ALL, 10)
 
-        btn_save = wx.Button(panel, -1, "Save")
-        btn_cancel = wx.Button(panel, -1, "Cancel")
-        btnSizer = wx.BoxSizer(wx.HORIZONTAL)
-        # this spacer pushes the buttons to the right
-        # btnSizer.Add((20, 20), 1)
-        btnSizer.AddStretchSpacer(20)
-        btnSizer.Add(btn_save)
-        btnSizer.AddSpacer(20)
-        btnSizer.Add(btn_cancel)
-        btnSizer.AddSpacer(20)
-        box.Add(btnSizer, 0, wx.EXPAND | wx.BOTTOM | wx.ALIGN_RIGHT, 10)
+        # btn_save = wx.Button(panel, -1, "Save")
+        # btn_cancel = wx.Button(panel, -1, "Cancel")
+        # btnSizer = wx.BoxSizer(wx.HORIZONTAL)
+        # # this spacer pushes the buttons to the right
+        # # btnSizer.Add((20, 20), 1)
+        # btnSizer.AddStretchSpacer(20)
+        # btnSizer.Add(btn_save)
+        # btnSizer.AddSpacer(20)
+        # btnSizer.Add(btn_cancel)
+        # btnSizer.AddSpacer(20)
+        # box.Add(btnSizer, 0, wx.EXPAND | wx.BOTTOM | wx.ALIGN_RIGHT, 10)
 
-        panel.SetSizer(box)
-        box.Fit(self.parent)  # this call triggers the layout alorithm to fire
-        box.SetSizeHints(self.parent)
-        # panel.SetBackgroundColour("orange")
-        panel.Refresh()
-        return panel
+        if display_type == DisplayType.DIALOG:
+            stdButtonSizer = wx.StdDialogButtonSizer()
+            stdButtonSizerOK = wx.Button(self.parent, wx.ID_OK, name="btnOK")
+            stdButtonSizerOK.SetDefault()
+            if ok_handler is not None:
+                bind_button(stdButtonSizerOK, ok_handler)
+
+            stdButtonSizer.AddButton(stdButtonSizerOK)
+            stdButtonSizerCancel = wx.Button(self.parent, wx.ID_CANCEL, name="btnCancel")
+            stdButtonSizer.AddButton(stdButtonSizerCancel)
+            if cancel_handler is not None:
+                bind_button(stdButtonSizerCancel, cancel_handler)
+            stdButtonSizer.Realize()
+            self.sizer.Add(stdButtonSizer, 0, wx.EXPAND, 5)
+        self.parent.Sizer.Add(self.sizer, wx.SizerFlags(1).Expand())
+
+    def set_viewstate(self, state: ViewState):
+        if state == ViewState.adding:
+            self.reset_fields()
+            self.enable_fields(True)
+            self.setfocusfirst()
+            py.dispatcher.send(signal=c.SIGNAL_VIEWSTATE, sender=self, command=c.COMMAND_ADDING, more=self)
+        elif state == ViewState.empty:
+            self.reset_fields()
+            self.enable_fields(False)
+            py.dispatcher.send(signal=c.SIGNAL_VIEWSTATE, sender=self, command=c.COMMAND_EMPTY, more=self)
+        elif state == ViewState.loaded:
+            self.enable_fields(True)
+            self.setfocusfirst()
+            py.dispatcher.send(signal=c.SIGNAL_VIEWSTATE, sender=self, command=c.COMMAND_LOADED, more=self)
+            self.pause_dirty_events(False)
+        elif state == ViewState.loading:
+            self.pause_dirty_events(True)
+
+        self.view_state = state
+
+    def setfocusfirst(self):
+        first_line = self.edit_lines[0]
+        if first_line is not None:
+            first_control = first_line.edit_fields[0]
+            if first_control is not None:
+                first_control.focus()
+
+    def reset_fields(self):
+        for line in self.edit_lines:
+            for edit_field in line.edit_fields:
+                edit_field.reset()
+
+    def enable_fields(self, flag):
+        for line in self.edit_lines:
+            for edit_field in line.edit_fields:
+                edit_field.enable(flag)
+
+    def pause_dirty_events(self, flag):
+        for line in self.edit_lines:
+            for edit_field in line.edit_fields:
+                edit_field.pause_dirty_events = flag
+
+    def bind(self, record):
+        for line in self.edit_lines:
+            for edit_field in line.edit_fields:
+                if edit_field.control is not None and edit_field.control.Validator is not None:
+                    edit_field.control.Validator.set_data(record)
+
 
 class FormLineSpec():
     """ can be made up of multiple edit fields or a single, such as zip, state, city on a single line """
@@ -107,9 +191,9 @@ class FormLineSpec():
         self.labelstr = labelstr
         self.edit_fields = edit_fields
 
-    def build(self, panel, sizer):
+    def build(self, parent, sizer):
         if self.labelstr is not None:
-            lbl = wx.StaticText(panel, -1, f"{self.labelstr}:")
+            lbl = wx.StaticText(parent, -1, f"{self.labelstr}:")
             sizer.Add(lbl, proportion=0, flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
         else:
             sizer.AddSpacer(spacer_width)
@@ -118,23 +202,25 @@ class FormLineSpec():
             edit_field = self.edit_fields[0]
             width = edit_field.width
             sizer_flags = wx.SizerFlags()
-            size = None
             if width == EditFieldWidth.LARGE:
                 sizer_flags.Expand()
-            control = edit_field.build(panel, False)
+            control = edit_field.build(parent, False)
             sizer.Add(control, sizer_flags)
         else:
             cstsizer = wx.BoxSizer(wx.HORIZONTAL)
             for i, edit in enumerate(self.edit_fields):
-                control = edit.build(panel, True)
+                control = edit.build(parent, True)
                 sizer_flags = wx.SizerFlags()
                 if i == 0:
-                    sizer_flags.Expand().Proportion(1)
+                    sizer_flags.Expand().Proportion(1).Border(0)
                 elif i != len(self.edit_fields):
                     sizer_flags.Border(wx.LEFT | wx.RIGHT, field_border_width)
+                else:
+                    sizer_flags.Expand().Border(0)
                 cstsizer.Add(control, sizer_flags)
+                del sizer_flags
 
-            sizer.Add(cstsizer, 0, wx.EXPAND)
+            sizer.Add(cstsizer, -1, wx.EXPAND)
 
 class EditFieldSpec():
     """ this is an edit field in a form, for example a combo box, or text box etc """
@@ -142,6 +228,8 @@ class EditFieldSpec():
     def __init__(self, name: str, width: EditFieldWidth = EditFieldWidth.DEFAULT):
         self.name = name
         self.width = width
+        self.control = None
+        self.pause_dirty_events = False
 
     def get_size(self, multi_column: bool = False):
         size = None
@@ -159,64 +247,219 @@ class EditFieldSpec():
             size = wx.Size(txt_width, -1)
         return size
 
+    def focus(self):
+        if self.control is not None:
+            self.control.SetFocus()
+
+    def enable(self, flag):
+        if self.control is not None:
+            if flag:
+                self.control.Enable()
+            else:
+                self.control.Disable()
 
 class TextField(EditFieldSpec):
 
-    def __init__(self, name, width: EditFieldWidth):
+    def __init__(self, name, width: EditFieldWidth, validator: wx.PyValidator = None):
         super().__init__(name, width)
+        self.validator = validator
+        #self.control = None
 
-    def build(self, panel: wx.Panel, multi_column: bool = False):
+    def build(self, parent, multi_column: bool = False):
         size = self.get_size(multi_column)
         if size is None:
-            control = wx.TextCtrl(panel, -1, "", name=self.name)
+            self.control = wx.TextCtrl(parent, -1, "", name=self.name, validator=self.validator)
         else:
-            control = wx.TextCtrl(panel, -1, "", size=size, name=self.name)
-        return control
+            self.control = wx.TextCtrl(parent, -1, "", size=size, name=self.name, validator=self.validator)
+        # if self.validator is not None:
+        #     control.Validator = self.validator
+        self.control.Bind(wx.EVT_TEXT, self.on_change_text)
+        return self.control
+
+    def reset(self):
+        self.control.SetValue('')
+
+    def on_change_text(self, event):
+        """ this is the place to raise a dirty message """
+        # need to not fire this if the form I belong too is in the loading state
+        if not self.pause_dirty_events:
+            py.dispatcher.send(signal=c.SIGNAL_VIEWSTATE, sender=self, command=c.COMMAND_DIRTY, more=self)
+
 
 
 class ComboField(EditFieldSpec):
 
-    def __init__(self, name, width: EditFieldWidth):
+    def __init__(self, name, width: EditFieldWidth, contents: List[ListItem] = None, validator: wx.Validator = None):
         super().__init__(name, width)
+        self.contents = contents
+        self.control = wx.ComboBox()
+        self.validator = validator
 
-    def build(self, panel: wx.Panel, multi_column: bool = False):
+    def build(self, parent,  multi_column: bool = False):
         size = self.get_size(multi_column)
+        style = wx.CB_READONLY
+        choices = []
         if size is None:
-            control = wx.Choice(panel, -1, "", name=self.name)
+            self.control.Create(parent, -1, name=self.name, choices=choices, style=style, validator=self.validator)
         else:
-            control = wx.Choice(panel, -1, "", size=size, name=self.name)
-        return control
+            self.control.Create(parent, -1, size=size, name=self.name, choices=choices, style=style,
+                                validator=self.validator)
+        if self.contents is not None:
+            for item in self.contents:
+                self.control.Append(item.label, item.code )
 
+        self.control.Bind(wx.EVT_COMBOBOX, self.on_select)
+        return self.control
+
+    def reset(self):
+        self.control.SetSelection(0)
+
+    def on_select(self, event):
+        """ this is the place to raise the dirty message """
+        # need to not fire this if the form I belong too is in the loading state
+        if not self.pause_dirty_events:
+            py.dispatcher.send(signal=c.SIGNAL_VIEWSTATE, sender=self, command=c.COMMAND_DIRTY, more=self)
+        # an example of how to get the selected item data
+        #listitem = self.control.GetClientData(self.control.GetSelection())
 
 class CheckboxField(EditFieldSpec):
-    def __init__(self, name):
+    def __init__(self, name, validator: wx.PyValidator = None):
         super().__init__(name, None)
+        self.validator = validator
+        self.control = None
 
-    def build(self, panel: wx.Panel, multi_column: bool = False):
-        return wx.CheckBox(panel, -1, "", name=self.name)
+    def build(self, parent, multi_column: bool = False):
+        self.control = wx.CheckBox(parent, -1, "", name=self.name, validator=self.validator)
+        self.control.Bind(wx.EVT_CHECKBOX, self.on_select)
+        return self.control
+
+    def reset(self):
+        self.control.SetValue(False)
+
+    def on_select(self, event):
+        """ this is the place to raise the dirty message """
+        # need to not fire this if the form I belong too is in the loading state
+        if not self.pause_dirty_events:
+            py.dispatcher.send(signal=c.SIGNAL_VIEWSTATE, sender=self, command=c.COMMAND_DIRTY, more=self)
+
+
+class FormDialog(wx.Dialog):
+
+    def __init__(self, parent, title, record, collection_name):
+        super().__init__(parent, id=wx.ID_ANY, title=title, pos=wx.DefaultPosition,
+                           size=wx.Size(600, 800), style=wx.DEFAULT_DIALOG_STYLE | wx.WS_EX_VALIDATE_RECURSIVELY)
+        self.record = record
+        self.collection_name = collection_name
+        self.Bind(wx.EVT_INIT_DIALOG, self.OnInitDialog)
+
+
+    def build(self, form: FormSpec):
+        self.SetSizeHints(wx.DefaultSize, wx.DefaultSize)
+
+        main_sizer = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(main_sizer)
+
+        form.build(display_type=DisplayType.DIALOG, ok_handler=self.on_ok, cancel_handler=self.on_cancel)
+
+        self.Layout()
+        self.Centre(wx.BOTH)
+        main_sizer.Fit(self)
+        self.TransferDataToWindow()
+
+    def OnInitDialog(self, event):
+        pass
+
+    def on_ok(self, event):
+        event.Skip()
+
+    def on_cancel(self, event):
+        event.Skip()
 
 
 
 def edit_line(labelstr, edit_fields):
     return FormLineSpec(labelstr, edit_fields)
 
-def form(parent, title, helpstr, edit_lines):
-    return FormSpec(parent, title, helpstr, edit_lines)
+
+
+def form(parent, name, title, helpstr, edit_lines):
+    return FormSpec(parent, name, title, helpstr, edit_lines)
+
+def panel(parent, name):
+    return wx.Panel(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL, name)
+
+def label(parent, caption, name):
+    lbl = wx.StaticText(parent, id=wx.ID_ANY, label=caption, name=name)
+    return lbl
+
+def generic_button(parent, id, text, handler, size, icon=None):
+    btn = wx.Button(parent, id, text, wx.DefaultPosition,size, 0)
+    bind_button(btn, handler)
+    if not icon is None:
+        btn.SetBitmap(make_icon(icon))
+    return btn
+
+def panel_tool_button(parent, id, text, handler, icon):
+    return generic_button(parent, id, text, handler, wx.Size(20, 20), icon)
 
 def tool_button(parent, id, text, handler):
-    btn = wx.Button(parent, id, text, wx.DefaultPosition, wx.Size(40, 40), 0)
-    btn.Bind(wx.EVT_BUTTON, handler)
-    return btn
+    return generic_button(parent, id, text, handler, wx.Size(40, 40))
+
+def command_button(parent, id, text, handler):
+    return generic_button(parent, id, text, handler, wx.Size(220, 30))
+
+def splitter(parent):
+    return wx.SplitterWindow(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.SP_3D)
+
+def panel_header(parent, name, caption, add_handler, delete_handler, edit_handler):
+    header_panel = panel(parent, name)
+    shelf_caption = label(header_panel, caption, "lbl" + name)
+    shelf_caption.Wrap(-1)
+    btn_add_shelf = panel_tool_button(header_panel, c.ID_ADD_SHELF, wx.EmptyString,
+                                      add_handler, c.ICON_ADD)
+
+    btn_delete_shelf = panel_tool_button(header_panel, c.ID_DELETE_SHELF, wx.EmptyString,
+                                         delete_handler, c.ICON_CANCEL)
+    btn_delete_shelf.Enable(False)
+    btn_edit_shelf = panel_tool_button(header_panel, c.ID_EDIT_SHELF, wx.EmptyString,
+                                       edit_handler, c.ICON_EDIT)
+    btn_edit_shelf.Enable(False)
+
+    header_sizer = hsizer([shelf_caption, btn_add_shelf, btn_delete_shelf, btn_edit_shelf])
+    header_panel.SetSizer(header_sizer)
+    header_panel.Layout()
+    header_sizer.Fit(header_panel)
+    return header_panel
+
+def single_edit(parent):
+    return wx.TextCtrl(parent, -1, "", size=(-1, -1))
+
+def multi_edit(parent):
+    return wx.TextCtrl(parent, -1, "",
+                       style=wx.TE_MULTILINE|wx.TE_PROCESS_ENTER)
 
 
 def hsizer(items):
     sizer = wx.BoxSizer(wx.HORIZONTAL)
+    flag = wx.SizerFlags().Expand()
     for item in items:
-        sizer.Add(item)
+        if type(item) == wx.TextCtrl:
+            flag.Proportion(1)
+        sizer.Add(item, flag)
     return sizer
 
 
 def vsizer():
     sizer = wx.BoxSizer(wx.VERTICAL)
     return sizer
+
+def confirm_delete(parent):
+    dlg = wx.MessageDialog(parent, 'Delete, are you sure?',
+                           'Delete', wx.OK | wx.CANCEL | wx.CANCEL_DEFAULT | wx.ICON_EXCLAMATION)
+    result = dlg.ShowModal()
+    dlg.Destroy()
+    if result == wx.ID_OK:
+        return True
+    else:
+        return False
 

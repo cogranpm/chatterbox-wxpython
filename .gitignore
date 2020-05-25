@@ -2,3 +2,6 @@
 /build/chatterbox/
 /dist/chatterbox/
 /app.log
+/forms/
+__pycache__/
+/chatterbox.ini
