@@ -178,7 +178,8 @@ class AppFrame(wx.Frame):
 
         self.menuFileNew = wx.MenuItem(self.menuFile, wx.ID_ADD, u"&New", wx.EmptyString,
                                         wx.ITEM_NORMAL)
-        self.menuFileNew.Enable(False)
+        # not working on linux
+        # self.menuFileNew.Enable(False)
         self.menuFileSave = wx.MenuItem(self.menuFile, wx.ID_SAVE, u"&Save", wx.EmptyString, wx.ITEM_NORMAL)
         self.menuFileQuit = wx.MenuItem(self.menuFile, wx.ID_EXIT, u"&Quit", wx.EmptyString,
                                         wx.ITEM_NORMAL)
@@ -193,7 +194,8 @@ class AppFrame(wx.Frame):
 
         self.menuEditDelete = wx.MenuItem(self.menuEdit, wx.ID_DELETE, u"Delete", wx.EmptyString,
                                             wx.ITEM_NORMAL)
-        self.menuEditDelete.Enable(False)
+        # not working on linux
+        # self.menuEditDelete.Enable(False)
         self.menuEdit.Append(self.menuEditDelete)
 
         self.menuEditSettings = wx.MenuItem(self.menuEdit, wx.ID_PREFERENCES, u"&Settings", wx.EmptyString,
