@@ -21,7 +21,8 @@ class ChatterboxApp(wx.App):
         """ System, Toolkit and WxWidgets fully initialized"""
         super().OnInit()
         config_logging()
-         # cc.set_config(cc.CONFIG_KEY_DATA_DIRECTORY, cc.get_current_path())
+        # E:\shared\Source\python\conda\wx\chatterbox
+        # cc.set_config(cc.CONFIG_KEY_DATA_DIRECTORY, cc.get_current_path())
         # print(cc.read_config(cc.CONFIG_KEY_DATA_DIRECTORY))
          # wx.ConfigBase.Set(wx.Config(cc.APPLICATION_NAME))
         self.data_directory = cc.read_config(cc.CONFIG_KEY_DATA_DIRECTORY)

@@ -27,6 +27,7 @@ name_column = 'name'
 def add_record():
     return {'id': None, 'name': ''}
 
+
 class MainPanel(wx.Panel):
     """ shows a list of shelves and all the children """
     def __init__(self, parent=None):
@@ -53,6 +54,7 @@ class MainPanel(wx.Panel):
         sb.list_spec = sb.make_list_spec(self.db)
         sb.panel_spec = sb.make_panel_spec(splitter)
         sb.panel = sb.make_panel(sb.panel_spec)
+        sb.parent = self
 
         splitter.SplitVertically(self.panel, sb.panel, 248)
         # splitter.SetMinimumPaneSize(200)
@@ -76,20 +78,16 @@ class MainPanel(wx.Panel):
         match = frm.is_child_of([self.panel, sb.panel], focussed_item)
         if match is not None:
             if match is sb.panel:
-                logging.info("subject")
+                sb.add(None)
             elif match is self.panel:
-                logging.info("shelf")
+                self.add(None)
 
     def handle_tool_delete(self):
         logging.info("delete tool item clicked")
 
     def add(self, event):
         record = add_record()
-        dlg: FormDialog = FormDialog(self, "Add Shelf", record, c.COLLECTION_NAME_SHELF)
-        form: FormSpec = FormSpec(dlg, "frmDemo", "Shelf", "Add Shelf", [
-            edit_line("Name", [TextField(name_column, large(), validator=FieldValidator(record, name_column, [not_empty]))])
-        ])
-        dlg.build(form)
+        dlg: FormDialog = self.make_form(record)
         result = dlg.ShowModal()
         if result == wx.ID_OK:
             db = wx.GetApp().datastore
@@ -102,4 +100,12 @@ class MainPanel(wx.Panel):
 
     def edit(self, event):
         pass
+
+    def make_form(self, record):
+        dlg: FormDialog = FormDialog(self, "Add Shelf", record, c.COLLECTION_NAME_SHELF)
+        form: FormSpec = FormSpec(dlg, "frmDemo", "Shelf", "Add Shelf", [
+            edit_line("Name", [TextField(name_column, large(), validator=FieldValidator(record, name_column, [not_empty]))])
+        ])
+        dlg.build(form)
+        return dlg
 

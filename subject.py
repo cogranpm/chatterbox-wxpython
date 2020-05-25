@@ -9,15 +9,17 @@ import wx.dataview as dv
 from fn_app import get_data_store
 
 name_column = 'name'
+description_column = 'description'
 
 shelf_id: int = None
 panel: BasePanel = None
 list_spec: ListSpec = None
 panel_spec: PanelSpec = None
+parent = None
 
 
 def add_record(shelf_id: int):
-    return {'id': None, 'shelf_id': shelf_id, 'name': ''}
+    return {'id': None, 'shelf_id': shelf_id, 'name': '', 'description': ''}
 
 def make_list_spec(datastore):
     return ListSpec([
@@ -38,18 +40,26 @@ def selection_change(self, event: dv.DataViewEvent):
     global panel, list_spec
     selected_item = panel.list.GetSelection()
     record = list_spec.model.ItemToObject(selected_item)
-    print(record)
 
-
-def add(self, event):
-    global shelf_id
-    record = add_record(shelf_id)
-    # redundance on Title and record
-    dlg: FormDialog = FormDialog(self, "Add Subject", record, c.COLLECTION_NAME_SHELF)
+def make_form(record):
+    global parent
+    dlg: FormDialog = FormDialog(parent, "Add Subject", record, c.COLLECTION_NAME_SHELF)
     form: FormSpec = FormSpec(dlg, "frmDemo", "Subject", "Add Subject", [
-        edit_line("Name", [TextField("name", large(), validator=FieldValidator(record, "name", [not_empty]))])
+        edit_line("Name", [TextField(name_column, large(),
+                                     validator=FieldValidator(record, name_column, [not_empty]))]),
+        edit_line("Description", [TextField(description_column, large(),
+                                            validator=FieldValidator(record, description_column, [not_empty]))])
     ])
     dlg.build(form)
+    return dlg
+
+def add(event):
+    global shelf_id
+    record = add_record(shelf_id)
+    if shelf_id is None:
+        return
+    # redundance on Title and record
+    dlg: FormDialog = make_form(record)
     result = dlg.ShowModal()
     if result == wx.ID_OK:
         get_data_store().add(c.COLLECTION_NAME_SUBJECT, record)
