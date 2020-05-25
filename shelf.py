@@ -56,7 +56,6 @@ class MainPanel(wx.Panel):
         sb.panel = sb.make_panel(sb.panel_spec)
         sb.parent = self
 
-
         splitter.SplitVertically(self.panel, sb.panel, 248)
         # splitter.SetMinimumPaneSize(200)
         # splitter.SetSashGravity(0.5)
