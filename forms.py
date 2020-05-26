@@ -420,10 +420,10 @@ def panel_header(parent, name, caption, add_handler, delete_handler, edit_handle
 
     btn_delete_shelf = panel_tool_button(header_panel, c.ID_DELETE_SHELF, wx.EmptyString,
                                          delete_handler, c.ICON_CANCEL)
-    btn_delete_shelf.Enable(False)
+    # btn_delete_shelf.Enable(False)
     btn_edit_shelf = panel_tool_button(header_panel, c.ID_EDIT_SHELF, wx.EmptyString,
                                        edit_handler, c.ICON_EDIT)
-    btn_edit_shelf.Enable(False)
+    # btn_edit_shelf.Enable(False)
 
     header_sizer = hsizer([shelf_caption, btn_add_shelf, btn_delete_shelf, btn_edit_shelf])
     header_panel.SetSizer(header_sizer)

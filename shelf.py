@@ -33,8 +33,8 @@ class MainPanel(wx.Panel):
     def __init__(self, parent=None):
         super().__init__(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         self.db = get_data_store()
-        self.db.create_entity(c.COLLECTION_NAME_SHELF)
-        self.db.create_entity(c.COLLECTION_NAME_SUBJECT)
+        # self.db.create_entity(c.COLLECTION_NAME_SHELF)
+        # self.db.create_entity(c.COLLECTION_NAME_SUBJECT)
         main_sizer = frm.vsizer()
         self.SetSizer(main_sizer)
         splitter = frm.splitter(self)
@@ -43,11 +43,10 @@ class MainPanel(wx.Panel):
             ColumnSpec(name_column, ColumnType.str, 'Name', 100, True)
         ], self.selection_change, create_data(self.db, c.COLLECTION_NAME_SHELF))
 
-        panel_spec = PanelSpec(splitter, "pnlShelf", "Shelf", c.COLLECTION_NAME_SHELF,
-                               self.list_spec,
-                               self.add,
-                               self.delete,
-                               self.edit)
+        panel_spec = PanelSpec(parent= splitter, name="pnlShelf", title="Shelf", collection_name=c.COLLECTION_NAME_SHELF,
+                               listspec=self.list_spec,
+                               add_handler=self.add,
+                               edit_handler=self.edit)
         self.panel = BasePanel(panel_spec)
 
         # subject
@@ -56,6 +55,7 @@ class MainPanel(wx.Panel):
         sb.panel = sb.make_panel(sb.panel_spec)
         sb.parent = self
 
+
         splitter.SplitVertically(self.panel, sb.panel, 248)
         # splitter.SetMinimumPaneSize(200)
         # splitter.SetSashGravity(0.5)
@@ -63,8 +63,8 @@ class MainPanel(wx.Panel):
 
         # no save required
         # wx.py.dispatcher.connect(receiver=self.save, signal=c.SIGNAL_SAVE)
-        wx.py.dispatcher.connect(receiver=self.handle_tool_add, signal=c.SIGNAL_ADD)
-        wx.py.dispatcher.connect(receiver=self.handle_tool_delete, signal=c.SIGNAL_DELETE)
+        py.dispatcher.connect(receiver=self.handle_tool_add, signal=c.SIGNAL_ADD)
+        py.dispatcher.connect(receiver=self.handle_tool_delete, signal=c.SIGNAL_DELETE)
         py.dispatcher.send(signal=c.SIGNAL_VIEW_ACTIVATED, sender=self, command=c.COMMAND_VIEW_ACTIVATED, more=self)
 
 
@@ -90,13 +90,11 @@ class MainPanel(wx.Panel):
         dlg: FormDialog = self.make_form(record)
         result = dlg.ShowModal()
         if result == wx.ID_OK:
-            db = wx.GetApp().datastore
-            db.add(c.COLLECTION_NAME_SHELF, record)
+            self.db.add(c.COLLECTION_NAME_SHELF, record)
             self.list_spec.data.append(record)
             self.list_spec.model.ItemAdded(dv.NullDataViewItem, self.list_spec.model.ObjectToItem(record))
 
-    def delete(self, event):
-        selected_item = self.panel.list.GetSelection()
+
 
     def edit(self, event):
         pass

@@ -29,7 +29,7 @@ def make_list_spec(datastore):
 
 def make_panel_spec(parent):
     return PanelSpec(parent, "pnlSubject", "Subject",
-                     c.COLLECTION_NAME_SUBJECT, list_spec, add, delete, edit)
+                     c.COLLECTION_NAME_SUBJECT, list_spec, add, edit)
 
 
 def make_panel(spec: PanelSpec):

@@ -2,6 +2,7 @@ import wx
 import wx.py as py
 from dataclasses import dataclass
 import forms as frm
+from fn_app import get_data_store
 from typing import Any
 from lists import ListSpec
 import chatterbox_constants as c
@@ -14,7 +15,6 @@ class PanelSpec:
     collection_name: str
     listspec: ListSpec
     add_handler: Any
-    delete_handler: Any
     edit_handler: Any
 
 class BasePanel(wx.Panel):
@@ -26,20 +26,27 @@ class BasePanel(wx.Panel):
                          size=wx.DefaultSize,
                          style=wx.TAB_TRAVERSAL,
                          name=spec.name)
+        self.spec = spec
         self.collection_name = spec.collection_name
-        self.db = wx.GetApp().datastore
-        if not spec.collection_name is None:
-            self.db.create_entity(spec.collection_name)
-
+        self.db = get_data_store()
         main_sizer = frm.vsizer()
         self.SetSizer(main_sizer)
         header_panel = frm.panel_header(self, spec.name + "Header", spec.title,
-                                              spec.add_handler, spec.delete_handler,
-                                              spec.edit_handler)
+                                        spec.add_handler,
+                                        self.delete,
+                                        spec.edit_handler)
         main_sizer.Add(header_panel, 0, 0, 5)
         self.list = spec.listspec.build(self)
         main_sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
 
+    def delete(self, event):
+        selected_item = list.GetSelection()
+        if selected_item is not None:
+            if frm.confirm_delete(self):
+                    self.spec.listspec.model.ItemDeleted(dv.NullDataViewItem, selected_item)
+                    record = self.spec.listspec.model.ItemToObject(selected_item)
+                    self.db.remove(c.COLLECTION_NAME_SHELF, record)
+                    self.spec.listspec.data.remove(record)
 
 
 
