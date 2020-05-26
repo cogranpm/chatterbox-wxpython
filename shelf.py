@@ -85,6 +85,8 @@ class MainPanel(wx.Panel):
     def handle_tool_delete(self):
         logging.info("delete tool item clicked")
 
+    # can this be pulled out into the base class
+    # or some resusable function
     def add(self, event):
         record = add_record()
         dlg: FormDialog = self.make_form(record)
