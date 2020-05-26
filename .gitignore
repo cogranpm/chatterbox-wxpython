@@ -5,3 +5,7 @@
 /forms/
 __pycache__/
 /chatterbox.ini
+*.pyc/
+/*.pyc
+/*.project
+/.pydevproject
