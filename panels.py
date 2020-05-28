@@ -1,5 +1,6 @@
 import wx
 import wx.py as py
+import wx.dataview as dv
 from dataclasses import dataclass
 import forms as frm
 from fn_app import get_data_store
@@ -40,7 +41,7 @@ class BasePanel(wx.Panel):
         main_sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
 
     def delete(self, event):
-        selected_item = list.GetSelection()
+        selected_item = self.list.GetSelection()
         if selected_item is not None:
             if frm.confirm_delete(self):
                     self.spec.listspec.model.ItemDeleted(dv.NullDataViewItem, selected_item)
