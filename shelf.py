@@ -41,7 +41,7 @@ class MainPanel(wx.Panel):
 
         self.list_spec = ListSpec([
             ColumnSpec(name_column, ColumnType.str, 'Name', 100, True)
-        ], self.selection_change, create_data(self.db, c.COLLECTION_NAME_SHELF))
+        ], self.selection_change, self.edit, create_data(self.db, c.COLLECTION_NAME_SHELF))
 
         panel_spec = PanelSpec(parent= splitter, name="pnlShelf", title="Shelf", collection_name=c.COLLECTION_NAME_SHELF,
                                listspec=self.list_spec,
@@ -99,11 +99,16 @@ class MainPanel(wx.Panel):
 
 
     def edit(self, event):
-        pass
+        selected_item = self.panel.list.GetSelection()
+        record = self.list_spec.model.ItemToObject(selected_item)
+        dlg: FormDialog = self.make_form(record)
+        result = dlg.ShowModal()
+        
+
 
     def make_form(self, record):
         dlg: FormDialog = FormDialog(self, "Add Shelf", record, c.COLLECTION_NAME_SHELF)
-        form: FormSpec = FormSpec(dlg, "frmDemo", "Shelf", "Add Shelf", [
+        form: FormSpec = FormSpec(dlg, "frmShelf", "Shelf", "Add Shelf", [
             edit_line("Name", [TextField(name_column, large(), validator=FieldValidator(record, name_column, [not_empty]))])
         ])
         dlg.build(form)

@@ -27,11 +27,13 @@ def create_data(db, collection_name):
 
 class ListSpec:
 
-    def __init__(self, columns: List[ColumnSpec], selection_handler, data):
+    def __init__(self, columns: List[ColumnSpec], selection_handler, edit_handler, data = None):
         self.columns = columns
         self.data = data
         self.model = PyTestModel(self.data, self.columns)
         self.selection_handler = selection_handler
+        if edit_handler is not None:
+            self.edit_handler = edit_handler
 
     def build(self, parent):
         dvc = dv.DataViewCtrl(parent, wx.ID_ANY, style=wx.BORDER_THEME)
@@ -46,6 +48,10 @@ class ListSpec:
             c.Sortable = True
 
         dvc.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.selection_handler)
+        
+        if self.edit_handler is not None:
+            dvc.Bind(dv.EVT_DATAVIEW_ITEM_ACTIVATED, self.edit_handler)
+            
         return dvc
 
 

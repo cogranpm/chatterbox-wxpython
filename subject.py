@@ -24,7 +24,7 @@ def add_record(shelf_id: int):
 def make_list_spec(datastore):
     return ListSpec([
         ColumnSpec(name_column, ColumnType.str, 'Name', 100, True)
-    ], selection_change, create_data(datastore, c.COLLECTION_NAME_SUBJECT))
+    ], selection_change, edit, create_data(datastore, c.COLLECTION_NAME_SUBJECT))
 
 
 def make_panel_spec(parent):

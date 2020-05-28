@@ -55,7 +55,7 @@ class PlaygroundPanel(wx.Panel):
             ColumnSpec(state_column, ColumnType.str, 'State', 45, True),
             ColumnSpec(phone_column, ColumnType.str, 'Phone', 145, True),
             ColumnSpec(email_column, ColumnType.str, 'Email', 145, True)
-        ], self.list_selection_change, create_data(self.db, collection_name))
+        ], self.list_selection_change, None, create_data(self.db, collection_name))
 
         # base class
         self.list = self.listspec.build(self)
