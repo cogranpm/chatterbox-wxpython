@@ -97,13 +97,11 @@ class MainPanel(wx.Panel):
             self.list_spec.model.ItemAdded(dv.NullDataViewItem, self.list_spec.model.ObjectToItem(record))
 
 
-
     def edit(self, event):
         selected_item = self.panel.list.GetSelection()
         record = self.list_spec.model.ItemToObject(selected_item)
         dlg: FormDialog = self.make_form(record)
         result = dlg.ShowModal()
-        
 
 
     def make_form(self, record):
