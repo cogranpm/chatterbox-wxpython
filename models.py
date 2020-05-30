@@ -41,6 +41,8 @@ class PyTestModel(dv.PyDataViewModel):
         return self.columns[index]
 
     def GetChildren(self, item, children):
+        if self.data is None:
+            return
         for row in self.data:
             children.append(self.ObjectToItem(row))
         return len(self.data)

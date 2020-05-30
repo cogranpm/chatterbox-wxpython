@@ -8,6 +8,7 @@ import wx
 import wx.dataview as dv
 from fn_app import get_data_store
 from shelve import Shelf
+from pkgutil import get_data
 
 
 name_column = 'name'
@@ -75,8 +76,13 @@ def add(event):
     if result == wx.ID_OK:
         get_data_store().add(c.COLLECTION_NAME_SUBJECT, record)
 
-def delete(self, event):
+def delete(event):
     pass
 
-def edit(self, event):
-    pass
+def edit(event):
+    selected_item = panel.list.GetSelection()
+    record = list_spec.model.ItemToObject(selected_item)
+    dlg: FormDialog = make_form(record)
+    result = dlg.ShowModal()
+    if result == wx.ID_OK:
+        get_data_store().update(c.COLLECTION_NAME_SUBJECT, record)
