@@ -1,3 +1,9 @@
+""" module for subject view
+aim is to do as much in the functional style:
+immutable values
+pure functions
+no side effects scattered, all should occur in single place """
+
 import chatterbox_constants as c
 from lists import ListSpec, ColumnType, ColumnSpec, get_selected_item, get_record_from_item
 from panels import PanelSpec, BasePanel
