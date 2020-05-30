@@ -14,7 +14,7 @@ import chatterbox_constants as c
 import wx.dataview as dv
 from fn_app import get_data_store
 import forms as frm
-from lists import states, ColumnSpec, ColumnType, ListSpec, create_data
+from lists import states, ColumnSpec, ColumnType, ListSpec, create_data, get_selected_item, get_record_from_item
 from validators import FieldValidator, CheckboxValidator, ComboValidator, not_empty
 import wx.py as py
 from models import ViewState
@@ -69,10 +69,10 @@ class MainPanel(wx.Panel):
 
 
     def selection_change(self, event: dv.DataViewEvent):
-        selected_item = self.panel.list.GetSelection()
+        selected_item = get_selected_item(self.panel.list)
         if selected_item is None:
             return
-        record = self.list_spec.model.ItemToObject(selected_item)
+        record = get_record_from_item(self.list_spec.model, selected_item)
         sb.shelf_id = record['id']
         sb.parent_changed()
 
@@ -107,6 +107,7 @@ class MainPanel(wx.Panel):
         result = dlg.ShowModal()
         if result == wx.ID_OK:
             self.db.update(c.COLLECTION_NAME_SHELF, record)
+            self.list_spec.model.ItemChanged(self.list_spec.model.ObjectToItem(record))
 
 
     def make_form(self, record):

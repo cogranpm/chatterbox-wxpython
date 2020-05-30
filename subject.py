@@ -1,5 +1,5 @@
 import chatterbox_constants as c
-from lists import ListSpec, ColumnType, ColumnSpec
+from lists import ListSpec, ColumnType, ColumnSpec, get_selected_item, get_record_from_item
 from panels import PanelSpec, BasePanel
 from forms import FormDialog, FormSpec, TextField, edit_line, large
 from validators import not_empty, FieldValidator
@@ -47,12 +47,20 @@ def make_panel(spec: PanelSpec):
 
 
 def selection_change(event: dv.DataViewEvent):
-    selected_item = panel.list.GetSelection()
-    record = list_spec.model.ItemToObject(selected_item)
+    selected_item = get_selected_item(panel.list)
+    if selected_item is not None:
+        record = get_record_from_item(list_spec.model, selected_item)
+        # not sure yet what to do with this
+        # probably pass on to grinders, child subject(perhaps shelf) and so on
+        
+def make_dialog(record, title: str)-> FormDialog:
+    dlg: FormDialog = FormDialog(parent, title, record, c.COLLECTION_NAME_SHELF)
+    return dlg
 
-def make_form(record):
-    dlg: FormDialog = FormDialog(parent, "Add Subject", record, c.COLLECTION_NAME_SHELF)
-    form: FormSpec = FormSpec(dlg, "frmDemo", "Subject", "Add Subject", [
+
+def make_form(record, title: str):
+    dlg = make_dialog(record, title)
+    form: FormSpec = FormSpec(dlg, "frmDemo", "Subject", title, [
         edit_line("Name", [TextField(name_column, large(),
                                      validator=FieldValidator(record, name_column, [not_empty]))]),
         edit_line("Description", [TextField(description_column, large(),
@@ -70,16 +78,20 @@ def add(event):
         return
     record = add_record(shelf_id)
     # redundance on Title and record
-    dlg: FormDialog = make_form(record)
+    dlg: FormDialog = make_form(record, "Add Subject")
     result = dlg.ShowModal()
     if result == wx.ID_OK:
         get_data_store().add(c.COLLECTION_NAME_SUBJECT, record)
+        list_spec.data.append(record)
+        list_spec.model.ItemAdded(dv.NullDataViewItem, list_spec.model.ObjectToItem(record))
+
 
 
 def edit(event):
-    selected_item = panel.list.GetSelection()
-    record = list_spec.model.ItemToObject(selected_item)
-    dlg: FormDialog = make_form(record)
+    selected_item = get_selected_item(panel.list)
+    record = get_record_from_item(list_spec.model, selected_item)
+    dlg: FormDialog = make_form(record, "Edit Subject")
     result = dlg.ShowModal()
     if result == wx.ID_OK:
         get_data_store().update(c.COLLECTION_NAME_SUBJECT, record)
+        list_spec.model.ItemChanged(list_spec.model.ObjectToItem(record))

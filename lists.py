@@ -24,6 +24,18 @@ def create_data(db, collection_name):
         list.append(record)
     return list
 
+def get_record_from_item(model: PyTestModel, selected_item: dv.DataViewItem):
+    if selected_item is None:
+        return None
+    return model.ItemToObject(selected_item)
+
+def get_selected_item(list: dv.DataViewCtrl) -> dv.DataViewItem:
+    if list is not None:
+        return list.GetSelection()
+    else:
+        return None 
+    
+
 class ListSpec:
 
     def __init__(self, columns: List[ColumnSpec], selection_handler, edit_handler, data = None):
