@@ -32,8 +32,7 @@ class ListSpec:
         self.data = data
         self.model = PyTestModel(self.data, self.columns)
         self.selection_handler = selection_handler
-        if edit_handler is not None:
-            self.edit_handler = edit_handler
+        self.edit_handler = edit_handler
 
     def build(self, parent):
         dvc = dv.DataViewCtrl(parent, wx.ID_ANY, style=wx.BORDER_THEME)
