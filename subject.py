@@ -9,6 +9,7 @@ import wx.dataview as dv
 from fn_app import get_data_store
 from shelve import Shelf
 
+
 name_column = 'name'
 description_column = 'description'
 shelf_id: int = None
@@ -31,7 +32,8 @@ def add_record(shelf_id: int):
 
 def make_list_spec(datastore):
     return ListSpec([
-        ColumnSpec(name_column, ColumnType.str, 'Name', 100, True)
+        ColumnSpec(name_column, ColumnType.str, 'Name', 100, True),
+        ColumnSpec(description_column, ColumnType.str, 'Description', 100, True)
     ], selection_change, edit, create_data())
 
 
