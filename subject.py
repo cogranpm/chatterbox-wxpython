@@ -20,7 +20,6 @@ parent = None
 
 
 def create_data():
-    global shelf_id
     records = get_data_store().query(c.COLLECTION_NAME_SUBJECT, {'shelf_id': shelf_id})
     list = []
     for record in records:
@@ -46,13 +45,11 @@ def make_panel(spec: PanelSpec):
     return BasePanel(spec)
 
 
-def selection_change(self, event: dv.DataViewEvent):
-    global panel, list_spec
+def selection_change(event: dv.DataViewEvent):
     selected_item = panel.list.GetSelection()
     record = list_spec.model.ItemToObject(selected_item)
 
 def make_form(record):
-    global parent
     dlg: FormDialog = FormDialog(parent, "Add Subject", record, c.COLLECTION_NAME_SHELF)
     form: FormSpec = FormSpec(dlg, "frmDemo", "Subject", "Add Subject", [
         edit_line("Name", [TextField(name_column, large(),
@@ -64,13 +61,11 @@ def make_form(record):
     return dlg
 
 def parent_changed():
-    global shelf_id, list_spec
     list_spec.update_data(create_data())
     
     
     
 def add(event):
-    global shelf_id
     if shelf_id is None:
         return
     record = add_record(shelf_id)
