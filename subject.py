@@ -1,5 +1,5 @@
 import chatterbox_constants as c
-from lists import ListSpec, ColumnType, ColumnSpec, create_data
+from lists import ListSpec, ColumnType, ColumnSpec
 from panels import PanelSpec, BasePanel
 from forms import FormDialog, FormSpec, TextField, edit_line, large
 from validators import not_empty, FieldValidator
@@ -7,10 +7,10 @@ from datastore import DataStore
 import wx
 import wx.dataview as dv
 from fn_app import get_data_store
+from shelve import Shelf
 
 name_column = 'name'
 description_column = 'description'
-
 shelf_id: int = None
 panel: BasePanel = None
 list_spec: ListSpec = None
@@ -18,13 +18,21 @@ panel_spec: PanelSpec = None
 parent = None
 
 
+def create_data():
+    global shelf_id
+    records = get_data_store().query(c.COLLECTION_NAME_SUBJECT, {'shelf_id': shelf_id})
+    list = []
+    for record in records:
+        list.append(record)
+    return list
+
 def add_record(shelf_id: int):
     return {'id': None, 'shelf_id': shelf_id, 'name': '', 'description': ''}
 
 def make_list_spec(datastore):
     return ListSpec([
         ColumnSpec(name_column, ColumnType.str, 'Name', 100, True)
-    ], selection_change, edit, create_data(datastore, c.COLLECTION_NAME_SUBJECT))
+    ], selection_change, edit, create_data())
 
 
 def make_panel_spec(parent):
@@ -53,11 +61,17 @@ def make_form(record):
     dlg.build(form)
     return dlg
 
+def parent_changed():
+    global shelf_id, list_spec
+    list_spec.update_data(create_data())
+    
+    
+    
 def add(event):
     global shelf_id
-    record = add_record(shelf_id)
     if shelf_id is None:
         return
+    record = add_record(shelf_id)
     # redundance on Title and record
     dlg: FormDialog = make_form(record)
     result = dlg.ShowModal()

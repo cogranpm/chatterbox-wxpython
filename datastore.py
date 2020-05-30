@@ -53,5 +53,12 @@ class DataStore:
         else:
             return dict()
 
+    def query(self, name: str, filters:dict):
+        table = self.get_collection(name)
+        if table is not None:
+            # ** allows you to deconstruct a dict into keyword arguments
+            return table.find(**filters)
+        else:
+            return dict()
 
 

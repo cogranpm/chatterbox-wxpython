@@ -18,7 +18,6 @@ def create_list_column(index: int, dvc: dv.DataViewCtrl, column_spec: ColumnSpec
 
 
 def create_data(db, collection_name):
-    db.create_entity(collection_name)
     records = db.all(collection_name)
     list = []
     for record in records:
@@ -29,6 +28,7 @@ class ListSpec:
 
     def __init__(self, columns: List[ColumnSpec], selection_handler, edit_handler, data = None):
         self.columns = columns
+        # does this need to be stored in both this class AND the model instance
         self.data = data
         self.model = PyTestModel(self.data, self.columns)
         self.selection_handler = selection_handler
@@ -53,6 +53,11 @@ class ListSpec:
             dvc.Bind(dv.EVT_DATAVIEW_ITEM_ACTIVATED, self.edit_handler)
             
         return dvc
+    
+    def update_data(self, data):
+        self.data = data
+        self.model.data = data
+        self.model.Cleared()
 
 
 @dataclass(frozen=True)

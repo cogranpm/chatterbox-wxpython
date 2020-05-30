@@ -48,6 +48,7 @@ class BasePanel(wx.Panel):
                     record = self.spec.listspec.model.ItemToObject(selected_item)
                     self.db.remove(c.COLLECTION_NAME_SHELF, record)
                     self.spec.listspec.data.remove(record)
+                    self.spec.listspec.model.Cleared()
 
 
 

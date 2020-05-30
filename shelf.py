@@ -33,8 +33,8 @@ class MainPanel(wx.Panel):
     def __init__(self, parent=None):
         super().__init__(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         self.db = get_data_store()
-        # self.db.create_entity(c.COLLECTION_NAME_SHELF)
-        # self.db.create_entity(c.COLLECTION_NAME_SUBJECT)
+        self.db.create_entity(c.COLLECTION_NAME_SHELF)
+        self.db.create_entity(c.COLLECTION_NAME_SUBJECT)
         main_sizer = frm.vsizer()
         self.SetSizer(main_sizer)
         splitter = frm.splitter(self)
@@ -70,8 +70,11 @@ class MainPanel(wx.Panel):
 
     def selection_change(self, event: dv.DataViewEvent):
         selected_item = self.panel.list.GetSelection()
+        if selected_item is None:
+            return
         record = self.list_spec.model.ItemToObject(selected_item)
         sb.shelf_id = record['id']
+        sb.parent_changed()
 
     def handle_tool_add(self):
         focussed_item = wx.Window.FindFocus()
@@ -102,6 +105,8 @@ class MainPanel(wx.Panel):
         record = self.list_spec.model.ItemToObject(selected_item)
         dlg: FormDialog = self.make_form(record)
         result = dlg.ShowModal()
+        if result == wx.ID_OK:
+            self.db.update(c.COLLECTION_NAME_SHELF, record)
 
 
     def make_form(self, record):
