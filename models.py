@@ -56,13 +56,13 @@ class PyTestModel(dv.PyDataViewModel):
         return dv.NullDataViewItem
 
     def GetColumnType(self, col):
-        global column_type_map
+        # global column_type_map
         return column_type_map[self.get_column_by_index(col).data_type]
 
     def GetColumnCount(self):
-        # this needs to change to a map access
-        return len(self.columns.keys())
-        # return len(self.data[0])
+        return len(self.columns)
+        #return len(self.columns.keys())
+
 
     def GetValue(self, item, col):
         row = self.ItemToObject(item)

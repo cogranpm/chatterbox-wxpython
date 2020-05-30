@@ -55,6 +55,7 @@ class ListSpec:
         return dvc
     
     def update_data(self, data):
+        # does this class need data member?
         self.data = data
         self.model.data = data
         self.model.Cleared()

@@ -65,7 +65,6 @@ def parent_changed():
     list_spec.update_data(create_data())
     
     
-    
 def add(event):
     if shelf_id is None:
         return
@@ -76,8 +75,6 @@ def add(event):
     if result == wx.ID_OK:
         get_data_store().add(c.COLLECTION_NAME_SUBJECT, record)
 
-def delete(event):
-    pass
 
 def edit(event):
     selected_item = panel.list.GetSelection()
