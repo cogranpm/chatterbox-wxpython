@@ -5,6 +5,7 @@ pure functions
 no side effects scattered, all should occur in single place """
 
 import chatterbox_constants as c
+import data_functions as df
 from lists import ListSpec, ColumnType, ColumnSpec, get_selected_item, get_record_from_item
 from panels import PanelSpec, BasePanel
 from forms import FormDialog, FormSpec, TextField, edit_line, large
@@ -15,6 +16,7 @@ import wx.dataview as dv
 from fn_app import get_data_store
 from shelve import Shelf
 from pkgutil import get_data
+from typing import Callable, OrderedDict
 
 
 name_column = 'name'
@@ -26,8 +28,9 @@ panel_spec: PanelSpec = None
 parent = None
 
 
-def create_data():
-    records = get_data_store().query(c.COLLECTION_NAME_SUBJECT, {'shelf_id': shelf_id})
+def create_data(query_fn):
+    # records = get_data_store().query(c.COLLECTION_NAME_SUBJECT, {'shelf_id': shelf_id})
+    records = query_fn(shelf_id)
     list = []
     for record in records:
         list.append(record)
@@ -40,7 +43,7 @@ def make_list_spec(datastore):
     return ListSpec([
         ColumnSpec(name_column, ColumnType.str, 'Name', 100, True),
         ColumnSpec(description_column, ColumnType.str, 'Description', 100, True)
-    ], selection_change, edit, create_data())
+    ], selection_change, edit, create_data(df.get_subjects_by_shelfid))
 
 
 def make_panel_spec(parent):
@@ -76,7 +79,7 @@ def make_form(record, title: str):
     return dlg
 
 def parent_changed():
-    list_spec.update_data(create_data())
+    list_spec.update_data(create_data(df.get_subjects_by_shelfid))
     
     
 def add(event):
