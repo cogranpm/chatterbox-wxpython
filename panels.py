@@ -37,7 +37,7 @@ class BasePanel(wx.Panel):
                                         self.delete,
                                         spec.edit_handler)
         main_sizer.Add(header_panel, 0, 0, 5)
-        self.list = spec.listspec.build(self)
+        self.list = spec.listspec.make_list(self)
         main_sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
 
     def delete(self, event):

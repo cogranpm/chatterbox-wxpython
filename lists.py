@@ -60,7 +60,7 @@ class ListSpec:
     #     self.edit_handler = edit_handler
     #===========================================================================
 
-    def build(self, parent):
+    def make_list(self, parent) -> dv.DataViewCtrl:
         dvc = dv.DataViewCtrl(parent, wx.ID_ANY, style=wx.BORDER_THEME)
         dvc.AssociateModel(self.model)
         self.model.DecRef()

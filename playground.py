@@ -59,7 +59,7 @@ class PlaygroundPanel(wx.Panel):
             data = create_data(self.db, collection_name))
 
         # base class
-        self.list = self.listspec.build(self)
+        self.list = self.listspec.make_list(self)
         wx.py.dispatcher.connect(receiver=self.save, signal=c.SIGNAL_SAVE)
         wx.py.dispatcher.connect(receiver=self.add, signal=c.SIGNAL_ADD)
         wx.py.dispatcher.connect(receiver=self.delete, signal=c.SIGNAL_DELETE)
