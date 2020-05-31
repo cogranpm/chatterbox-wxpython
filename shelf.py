@@ -50,7 +50,7 @@ class MainPanel(wx.Panel):
         self.panel = BasePanel(panel_spec)
 
         # subject
-        sb.list_spec = sb.make_list_spec(self.db)
+        sb.list_spec = sb.make_list_spec()
         sb.panel_spec = sb.make_panel_spec(splitter)
         sb.panel = sb.make_panel(sb.panel_spec)
         sb.parent = self

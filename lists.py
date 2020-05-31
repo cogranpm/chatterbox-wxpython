@@ -70,6 +70,13 @@ class ListSpec:
         self.data = data
         self.model.data = data
         self.model.Cleared()
+        
+    def added_record(self, record):
+        self.model.data.append(record)
+        self.model.ItemAdded(dv.NullDataViewItem, self.model.ObjectToItem(record))
+        
+    def edited_record(self, record):
+        self.model.ItemChanged(self.model.ObjectToItem(record))
 
 
 @dataclass(frozen=True)

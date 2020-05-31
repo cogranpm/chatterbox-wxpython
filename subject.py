@@ -28,9 +28,8 @@ panel_spec: PanelSpec = None
 parent = None
 
 
-def create_data(query_fn):
-    # records = get_data_store().query(c.COLLECTION_NAME_SUBJECT, {'shelf_id': shelf_id})
-    records = query_fn(shelf_id)
+def create_data(shelf_key, query_fn):
+    records = query_fn(shelf_key)
     list = []
     for record in records:
         list.append(record)
@@ -39,11 +38,11 @@ def create_data(query_fn):
 def add_record(shelf_id: int):
     return {'id': None, 'shelf_id': shelf_id, 'name': '', 'description': ''}
 
-def make_list_spec(datastore):
+def make_list_spec():
     return ListSpec([
         ColumnSpec(name_column, ColumnType.str, 'Name', 100, True),
         ColumnSpec(description_column, ColumnType.str, 'Description', 100, True)
-    ], selection_change, edit, create_data(df.get_subjects_by_shelfid))
+    ], selection_change, edit, create_data(shelf_id, df.get_subjects_by_shelfid))
 
 
 def make_panel_spec(parent):
@@ -60,7 +59,7 @@ def selection_change(event: dv.DataViewEvent):
     if selected_item is not None:
         record = get_record_from_item(list_spec.model, selected_item)
         # not sure yet what to do with this
-        # probably pass on to grinders, child subject(perhaps shelf) and so on
+        # probably pass on to grinders, publications, child subject(perhaps shelf) and so on
         
 def make_dialog(record, title: str)-> FormDialog:
     dlg: FormDialog = FormDialog(parent, title, record, c.COLLECTION_NAME_SHELF)
@@ -79,7 +78,7 @@ def make_form(record, title: str):
     return dlg
 
 def parent_changed():
-    list_spec.update_data(create_data(df.get_subjects_by_shelfid))
+    list_spec.update_data(create_data(shelf_id, df.get_subjects_by_shelfid))
     
     
 def add(event):
@@ -91,8 +90,7 @@ def add(event):
     result = dlg.ShowModal()
     if result == wx.ID_OK:
         get_data_store().add(c.COLLECTION_NAME_SUBJECT, record)
-        list_spec.data.append(record)
-        list_spec.model.ItemAdded(dv.NullDataViewItem, list_spec.model.ObjectToItem(record))
+        list_spec.added_record(record)
 
 
 
@@ -103,4 +101,4 @@ def edit(event):
     result = dlg.ShowModal()
     if result == wx.ID_OK:
         get_data_store().update(c.COLLECTION_NAME_SUBJECT, record)
-        list_spec.model.ItemChanged(list_spec.model.ObjectToItem(record))
+        list_spec.edited_record(record)
