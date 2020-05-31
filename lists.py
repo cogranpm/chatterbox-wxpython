@@ -1,8 +1,8 @@
 import wx
 import wx.dataview as dv
 from enum import Enum
-from typing import Dict, List
-from dataclasses import dataclass
+from typing import Dict, List, Callable, Any
+from dataclasses import dataclass, InitVar
 from models import PyTestModel, ColumnSpec, ColumnType
 
 
@@ -36,29 +36,44 @@ def get_selected_item(list: dv.DataViewCtrl) -> dv.DataViewItem:
         return None 
     
 
+# would like to make this frozen, but model is a problem 
+# as it is set in postinit
+@dataclass()
 class ListSpec:
 
-    def __init__(self, columns: List[ColumnSpec], selection_handler, edit_handler, data = None):
-        self.columns = columns
-        # does this need to be stored in both this class AND the model instance
-        self.data = data
-        self.model = PyTestModel(self.data, self.columns)
-        self.selection_handler = selection_handler
-        self.edit_handler = edit_handler
+    data: InitVar[Any] = None
+    columns: InitVar[List[ColumnSpec]] = None
+    model: PyTestModel = None
+    selection_handler: Callable = None
+    edit_handler: Callable = None
+    
+    def __post_init__(self, data, columns):
+        if self.model is None:
+            self.model = PyTestModel(data, columns)
+
+    #===========================================================================
+    # def __init__(self, columns: List[ColumnSpec], selection_handler, edit_handler, data = None):
+    #     self.columns = columns
+    #     # does this need to be stored in both this class AND the model instance
+    #     self.model = PyTestModel(data, self.columns)
+    #     self.selection_handler = selection_handler
+    #     self.edit_handler = edit_handler
+    #===========================================================================
 
     def build(self, parent):
         dvc = dv.DataViewCtrl(parent, wx.ID_ANY, style=wx.BORDER_THEME)
         dvc.AssociateModel(self.model)
         self.model.DecRef()
 
-        for i, column in enumerate(self.columns):
+        for i, column in enumerate(self.model.columns):
             if column.browseable:
                 list_column = create_list_column(i, dvc, column)
 
         for c in dvc.Columns:
             c.Sortable = True
 
-        dvc.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.selection_handler)
+        if self.selection_handler is not None:
+            dvc.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.selection_handler)
         
         if self.edit_handler is not None:
             dvc.Bind(dv.EVT_DATAVIEW_ITEM_ACTIVATED, self.edit_handler)
@@ -66,10 +81,8 @@ class ListSpec:
         return dvc
     
     def update_data(self, data):
-        # does this class need data member?
-        self.data = data
-        self.model.data = data
-        self.model.Cleared()
+        self.model.change_data(data)
+
         
     def added_record(self, record):
         self.model.data.append(record)

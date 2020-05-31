@@ -44,7 +44,7 @@ class PlaygroundPanel(wx.Panel):
 
         # this should be parameter of the class perhaps
         # create_data would be call to database
-        self.listspec = ListSpec([
+        self.listspec = ListSpec(columns = [
             ColumnSpec(name_column, ColumnType.str, 'Name', 100, True),
             ColumnSpec(age_column, ColumnType.int, 'Age', 40, True),
             ColumnSpec(member_column, ColumnType.bool, 'Member', 40, True),
@@ -55,7 +55,8 @@ class PlaygroundPanel(wx.Panel):
             ColumnSpec(state_column, ColumnType.str, 'State', 45, True),
             ColumnSpec(phone_column, ColumnType.str, 'Phone', 145, True),
             ColumnSpec(email_column, ColumnType.str, 'Email', 145, True)
-        ], self.list_selection_change, None, create_data(self.db, collection_name))
+        ], selection_handler = self.list_selection_change, 
+            data = create_data(self.db, collection_name))
 
         # base class
         self.list = self.listspec.build(self)
@@ -98,7 +99,7 @@ class PlaygroundPanel(wx.Panel):
                 self.TransferDataFromWindow()
 
                 if self.form.view_state == ViewState.adding:
-                    self.listspec.data.append(record)
+                    self.listspec.model.data.append(record)
                     self.listspec.model.ItemAdded(dv.NullDataViewItem, self.listspec.model.ObjectToItem(record))
                     self.db.add(collection_name, record)
                     #py.dispatcher.send(signal=c.SIGNAL_STORE, sender=self, command=c.COMMAND_ADD,
@@ -126,8 +127,7 @@ class PlaygroundPanel(wx.Panel):
                     self.listspec.model.ItemDeleted(dv.NullDataViewItem, selected_item)
                     record = self.listspec.model.ItemToObject(selected_item)
                     self.db.remove(collection_name, record)
-                    # del (self.listspec.data[0])
-                    self.listspec.data.remove(record)
+                    self.listspec.model.data.remove(record)
                     self.form.set_viewstate(ViewState.empty)
 
     def list_selection_change(self, event: dv.DataViewEvent):
@@ -182,7 +182,7 @@ class PlaygroundForm(wx.Dialog):
         # self.data = create_data()
         # self.model = PyTestModel(self.data, self.columns)
         # self.list = self.create_list()
-        self.listspec = ListSpec([
+        self.listspec = ListSpec(columns = [
             ColumnSpec(name_column, ColumnType.str, 'Name', 100, True),
             ColumnSpec(age_column, ColumnType.int, 'Age', 40, True),
             ColumnSpec(member_column, ColumnType.bool, 'Member', 40, True),
@@ -193,15 +193,10 @@ class PlaygroundForm(wx.Dialog):
             ColumnSpec(state_column, ColumnType.str, 'State', 45, True),
             ColumnSpec(phone_column, ColumnType.str, 'Phone', 145, True),
             ColumnSpec(email_column, ColumnType.str, 'Email', 145, True)
-        ], self.list_selection_change, create_data())
+        ], selection_handler = self.list_selection_change, 
+            data = create_data())
         self.list = self.listspec.build(self)
 
-        # self.columns = {self.name_column.key: self.name_column, self.age_column.key: self.age_column, self.member_column.key: self.member_column,
-        #                self.address1_column.key: self.address1_column, self.address2_column.key: self.address2_column}
-
-
-        # dispatcher.connect
-        # just showing an example
         wx.py.dispatcher.connect(receiver=self.push, signal='Interpreter.push')
 
         # declare the validators
@@ -263,12 +258,13 @@ class PlaygroundForm(wx.Dialog):
 
     def add_button_click(self, event):
         new_person = {'name': 'Peter', 'age': 33, 'address1': '14 Angel Terrace'}
-        self.listspec.data.append(new_person)
+        self.listspec.model.data.append(new_person)
         self.listspec.model.ItemAdded(dv.NullDataViewItem, self.listspec.model.ObjectToItem(new_person))
 
     def delete_button_click(self, event):
-        self.model.ItemDeleted(dv.NullDataViewItem, self.listspec.model.ObjectToItem(self.listspec.data[0]))
-        del(self.listspec.data[0])
+        self.model.ItemDeleted(dv.NullDataViewItem, 
+                               self.listspec.model.ObjectToItem(self.listspec.model.data[0]))
+        del(self.listspec.model.data[0])
 
     def edit_form(self):
         helpstr = """

@@ -39,9 +39,11 @@ class MainPanel(wx.Panel):
         self.SetSizer(main_sizer)
         splitter = frm.splitter(self)
 
-        self.list_spec = ListSpec([
-            ColumnSpec(name_column, ColumnType.str, 'Name', 100, True)
-        ], self.selection_change, self.edit, create_data(self.db, c.COLLECTION_NAME_SHELF))
+        self.list_spec = ListSpec(columns = 
+            [ColumnSpec(name_column, ColumnType.str, 'Name', 100, True)], 
+            selection_handler = self.selection_change, 
+            edit_handler = self.edit, 
+            data = create_data(self.db, c.COLLECTION_NAME_SHELF))
 
         panel_spec = PanelSpec(parent= splitter, name="pnlShelf", title="Shelf", collection_name=c.COLLECTION_NAME_SHELF,
                                listspec=self.list_spec,

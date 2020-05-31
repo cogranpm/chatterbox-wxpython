@@ -39,10 +39,12 @@ def add_record(shelf_id: int):
     return {'id': None, 'shelf_id': shelf_id, 'name': '', 'description': ''}
 
 def make_list_spec():
-    return ListSpec([
+    return ListSpec(columns = [
         ColumnSpec(name_column, ColumnType.str, 'Name', 100, True),
         ColumnSpec(description_column, ColumnType.str, 'Description', 100, True)
-    ], selection_change, edit, create_data(shelf_id, df.get_subjects_by_shelfid))
+    ], selection_handler = selection_change, 
+        edit_handler = edit, 
+        data = create_data(shelf_id, df.get_subjects_by_shelfid))
 
 
 def make_panel_spec(parent):

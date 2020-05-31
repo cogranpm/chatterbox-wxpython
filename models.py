@@ -35,6 +35,22 @@ class PyTestModel(dv.PyDataViewModel):
         super().__init__()
         self.data = data
         self.columns = columns
+        
+    def change_data(self, records):
+        # cleared doesn't work on linux
+        # so need to delete by item and 
+        # add by item
+        if self.data is not None:
+            for item in self.data:
+                object = self.ObjectToItem(item)
+                if object is not None:
+                    self.ItemDeleted(dv.NullDataViewItem, self.ObjectToItem(item))
+        
+        self.data = records        
+        for record in self.data:
+            self.ItemAdded(dv.NullDataViewItem, self.ObjectToItem(record))
+
+            
 
     def get_column_by_index(self, index):
         # return list(self.columns.values())[index]
