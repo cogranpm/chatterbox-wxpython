@@ -53,7 +53,7 @@ class MainPanel(wx.Panel):
             edit_handler=edit,
             data=create_data(df.get_all(collection_name)))
 
-        panel_spec = PanelSpec(parent=splitter, name="pnlShelf", title="Shelf", collection_name=collection_name,
+        panel_spec = PanelSpec(parent=splitter, name="pnlShelf", title=title, collection_name=collection_name,
                                add_handler=add,
                                edit_handler=edit)
         panel = BasePanel(spec=panel_spec, listspec=list_spec)
@@ -84,6 +84,40 @@ def selection_change(event: dv.DataViewEvent):
     sb.shelf_id = record['id']
     sb.parent_changed()
 
+
+# can this be pulled out into the base class
+# or some resusable function
+def add(event):
+    record = add_record()
+    dlg: FormDialog = make_form(record, "Add " + title)
+    result = dlg.ShowModal()
+    if result == wx.ID_OK:
+        df.add_record(collection_name, record)
+        list_spec.added_record(record)
+
+
+def edit(event):
+    selected_item = get_selected_item(panel.list)
+    record = get_record_from_item(list_spec.model, selected_item)
+    dlg: FormDialog = make_form(record=record, title="Edit " + title)
+    result = dlg.ShowModal()
+    if result == wx.ID_OK:
+        df.update_record(collection_name, record)
+        list_spec.edited_record(record)
+
+
+def make_dialog(record, title: str) -> FormDialog:
+    dlg: FormDialog = FormDialog(parent=parent, title=title, record=record, collection_name=collection_name)
+    return dlg
+
+def make_form(record, title: str):
+    dlg = make_dialog(record, title)
+    form: FormSpec = FormSpec(parent=dlg, name=form_name, title=title, helpstr=helpstr, edit_lines=[
+        edit_line("Name", [TextField(name_column, large(), validator=FieldValidator(record, name_column, [not_empty]))])
+    ])
+    dlg.build(form)
+    return dlg
+
 # just messing around to see if handling the toolbar commands make sense in this tab
 # it probably doesn't as each sub panel has toolbars
 # using the focused panel or control to figure on which sub panel to call the action
@@ -98,33 +132,4 @@ def handle_tool_add():
 
 def handle_tool_delete(self):
     logging.info("delete tool item clicked")
-
-# can this be pulled out into the base class
-# or some resusable function
-def add(event):
-    record = add_record()
-    dlg: FormDialog = make_form(record)
-    result = dlg.ShowModal()
-    if result == wx.ID_OK:
-        df.add_record(collection_name, record)
-        list_spec.added_record(record)
-
-
-def edit(self, event):
-    selected_item = get_selected_item(panel.list)
-    record = get_record_from_item(list_spec.model, selected_item)
-    dlg: FormDialog = make_form(record=record, title="Edit " + title, name=form_name, helpstr=helpstr)
-    result = dlg.ShowModal()
-    if result == wx.ID_OK:
-        df.update_record(collection_name, record)
-        list_spec.edited_record(record)
-
-
-def make_form(parent, record):
-    dlg: FormDialog = FormDialog(parent, "Add Shelf", record, collection_name)
-    form: FormSpec = FormSpec(dlg, "frmShelf", "Shelf", "Add Shelf", [
-        edit_line("Name", [TextField(name_column, large(), validator=FieldValidator(record, name_column, [not_empty]))])
-        ])
-    dlg.build(form)
-    return dlg
 

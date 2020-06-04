@@ -65,14 +65,13 @@ def selection_change(event: dv.DataViewEvent):
         # probably pass on to grinders, publications, child subject(perhaps shelf) and so on
 
 
-def make_dialog(record, title: str) -> FormDialog:
-    dlg: FormDialog = FormDialog(parent, title, record, c.COLLECTION_NAME_SHELF)
-    return dlg
+def make_dialog(record, dialog_title) -> FormDialog:
+    return FormDialog(parent=parent, title=dialog_title, record=record, collection_name=collection_name)
 
 
-def make_form(record, title: str, name: str, helpstr: str):
-    dlg = make_dialog(record, title)
-    form: FormSpec = FormSpec(parent=dlg, name=name, title=title, helpstr=helpstr, edit_lines=[
+def make_form(record, form_title):
+    dlg = make_dialog(record, form_title)
+    form: FormSpec = FormSpec(parent=dlg, name=form_name, title=form_title, helpstr=helpstr, edit_lines=[
         edit_line("Name", [TextField(name_column, large(),
                                      validator=FieldValidator(record, name_column, [not_empty]))]),
         edit_line("Description", [TextField(description_column, large(),
@@ -91,7 +90,7 @@ def add(event):
         return
     record = make_new_record(shelf_id)
     # redundance on Title and record
-    dlg: FormDialog = make_form(record=record, title="Add " + title, name=form_name, helpstr=helpstr)
+    dlg: FormDialog = make_form(record=record, form_title="Add " + title)
     result = dlg.ShowModal()
     if result == wx.ID_OK:
         df.add_record(collection_name, record)
@@ -101,7 +100,7 @@ def add(event):
 def edit(event):
     selected_item = get_selected_item(panel.list)
     record = get_record_from_item(list_spec.model, selected_item)
-    dlg: FormDialog = make_form(record=record, title="Edit " + title, name=form_name, helpstr=helpstr)
+    dlg: FormDialog = make_form(record=record, form_title="Edit " + title)
     result = dlg.ShowModal()
     if result == wx.ID_OK:
         df.update_record(collection_name, record)
