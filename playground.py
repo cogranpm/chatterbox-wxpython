@@ -9,6 +9,7 @@ from lists import states, ColumnSpec, ColumnType, ListSpec, create_data
 from validators import FieldValidator, CheckboxValidator, ComboValidator, not_empty
 import wx.py as py
 from models import ViewState
+import data_functions as df
 
 from typing import List, Dict
 
@@ -29,6 +30,9 @@ def add_record():
     return {'id': None, 'name': '', 'age': None, 'member': False, 'address1': "", 'address2': "",
              'city': '', 'zip': '', 'state': '', 'phone': '', 'email': ''}
 
+# this is the panel version
+# both panel and dialog version are in this file
+# dialog version is below
 class PlaygroundPanel(wx.Panel):
 
     def __init__(self, parent=None):
@@ -55,8 +59,8 @@ class PlaygroundPanel(wx.Panel):
             ColumnSpec(state_column, ColumnType.str, 'State', 45, True),
             ColumnSpec(phone_column, ColumnType.str, 'Phone', 145, True),
             ColumnSpec(email_column, ColumnType.str, 'Email', 145, True)
-        ], selection_handler = self.list_selection_change, 
-            data = create_data(self.db, collection_name))
+        ], selection_handler=self.list_selection_change,
+            data=create_data(df.get_all(collection_name)))
 
         # base class
         self.list = self.listspec.make_list(self)
@@ -168,6 +172,7 @@ class PlaygroundPanel(wx.Panel):
         self.form.build()
 
 
+# dialog version of crud form
 class PlaygroundForm(wx.Dialog):
 
     def __init__(self, parent=None):

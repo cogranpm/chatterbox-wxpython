@@ -17,8 +17,7 @@ def create_list_column(index: int, dvc: dv.DataViewCtrl, column_spec: ColumnSpec
     return list_column
 
 
-def create_data(db, collection_name):
-    records = db.all(collection_name)
+def create_data(records):
     list = []
     for record in records:
         list.append(record)
