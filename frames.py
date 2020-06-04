@@ -269,14 +269,12 @@ class AppFrame(wx.Frame):
         bSizerNotebookMain = wx.BoxSizer(wx.VERTICAL)
 
         self.m_auiShelf = wx.aui.AuiNotebook(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize,  style=wx.aui.AUI_NB_CLOSE_BUTTON)
+
         self.m_panelNotes = wx.Panel(self.m_auiShelf, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         self.m_panelNotes.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
-
         splitterSizer = wx.BoxSizer(wx.VERTICAL)
-
         self.m_splitter1 = wx.SplitterWindow(self.m_panelNotes, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.SP_3D)
         self.m_splitter1.Bind(wx.EVT_IDLE, self.m_splitter1OnIdle)
-
         self.pnlShelf = wx.Panel(self.m_splitter1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         bSizer5 = wx.BoxSizer(wx.VERTICAL)
 

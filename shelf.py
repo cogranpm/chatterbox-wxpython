@@ -21,6 +21,7 @@ from models import ViewState
 from forms import FormSpec, FormDialog, FormLineSpec, edit_line, large, TextField
 from panels import BasePanel, PanelSpec
 import subject as sb
+import grinder as gr
 import data_functions as df
 import fn_widget as w
 
@@ -44,6 +45,7 @@ class MainPanel(wx.Panel):
         super().__init__(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         df.create_entity(collection_name)
         df.create_entity(sb.collection_name)
+        df.create_entity(gr.collection_name)
         main_sizer = frm.vsizer()
         self.SetSizer(main_sizer)
         splitter = frm.splitter(self)
@@ -75,14 +77,21 @@ class MainPanel(wx.Panel):
 
         # subject children
         subject_notebook = w.notebook(subject_splitter)
-        grinder = wx.TextCtrl(subject_notebook, -1, "Grinders", style=wx.TE_MULTILINE)
+
+        # grinder
+        gr.list_spec = gr.make_list_spec()
+        gr.panel_spec = gr.make_panel_spec(subject_container)
+        gr.panel = gr.make_panel(gr.panel_spec)
+        gr.parent = subject_container
+
+        # grinder = wx.TextCtrl(subject_notebook, -1, "Grinders", style=wx.TE_MULTILINE)
         publications = wx.TextCtrl(subject_notebook, -1, "Publications", style=wx.TE_MULTILINE)
-        subject_notebook.AddPage(grinder, "Grinders")
+        subject_notebook.AddPage(gr.panel, "Grinders", False)
         subject_notebook.AddPage(publications, "Publications")
         # subject_sizer.Add(sb.panel, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
         # subject_sizer.Add(subject_notebook, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
         subject_splitter.SplitHorizontally(sb.panel, subject_notebook, 248)
-        subject_sizer.Add(subject_splitter, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
+        subject_sizer.Add(subject_splitter, wx.SizerFlags(1).Expand())
 
 
         splitter.SplitVertically(panel, subject_container, 248)
