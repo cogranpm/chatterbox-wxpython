@@ -10,13 +10,8 @@ from lists import ListSpec, ColumnType, ColumnSpec, get_selected_item, get_recor
 from panels import PanelSpec, BasePanel
 from forms import FormDialog, FormSpec, TextField, edit_line, large
 from validators import not_empty, FieldValidator
-from datastore import DataStore
 import wx
 import wx.dataview as dv
-from fn_app import get_data_store
-from shelve import Shelf
-from pkgutil import get_data
-from typing import Callable, OrderedDict
 
 
 name_column = 'name'
@@ -35,8 +30,10 @@ def create_data(shelf_key, query_fn):
         list.append(record)
     return list
 
-def add_record(shelf_id: int):
+
+def make_new_record(shelf_id: int):
     return {'id': None, 'shelf_id': shelf_id, 'name': '', 'description': ''}
+
 
 def make_list_spec():
     return ListSpec(columns = [
@@ -62,7 +59,8 @@ def selection_change(event: dv.DataViewEvent):
         record = get_record_from_item(list_spec.model, selected_item)
         # not sure yet what to do with this
         # probably pass on to grinders, publications, child subject(perhaps shelf) and so on
-        
+
+
 def make_dialog(record, title: str)-> FormDialog:
     dlg: FormDialog = FormDialog(parent, title, record, c.COLLECTION_NAME_SHELF)
     return dlg
@@ -79,6 +77,7 @@ def make_form(record, title: str):
     dlg.build(form)
     return dlg
 
+
 def parent_changed():
     list_spec.update_data(create_data(shelf_id, df.get_subjects_by_shelfid))
     
@@ -86,14 +85,13 @@ def parent_changed():
 def add(event):
     if shelf_id is None:
         return
-    record = add_record(shelf_id)
+    record = make_new_record(shelf_id)
     # redundance on Title and record
     dlg: FormDialog = make_form(record, "Add Subject")
     result = dlg.ShowModal()
     if result == wx.ID_OK:
-        get_data_store().add(c.COLLECTION_NAME_SUBJECT, record)
+        df.add_record(c.COLLECTION_NAME_SUBJECT, record)
         list_spec.added_record(record)
-
 
 
 def edit(event):
@@ -102,5 +100,5 @@ def edit(event):
     dlg: FormDialog = make_form(record, "Edit Subject")
     result = dlg.ShowModal()
     if result == wx.ID_OK:
-        get_data_store().update(c.COLLECTION_NAME_SUBJECT, record)
+        df.update_record(c.COLLECTION_NAME_SUBJECT, record)
         list_spec.edited_record(record)

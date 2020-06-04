@@ -24,10 +24,12 @@ def create_data(db, collection_name):
         list.append(record)
     return list
 
+
 def get_record_from_item(model: PyTestModel, selected_item: dv.DataViewItem):
     if selected_item is None:
         return None
     return model.ItemToObject(selected_item)
+
 
 def get_selected_item(list: dv.DataViewCtrl) -> dv.DataViewItem:
     if list is not None:
@@ -83,7 +85,6 @@ class ListSpec:
     def update_data(self, data):
         self.model.change_data(data)
 
-        
     def added_record(self, record):
         self.model.data.append(record)
         self.model.ItemAdded(dv.NullDataViewItem, self.model.ObjectToItem(record))

@@ -46,8 +46,8 @@ class BasePanel(wx.Panel):
             if frm.confirm_delete(self):
                     self.spec.listspec.model.ItemDeleted(dv.NullDataViewItem, selected_item)
                     record = self.spec.listspec.model.ItemToObject(selected_item)
-                    self.db.remove(c.COLLECTION_NAME_SHELF, record)
-                    self.spec.listspec.data.remove(record)
+                    self.db.remove(self.spec.collection_name, record)
+                    self.spec.listspec.model.data.remove(record)
                     self.spec.listspec.model.Cleared()
 
 
