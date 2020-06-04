@@ -83,7 +83,8 @@ def make_form(record, form_title):
 def parent_changed():
     list_spec.update_data(create_data(fkey, df.get_grinders_by_subject))
 
-
+# change these to be panel style editors
+# we have a lot of parent child stuff going on in a grinder
 def add(event):
     if fkey is None:
         return
