@@ -2,7 +2,11 @@
 aim is to do as much in the functional style:
 immutable values
 pure functions
-no side effects scattered, all should occur in single place """
+no side effects scattered, all should occur in single place
+ this was a nice theory, but what happens if the subject ui
+ is opened in more than a single tab, which should be supported
+ the state in a module is global between tabs ahhhhrgggg
+ """
 
 import chatterbox_constants as c
 import data_functions as df
