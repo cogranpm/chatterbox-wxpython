@@ -60,9 +60,9 @@ def tool_button(parent, id, text, handler):
     return btn
 
 
-def notebook(parent, id = wx.ID_ANY):
-    notebook = wx.aui.AuiNotebook(parent, id, wx.DefaultPosition, wx.DefaultSize, 0)
-    return notebook
+def notebook(parent, id=wx.ID_ANY):
+    return wx.aui.AuiNotebook(parent, id, wx.DefaultPosition, wx.DefaultSize, 0)
+
 
 def form(parent, content, headerstr, helpstr):
     """ represents a bunch of text fields and labels layed out in a grid """

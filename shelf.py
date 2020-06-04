@@ -22,6 +22,7 @@ from forms import FormSpec, FormDialog, FormLineSpec, edit_line, large, TextFiel
 from panels import BasePanel, PanelSpec
 import subject as sb
 import data_functions as df
+import fn_widget as w
 
 name_column = 'name'
 collection_name = c.COLLECTION_NAME_SHELF
@@ -58,13 +59,35 @@ class MainPanel(wx.Panel):
                                edit_handler=edit)
         panel = BasePanel(spec=panel_spec, listspec=list_spec)
 
+
+        # subject notebook
+        # subject panel
+        subject_container = w.panel(splitter, [])
+        subject_sizer = frm.vsizer()
+        subject_container.SetSizer(subject_sizer)
+        subject_splitter = w.splitter(subject_container)
+
         # subject
         sb.list_spec = sb.make_list_spec()
-        sb.panel_spec = sb.make_panel_spec(splitter)
+        sb.panel_spec = sb.make_panel_spec(subject_splitter)
         sb.panel = sb.make_panel(sb.panel_spec)
         sb.parent = self
 
-        splitter.SplitVertically(panel, sb.panel, 248)
+        # subject children
+        subject_notebook = w.notebook(subject_splitter)
+        grinder = wx.TextCtrl(subject_notebook, -1, "Grinders", style=wx.TE_MULTILINE)
+        publications = wx.TextCtrl(subject_notebook, -1, "Publications", style=wx.TE_MULTILINE)
+        subject_notebook.AddPage(grinder, "Grinders")
+        subject_notebook.AddPage(publications, "Publications")
+        # subject_sizer.Add(sb.panel, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
+        # subject_sizer.Add(subject_notebook, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
+        subject_splitter.SplitHorizontally(sb.panel, subject_notebook, 248)
+        subject_sizer.Add(subject_splitter, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
+
+
+        splitter.SplitVertically(panel, subject_container, 248)
+
+        #splitter.SplitVertically(panel, sb.panel, 248)
         # splitter.SetMinimumPaneSize(200)
         # splitter.SetSashGravity(0.5)
         main_sizer.Add(splitter, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
