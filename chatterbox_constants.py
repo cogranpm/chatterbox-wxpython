@@ -42,6 +42,8 @@ ICON_EDIT = 'Edit.png'
 ICON_ADD = 'Add.png'
 ICON_CANCEL = 'Cancel.png'
 
+FIELD_NAME_ID = 'id'
+
 config = ConfigObj("chatterbox.ini")
 
 def read_config(key: str):

@@ -22,23 +22,21 @@ collection_name = c.COLLECTION_NAME_SUBJECT
 class Subject:
 
     def __init__(self, parent, parent_container):
+        self.parent = parent
+        self.shelf_id = None
         self.list_spec = self.__make_list_spec()
         self.panel_spec = self.__make_panel_spec(parent_container)
         self.panel = self.__make_panel(self.panel_spec)
-        self.shelf_id = None
-        self.parent = parent
 
     def __add(self, event):
         if self.shelf_id is None:
             return
         record = make_new_record(self.shelf_id)
-        # redundance on Title and record
         dlg: FormDialog = self.__make_form(record=record, form_title="Add " + title)
         result = dlg.ShowModal()
         if result == wx.ID_OK:
             df.add_record(collection_name, record)
             self.list_spec.added_record(record)
-
 
     def __edit(self, event):
         selected_item = get_selected_item(self.panel.list)
@@ -49,7 +47,6 @@ class Subject:
             df.update_record(collection_name, record)
             self.list_spec.edited_record(record)
 
-
     def __make_list_spec(self):
         return ListSpec(columns=[
             ColumnSpec(name_column, ColumnType.str, 'Name', 100, True),
@@ -58,15 +55,12 @@ class Subject:
             edit_handler=self.__edit,
             data=create_data(self.shelf_id, df.get_subjects_by_shelf))
 
-
     def __make_panel_spec(self, parent):
         return PanelSpec(parent=parent, name="pnlSubject", title=title,
                          collection_name=collection_name, add_handler=self.__add, edit_handler=self.__edit)
 
-
     def __make_panel(self, spec: PanelSpec):
         return BasePanel(spec=spec, listspec=self.list_spec)
-
 
     def __selection_change(self, event: dv.DataViewEvent):
         selected_item = get_selected_item(self.panel.list)
@@ -75,10 +69,8 @@ class Subject:
             gr.fkey = record['id']
             gr.parent_changed()
 
-
     def __make_dialog(self, record, dialog_title) -> FormDialog:
         return FormDialog(parent=self.parent, title=dialog_title, record=record, collection_name=collection_name)
-
 
     def __make_form(self, record, form_title):
         dlg = self.__make_dialog(record, form_title)
@@ -91,9 +83,9 @@ class Subject:
         dlg.build(form)
         return dlg
 
-
-    def __parent_changed(self):
-        self.list_spec.update_data(create_data(self.shelf_id, df.get_subjects_by_shelf))
+    def parent_changed(self, fkey: int):
+        self.shelf_id = fkey
+        self.list_spec.update_data(create_data(fkey, df.get_subjects_by_shelf))
 
 
 def create_data(shelf_key, query_fn):
