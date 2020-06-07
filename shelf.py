@@ -70,10 +70,11 @@ class MainPanel(wx.Panel):
         subject_splitter = w.splitter(subject_container)
 
         # subject
-        sb.list_spec = sb.make_list_spec()
-        sb.panel_spec = sb.make_panel_spec(subject_splitter)
-        sb.panel = sb.make_panel(sb.panel_spec)
-        sb.parent = self
+        self.__subject = sb.Subject(self, subject_splitter)
+        # sb.list_spec = sb.make_list_spec()
+        # sb.panel_spec = sb.make_panel_spec(subject_splitter)
+        # sb.panel = sb.make_panel(sb.panel_spec)
+        # sb.parent = self
 
         # subject children
         subject_notebook = w.notebook(subject_splitter)
@@ -90,7 +91,7 @@ class MainPanel(wx.Panel):
         subject_notebook.AddPage(publications, "Publications")
         # subject_sizer.Add(sb.panel, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
         # subject_sizer.Add(subject_notebook, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
-        subject_splitter.SplitHorizontally(sb.panel, subject_notebook, 248)
+        subject_splitter.SplitHorizontally(self.__subject.panel, subject_notebook, 248)
         subject_sizer.Add(subject_splitter, wx.SizerFlags(1).Expand())
 
 
