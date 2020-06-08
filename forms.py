@@ -376,17 +376,21 @@ class FormDialog(wx.Dialog):
         event.Skip()
 
 
-
 def edit_line(labelstr, edit_fields):
     return FormLineSpec(labelstr, edit_fields)
 
+
+def make_dialog(parent, record, title: str, collection_name: str) -> FormDialog:
+    return FormDialog(parent=parent, title=title, record=record, collection_name=collection_name)
 
 
 def form(parent, name, title, helpstr, edit_lines):
     return FormSpec(parent, name, title, helpstr, edit_lines)
 
+
 def panel(parent, name):
     return wx.Panel(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL, name)
+
 
 def label(parent, caption, name):
     lbl = wx.StaticText(parent, id=wx.ID_ANY, label=caption, name=name)

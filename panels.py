@@ -1,11 +1,15 @@
+
+
+from typing import Callable, Any
+
 import wx
-import wx.py as py
 import wx.dataview as dv
 from dataclasses import dataclass
+
 import forms as frm
 from fn_app import get_data_store
-from typing import Any
 from lists import ListSpec
+
 
 
 @dataclass(frozen=True)
@@ -67,4 +71,10 @@ class BasePanel(wx.Panel):
                     self.listspec.model.Cleared()
 
 
+def make_panel_spec(parent, name: str, title: str, collection_name: str, add_handler: Callable, edit_handler: Callable):
+    return PanelSpec(parent=parent, name=name, title=title,
+                     collection_name=collection_name, add_handler=add_handler, edit_handler=edit_handler)
 
+
+def make_panel(spec: PanelSpec, list_spec: ListSpec):
+    return BasePanel(spec=spec, listspec=list_spec)
