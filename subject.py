@@ -24,10 +24,11 @@ class Subject:
     def __init__(self, parent, parent_container):
         self.parent = parent
         self.shelf_id = None
-        self.list_spec = self.__make_list_spec()
+        self.list_spec = make_list_spec(fkey=self.shelf_id, selection_handler=self.__selection_change, edit_handler=self.__edit)
         self.panel_spec = self.__make_panel_spec(parent_container)
         self.panel = self.__make_panel(self.panel_spec)
 
+    # called from event on panel
     def __add(self, event):
         if self.shelf_id is None:
             return
@@ -47,13 +48,6 @@ class Subject:
             df.update_record(collection_name, record)
             self.list_spec.edited_record(record)
 
-    def __make_list_spec(self):
-        return ListSpec(columns=[
-            ColumnSpec(name_column, ColumnType.str, 'Name', 100, True),
-            ColumnSpec(description_column, ColumnType.str, 'Description', 100, True)
-        ], selection_handler=self.__selection_change,
-            edit_handler=self.__edit,
-            data=create_data(self.shelf_id, df.get_subjects_by_shelf))
 
     def __make_panel_spec(self, parent):
         return PanelSpec(parent=parent, name="pnlSubject", title=title,
@@ -99,6 +93,14 @@ def create_data(shelf_key, query_fn):
 def make_new_record(shelf_id: int):
     return {'id': None, 'shelf_id': shelf_id, 'name': '', 'description': ''}
 
+
+def make_list_spec(fkey, selection_handler, edit_handler):
+    return ListSpec(columns=[
+        ColumnSpec(name_column, ColumnType.str, 'Name', 100, True),
+        ColumnSpec(description_column, ColumnType.str, 'Description', 100, True)
+    ], selection_handler=selection_handler,
+        edit_handler=edit_handler,
+        data=create_data(fkey, df.get_subjects_by_shelf))
 
 
     
