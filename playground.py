@@ -1,5 +1,6 @@
 # a dialog for just about anything
 import wx
+import wx.py as py
 import logging
 import chatterbox_constants as c
 import fn_widget as w
@@ -7,11 +8,9 @@ import wx.dataview as dv
 import forms as frm
 from lists import states, ColumnSpec, ColumnType, ListSpec, create_data
 from validators import FieldValidator, CheckboxValidator, ComboValidator, not_empty
-import wx.py as py
 from models import ViewState
 import data_functions as df
 
-from typing import List, Dict
 
 collection_name = 'playground'
 name_column = 'name'

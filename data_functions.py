@@ -20,6 +20,10 @@ def get_grinders_by_subject(subject_id):
     return get_data_store().query(c.COLLECTION_NAME_GRINDER, {'subject_id': subject_id})
 
 
+def get_grinder_tasks_by_grinder(grinder_id):
+    return get_data_store().query(c.COLLECTION_NAME_GRINDERTASK, {'grinder_id': grinder_id})
+
+
 def add_record(collection_name: str, record):
     get_data_store().add(collection_name, record)
 
