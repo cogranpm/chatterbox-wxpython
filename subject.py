@@ -24,8 +24,9 @@ collection_name = c.COLLECTION_NAME_SUBJECT
 
 class Subject:
 
-    def __init__(self, parent, parent_container):
+    def __init__(self, parent, parent_container, grinder: gr.Grinder):
         self.parent = parent
+        self.grinder = grinder
         self.shelf_id = None
         self.list_spec = make_list_spec(fkey=self.shelf_id, selection_handler=self.__selection_change, edit_handler=self.__edit)
         self.panel_spec = make_panel_spec(parent=parent_container, name='frmPanel', title=title,
@@ -66,8 +67,7 @@ class Subject:
         selected_item = get_selected_item(self.panel.list)
         if selected_item is not None:
             record = get_record_from_item(self.list_spec.model, selected_item)
-            gr.fkey = record['id']
-            gr.parent_changed()
+            self.grinder.parent_changed(record[c.FIELD_NAME_ID])
 
     def __make_form(self, dialog: FormDialog, name: str, record, form_title: str, helpstr: str):
         form: FormSpec = FormSpec(parent=dialog, name=name, title=form_title, helpstr=helpstr, edit_lines=[
