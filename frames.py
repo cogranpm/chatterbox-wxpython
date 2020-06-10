@@ -1,3 +1,5 @@
+from typing import Dict
+
 import wx
 import wx.xrc
 import wx.aui
@@ -19,6 +21,7 @@ class AppFrame(wx.Frame):
                          size=wx.Size(1133, 716),
                          style=wx.DEFAULT_FRAME_STYLE | wx.MAXIMIZE | wx.TAB_TRAVERSAL,
                          name="MainFrame")
+        self.pages = dict()
         self.SetSizeHints(wx.DefaultSize, wx.DefaultSize)
         self.setup()
         ico = wx.Icon('icons/disconnect2.ico', wx.BITMAP_TYPE_ICO)
@@ -26,6 +29,11 @@ class AppFrame(wx.Frame):
         wx.py.dispatcher.connect(receiver=self.on_viewstate, signal=c.SIGNAL_VIEWSTATE)
         wx.py.dispatcher.connect(receiver=self.on_view_activated, signal=c.SIGNAL_VIEW_ACTIVATED)
         self.Bind(wx.EVT_UPDATE_UI, self.on_updateui)
+
+    def add_page(self, key: str, title: str, window, page_data):
+        """ adds a notebook page and keeps track of it in the pages dict """
+        self.notebook.AddPage(window, title, True)
+        self.pages[key] = (window, page_data)
 
     def on_updateui(self, event):
         """ this gets called at regular intervals, can be useful for polling type logic """

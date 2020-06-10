@@ -8,6 +8,7 @@ from typing import Callable
 
 import wx
 import wx.dataview as dv
+import datetime as dt
 
 import chatterbox_constants as c
 import data_functions as df
@@ -59,8 +60,6 @@ def selection_change(event):
     pass
 
 
-
-
 class Grinder:
 
     def __init__(self, parent, container):
@@ -89,8 +88,8 @@ class Grinder:
         # need to access the notebook and add a new page with a grindertask loaded as the child
         selected_item = get_selected_item(self.panel.list)
         record = get_record_from_item(self.__list_spec.model, selected_item)
-        self.parent.frame.notebook.AddPage(GrinderTask(self, record, self.parent.frame),
-                                           c.NOTEBOOK_TITLE_GRINDER, True)
+        task_panel = GrinderTask(self, record, self.parent.frame)
+        self.parent.frame.add_page(key="grinder_task", title=c.NOTEBOOK_TITLE_GRINDER, window=task_panel, page_data=None)
 
 
     def __add(self, event):
@@ -120,6 +119,9 @@ class GrinderTask(wx.Panel):
     solution_column = 'solution'
     created_column = 'created'
 
+    def make_new_record(grinder_id: int):
+        return {c.FIELD_NAME_ID: None, 'grinder_id': grinder_id, GrinderTask.task_column: '', GrinderTask.solution_column: '', GrinderTask.created_column: dt.datetime.today()}
+
     def create_data(grinder_id: int, query_fn):
         records = query_fn(grinder_id)
         list = []
@@ -145,9 +147,11 @@ class GrinderTask(wx.Panel):
         self.list = self.list_spec.make_list(self)
         main_sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
 
-        self.form = frm.form(self, "frmDemo", "Form Demo", helpstr, [
-            frm.edit_line("Name", [frm.TextField(GrinderTask.task_column, frm.large(),
-                                                 validator=FieldValidator(None, GrinderTask.task_column, [not_empty]))])
+        self.form = frm.form(self, "frmGrinder", "Grinder", helpstr, [
+            frm.edit_line("Task", [frm.TextField(GrinderTask.task_column, frm.large(),
+                                                 validator=FieldValidator(None, GrinderTask.task_column, [not_empty]))]),
+            frm.edit_line("Solution", [frm.TextField(GrinderTask.solution_column, frm.large(),
+                                                     validator=FieldValidator(None, GrinderTask.solution_column, [not_empty]))])
         ])
 
         self.form.build()
@@ -160,13 +164,29 @@ class GrinderTask(wx.Panel):
         self.form.set_viewstate(ViewState.empty)
         wx.py.dispatcher.send(signal=c.SIGNAL_VIEW_ACTIVATED, sender=self, command=c.COMMAND_VIEW_ACTIVATED, more=self)
 
-    def save(self):
-        pass
+    def save(self, command, more):
+        if more is self:
+            if self.form.view_state == ViewState.adding:
+                record = GrinderTask.make_new_record(self.grinder_data[c.FIELD_NAME_ID])
+                self.form.bind(record)
+            if self.Validate():
+                self.TransferDataFromWindow()
+                if self.form.view_state == ViewState.adding:
+                    self.list_spec.added_record(record)
+                    df.add_record(GrinderTask.collection_name, record)
+                else:
+                    selected_item = self.list.GetSelection()
+                    record = self.list_spec.model.ItemToObject(selected_item)
+                    df.update_record(GrinderTask.collection_name, record)
+                    self.list_spec.edited_record(record)
+                self.form.set_viewstate(ViewState.loaded)
 
-    def add(self):
-        pass
+    def add(self, command, more):
+        if more is self:
+            self.form.set_viewstate(ViewState.adding)
 
-    def delete(self):
+
+    def delete(self, command, more):
         pass
 
     def list_selection_change(self, event: dv.DataViewEvent):
