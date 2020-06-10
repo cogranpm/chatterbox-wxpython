@@ -13,8 +13,9 @@ import chatterbox_constants as c
 import data_functions as df
 from lists import ListSpec, ColumnType, ColumnSpec, get_selected_item, get_record_from_item
 from panels import PanelSpec, BasePanel
-from forms import FormDialog, FormSpec, TextField, edit_line, large, make_dialog
+import forms as frm
 from validators import not_empty, FieldValidator
+from models import ViewState
 
 name_column = 'name'
 description_column = 'description'
@@ -75,36 +76,31 @@ class Grinder:
         self.__list_spec.update_data(create_data(self.fkey, df.get_grinders_by_subject))
 
 
-    def __make_form(self, dialog: FormDialog, name: str, record, form_title: str, helpstr: str):
-        form: FormSpec = FormSpec(parent=dialog, name=name, title=form_title, helpstr=helpstr, edit_lines=[
-            edit_line("Name", [TextField(name_column, large(),
+    def __make_form(self, dialog: frm.FormDialog, name: str, record, form_title: str, helpstr: str):
+        form: frm.FormSpec = frm.FormSpec(parent=dialog, name=name, title=form_title, helpstr=helpstr, edit_lines=[
+            frm.edit_line("Name", [frm.TextField(name_column, frm.large(),
                                          validator=FieldValidator(record, name_column, [not_empty]))]),
-            edit_line("Description", [TextField(description_column, large(),
+            frm.edit_line("Description", [frm.TextField(description_column, frm.large(),
                                                 validator=FieldValidator(record, description_column, [not_empty]))])
         ])
         return form
 
     def __edit(self, event):
+        # need to access the notebook and add a new page with a grindertask loaded as the child
         selected_item = get_selected_item(self.panel.list)
         record = get_record_from_item(self.__list_spec.model, selected_item)
-        dlg: FormDialog = make_dialog(parent=self.parent,
-                                      record=record, title=title, collection_name=collection_name)
-        form: FormSpec = self.__make_form(dialog=dlg, name=form_name,
-                                          record=record, form_title="Edit " + title, helpstr=helpstr)
-        dlg.build(form)
-        result = dlg.ShowModal()
-        if result == wx.ID_OK:
-            df.update_record(collection_name, record)
-            self.__list_spec.edited_record(record)
+        self.parent.frame.notebook.AddPage(GrinderTask(self, record, self.parent.frame),
+                                           c.NOTEBOOK_TITLE_GRINDER, True)
+
 
     def __add(self, event):
         if self.fkey is None:
             return
         record = make_new_record(self.fkey)
 
-        dlg: FormDialog = make_dialog(parent=self.parent,
+        dlg: frm.FormDialog = frm.make_dialog(parent=self.parent,
                                              record=record, title=title, collection_name=collection_name)
-        form: FormSpec = self.__make_form(dialog=dlg, name=form_name,
+        form: frm.FormSpec = self.__make_form(dialog=dlg, name=form_name,
                                           record=record, form_title="Add " + title, helpstr=helpstr)
         dlg.build(form)
         result = dlg.ShowModal()
@@ -131,8 +127,11 @@ class GrinderTask(wx.Panel):
             list.append(record)
         return list
 
-    def __init__(self, grinder: Grinder, parent):
+    def __init__(self, grinder: Grinder, grinder_data, parent):
         super().__init__(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        self.grinder_data = grinder_data
+        self.grinder = grinder
+        self.parent = parent
         df.create_entity(GrinderTask.collection_name)
         main_sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(main_sizer)
@@ -141,7 +140,40 @@ class GrinderTask(wx.Panel):
             ColumnSpec(GrinderTask.solution_column, ColumnType.str, 'Solution', 100, True),
             ColumnSpec(GrinderTask.created_column, ColumnType.date, 'Created', 100, True)
         ],
-        selection_handler=None,
-        data=GrinderTask.create_data(0, df.get_grinder_tasks_by_grinder))
+        selection_handler=self.list_selection_change,
+        data=GrinderTask.create_data(self.grinder_data[c.FIELD_NAME_ID], df.get_grinder_tasks_by_grinder))
+        self.list = self.list_spec.make_list(self)
+        main_sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
 
+        self.form = frm.form(self, "frmDemo", "Form Demo", helpstr, [
+            frm.edit_line("Name", [frm.TextField(GrinderTask.task_column, frm.large(),
+                                                 validator=FieldValidator(None, GrinderTask.task_column, [not_empty]))])
+        ])
 
+        self.form.build()
+
+        wx.py.dispatcher.connect(receiver=self.save, signal=c.SIGNAL_SAVE)
+        wx.py.dispatcher.connect(receiver=self.add, signal=c.SIGNAL_ADD)
+        wx.py.dispatcher.connect(receiver=self.delete, signal=c.SIGNAL_DELETE)
+
+        # self.edit_form()
+        self.form.set_viewstate(ViewState.empty)
+        wx.py.dispatcher.send(signal=c.SIGNAL_VIEW_ACTIVATED, sender=self, command=c.COMMAND_VIEW_ACTIVATED, more=self)
+
+    def save(self):
+        pass
+
+    def add(self):
+        pass
+
+    def delete(self):
+        pass
+
+    def list_selection_change(self, event: dv.DataViewEvent):
+        # testing dispatcher stuff
+        self.form.set_viewstate(ViewState.loading)
+        selected_item = self.list.GetSelection()
+        record = self.listspec.model.ItemToObject(selected_item)
+        self.form.bind(record)
+        self.TransferDataToWindow()
+        self.form.set_viewstate(ViewState.loaded)

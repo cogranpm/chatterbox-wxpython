@@ -34,8 +34,8 @@ def make_new_record():
 
 class MainPanel(wx.Panel):
     """ shows a list of shelves and all the children """
-    def __init__(self, parent=None):
-        global list_spec, panel_spec, panel
+    def __init__(self, parent):
+        self.frame = parent
         super().__init__(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         df.create_entity(collection_name)
         df.create_entity(sb.collection_name)
