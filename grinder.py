@@ -17,6 +17,7 @@ from panels import PanelSpec, BasePanel
 import forms as frm
 from validators import not_empty, FieldValidator
 from models import ViewState
+import fn_format as fmt
 
 name_column = 'name'
 description_column = 'description'
@@ -139,9 +140,9 @@ class GrinderTask(wx.Panel):
         main_sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(main_sizer)
         self.list_spec = ListSpec(columns=[
-            ColumnSpec(GrinderTask.task_column, ColumnType.str, 'Task', 100, True),
-            ColumnSpec(GrinderTask.solution_column, ColumnType.str, 'Solution', 100, True),
-            ColumnSpec(GrinderTask.created_column, ColumnType.date, 'Created', 100, True)
+            ColumnSpec(GrinderTask.task_column, ColumnType.str, 'Task', 100, sortable=True, browseable=True, format_fn=fmt.trunc),
+            ColumnSpec(GrinderTask.solution_column, ColumnType.str, 'Solution', 100, sortable=False, format_fn=fmt.trunc),
+            ColumnSpec(GrinderTask.created_column, ColumnType.date, 'Created', 100, sortable=True, browseable=True)
         ],
         selection_handler=self.list_selection_change,
         data=GrinderTask.create_data(self.grinder_data[c.FIELD_NAME_ID], df.get_grinder_tasks_by_grinder))

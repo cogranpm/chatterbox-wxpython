@@ -1,7 +1,9 @@
-import wx.dataview as dv
-from typing import List, Dict
+from typing import List, Dict, Callable
+
 from dataclasses import dataclass
 from enum import Enum
+
+import wx.dataview as dv
 
 ViewState = Enum('ViewState', 'adding dirty loaded loading empty')
 
@@ -11,14 +13,18 @@ column_type_map: Dict[ColumnType, str] = {ColumnType.str: 'string', ColumnType.b
                                           ColumnType.float: 'double', ColumnType.int: 'string',
                                           ColumnType.date: 'string'}
 
+
 @dataclass(frozen=True)
 class ColumnSpec:
     key: str
     data_type: ColumnType
     label: str
     width: int
+    format_fn: Callable
     browseable: bool = False
     sortable: bool = False
+
+
 
 
 # this is a wxPython xtra model based class
@@ -51,7 +57,6 @@ class EntityModel(dv.PyDataViewModel):
             self.ItemAdded(dv.NullDataViewItem, self.ObjectToItem(record))
 
     def get_column_by_index(self, index):
-        # return list(self.columns.values())[index]
         return self.columns[index]
 
     def GetChildren(self, item, children):
@@ -78,7 +83,11 @@ class EntityModel(dv.PyDataViewModel):
 
     def GetValue(self, item, col):
         row = self.ItemToObject(item)
-        return row[self.get_column_by_index(col).key]
+        column_spec: ColumnSpec = self.get_column_by_index(col)
+        value = row[column_spec.key]
+        if column_spec.format_fn is not None:
+            return column_spec.format_fn(value)
+        return value
 
     def GetAttr(self, item, col, attr):
         #if col == 1:
