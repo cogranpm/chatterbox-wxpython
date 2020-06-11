@@ -148,9 +148,9 @@ class GrinderTask(wx.Panel):
         main_sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
 
         self.form = frm.form(self, "frmGrinder", "Grinder", helpstr, [
-            frm.edit_line("Task", [frm.TextField(GrinderTask.task_column, frm.large(),
+            frm.edit_line("Task", [frm.TextField(GrinderTask.task_column, frm.large(), style=wx.TE_MULTILINE,
                                                  validator=FieldValidator(None, GrinderTask.task_column, [not_empty]))]),
-            frm.edit_line("Solution", [frm.TextField(GrinderTask.solution_column, frm.large(),
+            frm.edit_line("Solution", [frm.CodeEditor(GrinderTask.solution_column, frm.large(),
                                                      validator=FieldValidator(None, GrinderTask.solution_column, [not_empty]))])
         ])
 
@@ -193,7 +193,7 @@ class GrinderTask(wx.Panel):
         # testing dispatcher stuff
         self.form.set_viewstate(ViewState.loading)
         selected_item = self.list.GetSelection()
-        record = self.listspec.model.ItemToObject(selected_item)
+        record = self.list_spec.model.ItemToObject(selected_item)
         self.form.bind(record)
         self.TransferDataToWindow()
         self.form.set_viewstate(ViewState.loaded)
