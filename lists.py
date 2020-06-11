@@ -3,7 +3,7 @@ import wx.dataview as dv
 from enum import Enum
 from typing import Dict, List, Callable, Any
 from dataclasses import dataclass, InitVar
-from models import PyTestModel, ColumnSpec, ColumnType
+from models import EntityModel, ColumnSpec, ColumnType
 
 
 def create_list_column(index: int, dvc: dv.DataViewCtrl, column_spec: ColumnSpec):
@@ -24,7 +24,7 @@ def create_data(records):
     return list
 
 
-def get_record_from_item(model: PyTestModel, selected_item: dv.DataViewItem):
+def get_record_from_item(model: EntityModel, selected_item: dv.DataViewItem):
     if selected_item is None:
         return None
     return model.ItemToObject(selected_item)
@@ -44,22 +44,13 @@ class ListSpec:
 
     data: InitVar[Any] = None
     columns: InitVar[List[ColumnSpec]] = None
-    model: PyTestModel = None
+    model: EntityModel = None
     selection_handler: Callable = None
     edit_handler: Callable = None
     
     def __post_init__(self, data, columns):
         if self.model is None:
-            self.model = PyTestModel(data, columns)
-
-    #===========================================================================
-    # def __init__(self, columns: List[ColumnSpec], selection_handler, edit_handler, data = None):
-    #     self.columns = columns
-    #     # does this need to be stored in both this class AND the model instance
-    #     self.model = PyTestModel(data, self.columns)
-    #     self.selection_handler = selection_handler
-    #     self.edit_handler = edit_handler
-    #===========================================================================
+            self.model = EntityModel(data, columns)
 
     def make_list(self, parent) -> dv.DataViewCtrl:
         dvc = dv.DataViewCtrl(parent, wx.ID_ANY, style=wx.BORDER_THEME)

@@ -24,7 +24,7 @@ class ColumnSpec:
 # this is a wxPython xtra model based class
 # has a ItemToObject mapper built in which makes
 # selection processing easy
-class PyTestModel(dv.PyDataViewModel):
+class EntityModel(dv.PyDataViewModel):
     """
     this class has a neat way to get the object that is stored
     inside the row of the table without resorting to storing pointers etc
@@ -49,8 +49,6 @@ class PyTestModel(dv.PyDataViewModel):
         self.data = records        
         for record in self.data:
             self.ItemAdded(dv.NullDataViewItem, self.ObjectToItem(record))
-
-            
 
     def get_column_by_index(self, index):
         # return list(self.columns.values())[index]
@@ -77,26 +75,20 @@ class PyTestModel(dv.PyDataViewModel):
 
     def GetColumnCount(self):
         return len(self.columns)
-        #return len(self.columns.keys())
-
 
     def GetValue(self, item, col):
         row = self.ItemToObject(item)
-        # change to map access
-        # return row[col]
         return row[self.get_column_by_index(col).key]
 
     def GetAttr(self, item, col, attr):
-        if col == 1:
-            attr.SetColour('blue')
-            attr.SetBold(True)
-            return True
+        #if col == 1:
+        #    attr.SetColour('blue')
+        #    attr.SetBold(True)
+        #    return True
         return False
 
     def SetValue(self, variant, item, col):
         row = self.ItemToObject(item)
-        # change to map access
-        #row[col] = variant
         row[self.get_column_by_index(col).key] = variant
         return True
 

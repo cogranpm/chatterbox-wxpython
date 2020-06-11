@@ -118,6 +118,7 @@ class GrinderTask(wx.Panel):
     task_column = 'task'
     solution_column = 'solution'
     created_column = 'created'
+    help = 'Grinder Task'
 
     def make_new_record(grinder_id: int):
         return {c.FIELD_NAME_ID: None, 'grinder_id': grinder_id, GrinderTask.task_column: '', GrinderTask.solution_column: '', GrinderTask.created_column: dt.datetime.today()}
@@ -147,7 +148,7 @@ class GrinderTask(wx.Panel):
         self.list = self.list_spec.make_list(self)
         main_sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
 
-        self.form = frm.form(self, "frmGrinder", "Grinder", helpstr, [
+        self.form = frm.form(self, "frmGrinder", "Grinder Tasks", GrinderTask.help, [
             frm.edit_line("Task", [frm.TextField(GrinderTask.task_column, frm.large(), style=wx.TE_MULTILINE,
                                                  validator=FieldValidator(None, GrinderTask.task_column, [not_empty]))]),
             frm.edit_line("Solution", [frm.CodeEditor(GrinderTask.solution_column, frm.large(),
