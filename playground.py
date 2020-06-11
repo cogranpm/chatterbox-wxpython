@@ -48,16 +48,16 @@ class PlaygroundPanel(wx.Panel):
         # this should be parameter of the class perhaps
         # create_data would be call to database
         self.listspec = ListSpec(columns = [
-            ColumnSpec(name_column, ColumnType.str, 'Name', 100, True),
-            ColumnSpec(age_column, ColumnType.int, 'Age', 40, True),
-            ColumnSpec(member_column, ColumnType.bool, 'Member', 40, True),
-            ColumnSpec(address1_column, ColumnType.str, 'Address', 120, True),
-            ColumnSpec(address2_column, ColumnType.str, 'Address 2', 120, True),
-            ColumnSpec(city_column, ColumnType.str, 'City', 80, True),
-            ColumnSpec(zip_column, ColumnType.str, 'Zip', 45, True),
-            ColumnSpec(state_column, ColumnType.str, 'State', 45, True),
-            ColumnSpec(phone_column, ColumnType.str, 'Phone', 145, True),
-            ColumnSpec(email_column, ColumnType.str, 'Email', 145, True)
+            ColumnSpec(name_column, ColumnType.str, 'Name', 100, sortable=True),
+            ColumnSpec(age_column, ColumnType.int, 'Age', 40, sortable=True),
+            ColumnSpec(member_column, ColumnType.bool, 'Member', 40, sortable=True),
+            ColumnSpec(address1_column, ColumnType.str, 'Address', 120, sortable=True),
+            ColumnSpec(address2_column, ColumnType.str, 'Address 2', 120, sortable=True),
+            ColumnSpec(city_column, ColumnType.str, 'City', 80, sortable=True),
+            ColumnSpec(zip_column, ColumnType.str, 'Zip', 45, sortable=True),
+            ColumnSpec(state_column, ColumnType.str, 'State', 45, sortable=True),
+            ColumnSpec(phone_column, ColumnType.str, 'Phone', 145, sortable=True),
+            ColumnSpec(email_column, ColumnType.str, 'Email', 145, sortable=True)
         ], selection_handler=self.list_selection_change,
             data=create_data(df.get_all(collection_name)))
 

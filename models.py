@@ -20,8 +20,8 @@ class ColumnSpec:
     data_type: ColumnType
     label: str
     width: int
-    format_fn: Callable
-    browseable: bool = False
+    format_fn: Callable = None
+    browseable: bool = True
     sortable: bool = False
 
 
