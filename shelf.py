@@ -91,11 +91,11 @@ class MainPanel(wx.Panel):
         # py.dispatcher.connect(receiver=handle_tool_delete, signal=c.SIGNAL_DELETE)
         py.dispatcher.send(signal=c.SIGNAL_VIEW_ACTIVATED, sender=self, command=c.COMMAND_VIEW_ACTIVATED, more=self)
 
-    def selection_change(self, event: dv.DataViewEvent):
-        selected_item = get_selected_item(panel.list)
-        if selected_item is not None:
-            record = get_record_from_item(list_spec.model, selected_item)
-            self.__subject.parent_changed(record[c.FIELD_NAME_ID])
+    # def selection_change(self, event: dv.DataViewEvent):
+    #     selected_item = get_selected_item(self.shelf.panel.list)
+    #     if selected_item is not None:
+    #         record = get_record_from_item(self.shelf.list_spec.model, selected_item)
+    #         self.__subject.parent_changed(record[c.FIELD_NAME_ID])
 
 
 class Shelf:
@@ -152,7 +152,7 @@ class Shelf:
 
 def make_list_spec(selection_handler, edit_handler):
     return ListSpec(columns=[
-        ColumnSpec(name_column, ColumnType.str, 'Name', 100, True)
+        ColumnSpec(key=name_column, data_type=ColumnType.str, label='Name', width=100, sortable=True, browseable=True, format_fn=None)
     ], selection_handler=selection_handler,
         edit_handler=edit_handler,
         data=create_data(df.get_all(collection_name)))

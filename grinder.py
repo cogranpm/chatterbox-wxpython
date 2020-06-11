@@ -41,8 +41,8 @@ def make_new_record(subject_id: int):
 
 def make_list_spec(fkey: int, selection_handler: Callable, edit_handler: Callable):
     return ListSpec(columns=[
-        ColumnSpec(name_column, ColumnType.str, 'Name', 100, True),
-        ColumnSpec(description_column, ColumnType.str, 'Description', 100, True)
+        ColumnSpec(key=name_column, data_type=ColumnType.str, label='Name', width=100, sortable=True, browseable=True, format_fn=None),
+        ColumnSpec(key=description_column, data_type=ColumnType.str, label='Description', width=100, sortable=True, browseable=True, format_fn=None)
     ], selection_handler=selection_handler,
         edit_handler=edit_handler,
         data=create_data(fkey, df.get_grinders_by_subject))
@@ -140,9 +140,9 @@ class GrinderTask(wx.Panel):
         main_sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(main_sizer)
         self.list_spec = ListSpec(columns=[
-            ColumnSpec(GrinderTask.task_column, ColumnType.str, 'Task', 100, sortable=True, browseable=True, format_fn=fmt.trunc),
-            ColumnSpec(GrinderTask.solution_column, ColumnType.str, 'Solution', 100, sortable=False, format_fn=fmt.trunc),
-            ColumnSpec(GrinderTask.created_column, ColumnType.date, 'Created', 100, sortable=True, browseable=True)
+            ColumnSpec(key=GrinderTask.task_column, data_type=ColumnType.str, label='Task', width=100, sortable=True, browseable=True, format_fn=fmt.trunc),
+            ColumnSpec(key=GrinderTask.solution_column, data_type=ColumnType.str, label='Solution', width=100, sortable=False, browseable=False, format_fn=fmt.trunc),
+            ColumnSpec(key=GrinderTask.created_column, data_type=ColumnType.date, label='Created', width=100, sortable=True, browseable=True, format_fn=None)
         ],
         selection_handler=self.list_selection_change,
         data=GrinderTask.create_data(self.grinder_data[c.FIELD_NAME_ID], df.get_grinder_tasks_by_grinder))

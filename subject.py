@@ -98,8 +98,8 @@ def make_new_record(shelf_id: int):
 
 def make_list_spec(fkey, selection_handler, edit_handler):
     return ListSpec(columns=[
-        ColumnSpec(name_column, ColumnType.str, 'Name', 100, True),
-        ColumnSpec(description_column, ColumnType.str, 'Description', 100, True)
+        ColumnSpec(key=name_column, data_type=ColumnType.str, label='Name', width=100, sortable=True, browseable=True, format_fn=None),
+        ColumnSpec(key=description_column, data_type=ColumnType.str, label='Description', width=100, sortable=True, browseable=True, format_fn=None)
     ], selection_handler=selection_handler,
         edit_handler=edit_handler,
         data=create_data(fkey, df.get_subjects_by_shelf))
