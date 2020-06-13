@@ -126,7 +126,10 @@ class GrinderTask(wx.Panel):
         return {c.FIELD_NAME_ID: None, 'grinder_id': grinder_id, GrinderTask.task_column: '', GrinderTask.solution_column: '', GrinderTask.created_column: dt.datetime.today()}
 
     def create_data(grinder_id: int, query_fn):
-        records = query_fn(grinder_id)
+        try:
+            records = query_fn(grinder_id)
+        except Exception as e:
+            print(e)
         list = []
         for record in records:
             list.append(record)
