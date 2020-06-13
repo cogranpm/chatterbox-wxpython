@@ -157,9 +157,6 @@ class GrinderTask(wx.Panel):
     created_column = 'created'
     help = 'Grinder Task'
 
-
-
-
     def __init__(self, grinder: Grinder, grinder_data, parent):
         try:
             super().__init__(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)

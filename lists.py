@@ -3,7 +3,7 @@ import wx.dataview as dv
 from enum import Enum
 from typing import Dict, List, Callable, Any
 from dataclasses import dataclass, InitVar
-from models import EntityModel, ColumnSpec, ColumnType
+from models import BaseEntityModel, EntityModel, ColumnSpec, ColumnType
 
 
 def create_list_column(index: int, dvc: dv.DataViewCtrl, column_spec: ColumnSpec):
@@ -40,6 +40,19 @@ def get_selected_item(list: dv.DataViewCtrl) -> dv.DataViewItem:
     else:
         return None 
 
+
+def make_list(parent, model: BaseEntityModel, columns: List[ColumnSpec]) -> dv.DataViewCtrl:
+    dvc = dv.DataViewCtrl(parent, wx.ID_ANY, style=wx.BORDER_THEME)
+    dvc.AssociateModel(model)
+    model.DecRef()
+    for i, column in enumerate(columns):
+        if column.browseable:
+            list_column = create_list_column(i, dvc, column)
+
+    #for c in dvc.Columns:
+    #    c.Sortable = True
+
+    return dvc
 
 
 
