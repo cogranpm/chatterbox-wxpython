@@ -4,7 +4,8 @@ a grinder is an exercise to practice something
 this ui is for navigating the grinders for a particular subject
 """
 
-from typing import Callable
+from typing import Callable, Dict
+from enum import Enum
 
 import wx
 import wx.dataview as dv
@@ -141,7 +142,39 @@ class GrinderTaskModel(BaseEntityModel):
 # static view variety
 # view is a function that is called once
 # to setup the bindings
+
 # message is a type that is pattern matched on
+  # instead of that use an Enum
+Msg = Enum('Msg', 'save new delete select-item set_task set-solution')
+
+# model is just a Dict
+model = {}
+
+def init():
+    return {}
+
+# function to update the view
+def update(msg: Msg, model: Dict):
+    if msg == Msg.select_item:
+        return {'name': 'hello'}
+    elif msg == Msg.set_task:
+         # how is message argument passed in?
+        return {'task': 'thetask???'}
+
+def bindings(model: Dict):
+    """
+    view function is called once
+    return a list of bindings
+    1 for each command possible, so save, new, delete
+    1 for each two way binding such as from model to field and back
+    1 for each 1 way binding such as a read only label etc
+    this will create a view-model with  properties
+    a 2 way binding contains the field name from model, and
+    a message with an argument, eg a string
+    :param model:
+    :return:
+    """
+    return {GrinderTaskModel.task_column: None}
 
 class GrinderTaskPresenter:
 
