@@ -25,6 +25,11 @@ class ColumnSpec:
     sortable: bool = False
 
 
+class BaseEntityModel(dv.PyDataViewModel):
+
+    def __init__(self, parent_key: int):
+        super().__init__()
+        self.parent_key = parent_key
 
 
 # this is a wxPython xtra model based class

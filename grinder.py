@@ -16,7 +16,7 @@ from lists import ListSpec, ColumnType, ColumnSpec, get_selected_item, get_recor
 from panels import PanelSpec, BasePanel
 import forms as frm
 from validators import not_empty, FieldValidator
-from models import ViewState
+from models import ViewState, BaseEntityModel
 import fn_format as fmt
 import fn_widget as w
 
@@ -110,11 +110,46 @@ class Grinder:
             self.__list_spec.added_record(record)
 
 
+class GrinderTaskModel(BaseEntityModel):
+
+    collection_name = c.COLLECTION_NAME_GRINDERTASK
+    task_column = 'task'
+    solution_column = 'solution'
+    created_column = 'created'
+
+    def __init__(self, parent_key: int):
+        super().__init__(parent_key)
+        self.columns = [
+                ColumnSpec(key=GrinderTaskModel.task_column, data_type=ColumnType.str, label='Task', width=400, sortable=True, browseable=True, format_fn=fmt.trunc),
+                ColumnSpec(key=GrinderTaskModel.solution_column, data_type=ColumnType.str, label='Solution', width=100, sortable=False, browseable=False, format_fn=fmt.trunc),
+                ColumnSpec(key=GrinderTaskModel.created_column, data_type=ColumnType.date, label='Created', width=300, sortable=True, browseable=True, format_fn=None)
+            ]
+
+    def make_new_record(self):
+        return {c.FIELD_NAME_ID: None, 'grinder_id': self.parent_key, GrinderTask.task_column: '',
+                GrinderTaskModel.solution_column: '', GrinderTaskModel.created_column: dt.datetime.today()}
+
+    def create_data(self):
+        records = df.get_grinder_tasks_by_grinder(self.parent_key)
+        data_list = []
+        for record in records:
+            data_list.append(record)
+        return data_list
+
+
+class GrinderTaskPresenter:
+
+    def __init__(self, grinder_id: int):
+        self.model = GrinderTaskModel(grinder_id)
+        self.view = GrinderTask()
+
+
 class GrinderTask(wx.Panel):
     """ has a list of grinder tasks - such as ;
     write an abstract base class etc etc
     each task needs to have a text solution
     hints?
+    This class forms the View
     """
     collection_name = c.COLLECTION_NAME_GRINDERTASK
     task_column = 'task'
@@ -122,18 +157,8 @@ class GrinderTask(wx.Panel):
     created_column = 'created'
     help = 'Grinder Task'
 
-    def make_new_record(grinder_id: int):
-        return {c.FIELD_NAME_ID: None, 'grinder_id': grinder_id, GrinderTask.task_column: '', GrinderTask.solution_column: '', GrinderTask.created_column: dt.datetime.today()}
 
-    def create_data(grinder_id: int, query_fn):
-        try:
-            records = query_fn(grinder_id)
-        except Exception as e:
-            print(e)
-        list = []
-        for record in records:
-            list.append(record)
-        return list
+
 
     def __init__(self, grinder: Grinder, grinder_data, parent):
         try:
@@ -158,7 +183,6 @@ class GrinderTask(wx.Panel):
             self.list = self.list_spec.make_list(self)
             self.notebook.AddPage(self.list, "List", True)
 
-            #main_sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
             main_sizer.Add(self.notebook, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
 
             # figuring out how to seperate list and form into tabs

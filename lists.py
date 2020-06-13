@@ -39,7 +39,10 @@ def get_selected_item(list: dv.DataViewCtrl) -> dv.DataViewItem:
         return list.GetSelection()
     else:
         return None 
-    
+
+
+
+
 
 # would like to make this frozen, but model is a problem 
 # as it is set in postinit
