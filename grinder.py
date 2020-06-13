@@ -137,6 +137,12 @@ class GrinderTaskModel(BaseEntityModel):
         return data_list
 
 
+# try out module view update
+# static view variety
+# view is a function that is called once
+# to setup the bindings
+# message is a type that is pattern matched on
+
 class GrinderTaskPresenter:
 
     def __init__(self, grinder_id: int):
