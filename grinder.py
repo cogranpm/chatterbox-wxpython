@@ -136,50 +136,53 @@ class GrinderTask(wx.Panel):
         return list
 
     def __init__(self, grinder: Grinder, grinder_data, parent):
-        super().__init__(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
-        self.grinder_data = grinder_data
-        self.grinder = grinder
-        self.parent = parent
-        df.create_entity(GrinderTask.collection_name)
+        try:
+            super().__init__(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+            self.grinder_data = grinder_data
+            self.grinder = grinder
+            self.parent = parent
+            df.create_entity(GrinderTask.collection_name)
 
-        self.notebook: wx.aui.AuiNotebook = w.notebook(self)
+            self.notebook: wx.aui.AuiNotebook = w.notebook(self)
 
-        main_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.SetSizer(main_sizer)
-        self.list_spec = ListSpec(columns=[
-            ColumnSpec(key=GrinderTask.task_column, data_type=ColumnType.str, label='Task', width=400, sortable=True, browseable=True, format_fn=fmt.trunc),
-            ColumnSpec(key=GrinderTask.solution_column, data_type=ColumnType.str, label='Solution', width=100, sortable=False, browseable=False, format_fn=fmt.trunc),
-            ColumnSpec(key=GrinderTask.created_column, data_type=ColumnType.date, label='Created', width=300, sortable=True, browseable=True, format_fn=None)
-        ],
-            selection_handler=self.list_selection_change,
-            edit_handler=self.list_selection_edit,
-            data=GrinderTask.create_data(self.grinder_data[c.FIELD_NAME_ID], df.get_grinder_tasks_by_grinder))
-        self.list = self.list_spec.make_list(self)
-        self.notebook.AddPage(self.list, "List", True)
+            main_sizer = wx.BoxSizer(wx.VERTICAL)
+            self.SetSizer(main_sizer)
+            self.list_spec = ListSpec(columns=[
+                ColumnSpec(key=GrinderTask.task_column, data_type=ColumnType.str, label='Task', width=400, sortable=True, browseable=True, format_fn=fmt.trunc),
+                ColumnSpec(key=GrinderTask.solution_column, data_type=ColumnType.str, label='Solution', width=100, sortable=False, browseable=False, format_fn=fmt.trunc),
+                ColumnSpec(key=GrinderTask.created_column, data_type=ColumnType.date, label='Created', width=300, sortable=True, browseable=True, format_fn=None)
+            ],
+                selection_handler=self.list_selection_change,
+                edit_handler=self.list_selection_edit,
+                data=GrinderTask.create_data(self.grinder_data[c.FIELD_NAME_ID], df.get_grinder_tasks_by_grinder))
+            self.list = self.list_spec.make_list(self)
+            self.notebook.AddPage(self.list, "List", True)
 
-        #main_sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
-        main_sizer.Add(self.notebook, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
+            #main_sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
+            main_sizer.Add(self.notebook, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
 
-        # figuring out how to seperate list and form into tabs
-        self.form_panel = w.panel(self, [])
-        self.form_panel.SetSizer(w.sizer())
+            # figuring out how to seperate list and form into tabs
+            self.form_panel = w.panel(self, [])
+            self.form_panel.SetSizer(w.sizer())
 
-        self.form = frm.form(self.form_panel, "frmGrinder", "Grinder Tasks", GrinderTask.help, [
-            frm.edit_line("Task", [frm.TextField(GrinderTask.task_column, frm.large(), style=wx.TE_MULTILINE,
-                                                 validator=FieldValidator(None, GrinderTask.task_column, [not_empty]))]),
-            frm.edit_line("Solution", [frm.CodeEditor(GrinderTask.solution_column, frm.large(),
-                                                     validator=FieldValidator(None, GrinderTask.solution_column, [not_empty]))])
-        ])
+            self.form = frm.form(self.form_panel, "frmGrinder", "Grinder Tasks", GrinderTask.help, [
+                frm.edit_line("Task", [frm.TextField(GrinderTask.task_column, frm.large(), style=wx.TE_MULTILINE,
+                                                     validator=FieldValidator(None, GrinderTask.task_column, [not_empty]))]),
+                frm.edit_line("Solution", [frm.CodeEditor(GrinderTask.solution_column, frm.large(),
+                                                         validator=FieldValidator(None, GrinderTask.solution_column, [not_empty]))])
+            ])
 
-        self.form.build()
-        self.notebook.AddPage(self.form_panel, "Task", False)
+            self.form.build()
+            self.notebook.AddPage(self.form_panel, "Task", False)
 
-        wx.py.dispatcher.connect(receiver=self.save, signal=c.SIGNAL_SAVE)
-        wx.py.dispatcher.connect(receiver=self.add, signal=c.SIGNAL_ADD)
-        wx.py.dispatcher.connect(receiver=self.delete, signal=c.SIGNAL_DELETE)
+            wx.py.dispatcher.connect(receiver=self.save, signal=c.SIGNAL_SAVE)
+            wx.py.dispatcher.connect(receiver=self.add, signal=c.SIGNAL_ADD)
+            wx.py.dispatcher.connect(receiver=self.delete, signal=c.SIGNAL_DELETE)
 
-        self.form.set_viewstate(ViewState.empty)
-        wx.py.dispatcher.send(signal=c.SIGNAL_VIEW_ACTIVATED, sender=self, command=c.COMMAND_VIEW_ACTIVATED, more=self)
+            self.form.set_viewstate(ViewState.empty)
+            wx.py.dispatcher.send(signal=c.SIGNAL_VIEW_ACTIVATED, sender=self, command=c.COMMAND_VIEW_ACTIVATED, more=self)
+        except BaseException as ex:
+            print('some error here')
 
     def save(self, command, more):
         if more is self:

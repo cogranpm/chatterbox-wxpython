@@ -11,7 +11,7 @@ ViewState = Enum('ViewState', 'adding dirty loaded loading empty')
 ColumnType = Enum('ColumnType', 'str bool float int date')
 column_type_map: Dict[ColumnType, str] = {ColumnType.str: 'string', ColumnType.bool: 'bool',
                                           ColumnType.float: 'double', ColumnType.int: 'string',
-                                          ColumnType.date: 'string'}
+                                          ColumnType.date: 'datetime'}
 
 
 @dataclass(frozen=True)
@@ -76,13 +76,17 @@ class EntityModel(dv.PyDataViewModel):
 
     def GetColumnType(self, col):
         # global column_type_map
-        return column_type_map[self.get_column_by_index(col).data_type]
+        col_type = column_type_map[self.get_column_by_index(col).data_type]
+        return col_type
 
     def GetColumnCount(self):
         return len(self.columns)
 
     def GetValue(self, item, col):
-        row = self.ItemToObject(item)
+        try:
+            row = self.ItemToObject(item)
+        except Exception as ex:
+            print(ex)
         column_spec: ColumnSpec = self.get_column_by_index(col)
         value = row[column_spec.key]
         if column_spec.format_fn is not None:
@@ -97,25 +101,36 @@ class EntityModel(dv.PyDataViewModel):
         return False
 
     def SetValue(self, variant, item, col):
-        row = self.ItemToObject(item)
-        row[self.get_column_by_index(col).key] = variant
+        try:
+            row = self.ItemToObject(item)
+            row[self.get_column_by_index(col).key] = variant
+        except Exception as ex:
+            print(ex)
         return True
 
     def Compare(self, item1, item2, col, ascending):
-        if not ascending: # swap sort order?
-            item2, item1 = item1, item2
-        row1 = self.ItemToObject(item1)
-        row2 = self.ItemToObject(item2)
+        try:
+            if not ascending: # swap sort order?
+                item2, item1 = item1, item2
 
-        # different sort depending on column
-        if self.get_column_by_index(col).data_type == int:
-            a = int(row1[self.get_column_by_index(col).key])
-            b = int(row2[self.get_column_by_index(col).key])
-            return (a > b) - (a < b)
-        else:
-            a = row1[self.get_column_by_index(col).key]
-            b = row2[self.get_column_by_index(col).key]
-            return (a > b) - (a < b)
+            print("comparing")
+            row1 = self.ItemToObject(item1)
+            row2 = self.ItemToObject(item2)
+
+            # different sort depending on column
+            if self.get_column_by_index(col).data_type == ColumnType.int:
+                a = int(row1[self.get_column_by_index(col).key])
+                b = int(row2[self.get_column_by_index(col).key])
+                return (a > b) - (a < b)
+            #elif self.get_column_by_index(col).data_type == ColumnType.date:
+            #    return 0
+            else:
+                a = row1[self.get_column_by_index(col).key]
+                b = row2[self.get_column_by_index(col).key]
+                return (a > b) - (a < b)
+        except Exception as ex:
+            print(ex)
+            return 0
 
         # if col == 1 or col == 2:
         #     a = int(row1[col])

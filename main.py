@@ -2,8 +2,11 @@ import myapp
 
 
 def main():
-    app = myapp.ChatterboxApp()
-    app.MainLoop()
+    try:
+        app = myapp.ChatterboxApp()
+        app.MainLoop()
+    except Exception as ex:
+        print(ex)
 
 
 if __name__ == '__main__':
