@@ -11,6 +11,10 @@ def create_list_column(index: int, dvc: dv.DataViewCtrl, column_spec: ColumnSpec
         list_column: dv.DataViewColumn = dvc.AppendToggleColumn(column_spec.label, index,
                                                                 width=column_spec.width,
                                                                 mode=dv.DATAVIEW_CELL_EDITABLE)
+    elif column_spec.data_type == ColumnType.date:
+        list_column: dv.DataViewColumn = dvc.AppendDateColumn(column_spec.label, index,
+                                                              width=-1,
+                                                              mode=dv.DATAVIEW_CELL_ACTIVATABLE)
     else:
         list_column = dvc.AppendTextColumn(column_spec.label, index, width=column_spec.width,
                                            mode=dv.DATAVIEW_CELL_EDITABLE)
