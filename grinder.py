@@ -150,6 +150,7 @@ class GrinderTaskPresenter:
         self.model = GrinderTaskModel(grinder_data[c.FIELD_NAME_ID])
         self.view = GrinderTask(parent)
         # self.view.list = ....
+        # self.view.list.Bind... event handlers
         # self.view.form = ....
         # self.view.layout(....)
 
