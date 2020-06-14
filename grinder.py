@@ -91,9 +91,10 @@ class Grinder:
         # need to access the notebook and add a new page with a grindertask loaded as the child
         selected_item = get_selected_item(self.panel.list)
         record = get_record_from_item(self.__list_spec.model, selected_item)
-        task_panel = GrinderTask(self, record, self.parent.frame)
-        self.parent.frame.add_page(key="grinder_task", title=c.NOTEBOOK_TITLE_GRINDER, window=task_panel, page_data=None)
-
+        presenter = GrinderTaskPresenter(self, record, self.parent.frame)
+        # task_panel = GrinderTask(self, record, self.parent.frame)
+        self.parent.frame.add_page(key="grinder_task", title=c.NOTEBOOK_TITLE_GRINDER,
+                                   window=presenter.view, page_data=None)
 
     def __add(self, event):
         if self.fkey is None:
@@ -120,6 +121,7 @@ class GrinderTaskModel(BaseEntityModel):
 
     def __init__(self, parent_key: int):
         super().__init__(parent_key)
+        df.create_entity(GrinderTaskModel.collection_name)
         self.columns = [
                 ColumnSpec(key=GrinderTaskModel.task_column, data_type=ColumnType.str, label='Task', width=400, sortable=True, browseable=True, format_fn=fmt.trunc),
                 ColumnSpec(key=GrinderTaskModel.solution_column, data_type=ColumnType.str, label='Solution', width=100, sortable=False, browseable=False, format_fn=fmt.trunc),
@@ -138,49 +140,18 @@ class GrinderTaskModel(BaseEntityModel):
         return data_list
 
 
-# try out module view update
-# static view variety
-# view is a function that is called once
-# to setup the bindings
-
-# message is a type that is pattern matched on
-  # instead of that use an Enum
-Msg = Enum('Msg', 'save new delete select-item set_task set-solution')
-
-# model is just a Dict
-model = {}
-
-def init():
-    return {}
-
-# function to update the view
-def update(msg: Msg, model: Dict):
-    if msg == Msg.select_item:
-        return {'name': 'hello'}
-    elif msg == Msg.set_task:
-         # how is message argument passed in?
-        return {'task': 'thetask???'}
-
-def bindings(model: Dict):
-    """
-    view function is called once
-    return a list of bindings
-    1 for each command possible, so save, new, delete
-    1 for each two way binding such as from model to field and back
-    1 for each 1 way binding such as a read only label etc
-    this will create a view-model with  properties
-    a 2 way binding contains the field name from model, and
-    a message with an argument, eg a string
-    :param model:
-    :return:
-    """
-    return {GrinderTaskModel.task_column: None}
 
 class GrinderTaskPresenter:
 
-    def __init__(self, grinder_id: int):
-        self.model = GrinderTaskModel(grinder_id)
-        self.view = GrinderTask()
+    def __init__(self, grinder: Grinder, grinder_data, parent):
+        self.Grinder = grinder
+        self.parent = parent
+        self.grinder_data = grinder_data
+        self.model = GrinderTaskModel(grinder_data[c.FIELD_NAME_ID])
+        self.view = GrinderTask(parent)
+        # self.view.list = ....
+        # self.view.form = ....
+        # self.view.layout(....)
 
 
 class GrinderTask(wx.Panel):
@@ -196,18 +167,15 @@ class GrinderTask(wx.Panel):
     created_column = 'created'
     help = 'Grinder Task'
 
-    def __init__(self, grinder: Grinder, grinder_data, parent):
+    def __init__(self, parent):
         try:
             super().__init__(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
-            self.grinder_data = grinder_data
-            self.grinder = grinder
             self.parent = parent
-            df.create_entity(GrinderTask.collection_name)
-
             self.notebook: wx.aui.AuiNotebook = w.notebook(self)
-
             main_sizer = wx.BoxSizer(wx.VERTICAL)
             self.SetSizer(main_sizer)
+
+            # ListSpec needs to be replaced with something else
             self.list_spec = ListSpec(columns=[
                 ColumnSpec(key=GrinderTask.task_column, data_type=ColumnType.str, label='Task', width=400, sortable=True, browseable=True, format_fn=fmt.trunc),
                 ColumnSpec(key=GrinderTask.solution_column, data_type=ColumnType.str, label='Solution', width=100, sortable=False, browseable=False, format_fn=fmt.trunc),
@@ -242,7 +210,7 @@ class GrinderTask(wx.Panel):
             self.form.set_viewstate(ViewState.empty)
             wx.py.dispatcher.send(signal=c.SIGNAL_VIEW_ACTIVATED, sender=self, command=c.COMMAND_VIEW_ACTIVATED, more=self)
         except BaseException as ex:
-            print('some error here')
+            print('Error in GrindTask __init__: ' + str(ex))
 
     def save(self, command, more):
         if more is self:
@@ -275,7 +243,6 @@ class GrinderTask(wx.Panel):
         selected_item = self.list.GetSelection()
         record = self.list_spec.model.ItemToObject(selected_item)
         self.form.bind(record)
-        #self.TransferDataToWindow()
         self.form_panel.TransferDataToWindow()
         self.form.set_viewstate(ViewState.loaded)
 
