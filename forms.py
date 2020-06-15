@@ -1,4 +1,5 @@
 # classes etc that help define a form and related controls
+from dataclasses import dataclass
 from enum import Enum, auto
 from typing import List, Tuple
 from lists import ListItem
@@ -26,6 +27,51 @@ width_medium_multi = 100
 width_small_multi = 70
 
 field_border_width = 5
+
+
+class EditFieldDef:
+
+    def __init__(self, name: str, width: EditFieldWidth):
+        self.name = name
+        self.width = width
+
+class TextFieldDef(EditFieldDef):
+
+    def __init__(self, name: str, width: EditFieldWidth, multi_line: bool):
+        super().__init__(name, width)
+        self.multi_line = multi_line
+
+
+class CodeEditorDef(EditFieldDef):
+
+    def __init__(self, name: str, width: EditFieldWidth):
+        super().__init__(name, width)
+
+
+class CheckboxFieldDef(EditFieldDef):
+
+    def __init__(self, name: str, width: EditFieldWidth):
+        super().__init__(name, width)
+
+
+class ComboFieldDef(EditFieldDef):
+
+    def __init__(self, name: str, width: EditFieldWidth, contents: List[ListItem]):
+        super().__init__(name, width)
+        self.contents = contents
+
+@dataclass(frozen=True)
+class FormLineDef:
+    label: str
+    edit_fields: List['EditFieldDef']
+
+
+@dataclass(frozen=True)
+class FormDef:
+    title: str
+    help: str
+    edit_lines: List['FormLineSpec']
+    name: str
 
 
 def is_child_of(widgets, child_widget):
@@ -67,6 +113,7 @@ def default():
 
 def bind_button(btn, handler):
     btn.Bind(wx.EVT_BUTTON, handler)
+
 
 
 class FormSpec():

@@ -118,6 +118,7 @@ class GrinderTaskModel(BaseEntityModel):
     task_column = 'task'
     solution_column = 'solution'
     created_column = 'created'
+    help = 'Grinder Task'
 
     columns = [
         ColumnSpec(key=task_column, data_type=ColumnType.str, label='Task', width=400, sortable=True,
@@ -166,8 +167,15 @@ class GrinderTaskPresenter:
         # on selected list item results in text of column being edited
         # instead or running the ITEM_ACTIVATED event
         self.view.list.Bind(dv.EVT_DATAVIEW_ITEM_START_EDITING, self.start_editing)
-        self.view.set_form(None)
 
+        form_spec = frm.form(self.form_panel, "frmGrinder", "Grinder Tasks", GrinderTaskModel.help, [
+            frm.edit_line("Task", [frm.TextField(GrinderTaskModel.task_column, frm.large(), style=wx.TE_MULTILINE,
+                                                 validator=FieldValidator(None, GrinderTaskModel.task_column, [not_empty]))]),
+            frm.edit_line("Solution", [frm.CodeEditor(GrinderTaskModel.solution_column, frm.large(),
+                                                      validator=FieldValidator(None, GrinderTaskModel.solution_column,
+                                                                               [not_empty]))])
+        ])
+        self.view.set_form(form_spec.build())
         self.model.change_data(self.model.create_data())
 
         wx.py.dispatcher.connect(receiver=self.save, signal=c.SIGNAL_SAVE)
@@ -277,14 +285,6 @@ class GrinderTask(wx.Panel):
         # to-do change this to use passed in form
         self.form_panel = w.panel(self, [])
         self.form_panel.SetSizer(w.sizer())
-        self.form = frm.form(self.form_panel, "frmGrinder", "Grinder Tasks", GrinderTask.help, [
-            frm.edit_line("Task", [frm.TextField(GrinderTask.task_column, frm.large(), style=wx.TE_MULTILINE,
-                                                 validator=FieldValidator(None, GrinderTask.task_column, [not_empty]))]),
-            frm.edit_line("Solution", [frm.CodeEditor(GrinderTask.solution_column, frm.large(),
-                                                      validator=FieldValidator(None, GrinderTask.solution_column,
-                                                                               [not_empty]))])
-        ])
-        self.form.build()
         self.notebook.AddPage(self.form_panel, "Task", False)
         self.form.set_viewstate(ViewState.empty)
 
