@@ -153,6 +153,7 @@ class GrinderTaskPresenter:
         self.parent = parent
         self.grinder_data = grinder_data
         self.model = GrinderTaskModel(grinder_data[c.FIELD_NAME_ID])
+        self.view_state = ViewState.empty
         self.view = GrinderTask(parent)
         self.view.set_list(create_list(parent, self.model.columns))
         self.view.list.AssociateModel(self.model)
@@ -175,6 +176,30 @@ class GrinderTaskPresenter:
 
         # figuring out how to seperate list and form into tabs
         # wx.py.dispatcher.send(signal=c.SIGNAL_VIEW_ACTIVATED, sender=self, command=c.COMMAND_VIEW_ACTIVATED, more=self)
+
+    def set_viewstate(self, state: ViewState):
+        # need to update the form
+        if state == ViewState.adding:
+            #self.reset_fields()
+            #self.enable_fields(True)
+            #self.setfocusfirst()
+            wx.py.dispatcher.send(signal=c.SIGNAL_VIEWSTATE, sender=self, command=c.COMMAND_ADDING, more=self)
+        elif state == ViewState.empty:
+            #self.reset_fields()
+            #self.enable_fields(False)
+            wx.py.dispatcher.send(signal=c.SIGNAL_VIEWSTATE, sender=self, command=c.COMMAND_EMPTY, more=self)
+        elif state == ViewState.loaded:
+            #self.enable_fields(True)
+            #self.setfocusfirst()
+            wx.py.dispatcher.send(signal=c.SIGNAL_VIEWSTATE, sender=self, command=c.COMMAND_LOADED, more=self)
+            self.pause_dirty_events(False)
+        elif state == ViewState.loading:
+            self.pause_dirty_events(True)
+
+        self.view_state = state
+
+    def pause_dirty_events(self, flag: bool):
+        pass
 
     def selection_handler(self, event: dv.DataViewEvent):
         pass
@@ -212,7 +237,10 @@ class GrinderTaskPresenter:
         pass
 
     def add(self, command, more):
-        pass
+        self.set_viewstate(ViewState.adding)
+        self.view.add()
+
+
 
     def delete(self, command, more):
         pass
@@ -277,10 +305,9 @@ class GrinderTask(wx.Panel):
                     self.list_spec.edited_record(record)
                 self.form.set_viewstate(ViewState.loaded)
 
-    def add(self, command, more):
-        if more is self:
-            self.notebook.SetSelection(1)
-            self.form.set_viewstate(ViewState.adding)
+    def add(self):
+        self.notebook.SetSelection(1)
+
 
 
     def delete(self, command, more):

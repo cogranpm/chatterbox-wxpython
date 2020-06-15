@@ -6,6 +6,8 @@ from enum import Enum
 import wx.dataview as dv
 import wx
 
+import chatterbox_constants as c
+
 ViewState = Enum('ViewState', 'adding dirty loaded loading empty')
 
 # not sure how to do date time
@@ -50,25 +52,6 @@ class BaseEntityModel(dv.PyDataViewModel):
         for record in self.data:
             self.ItemAdded(dv.NullDataViewItem, self.ObjectToItem(record))
 
-    def set_viewstate(self, state: ViewState):
-        if state == ViewState.adding:
-            self.reset_fields()
-            self.enable_fields(True)
-            self.setfocusfirst()
-            wx.py.dispatcher.send(signal=c.SIGNAL_VIEWSTATE, sender=self, command=c.COMMAND_ADDING, more=self)
-        elif state == ViewState.empty:
-            self.reset_fields()
-            self.enable_fields(False)
-            wx.py.dispatcher.send(signal=c.SIGNAL_VIEWSTATE, sender=self, command=c.COMMAND_EMPTY, more=self)
-        elif state == ViewState.loaded:
-            self.enable_fields(True)
-            self.setfocusfirst()
-            wx.py.dispatcher.send(signal=c.SIGNAL_VIEWSTATE, sender=self, command=c.COMMAND_LOADED, more=self)
-            self.pause_dirty_events(False)
-        elif state == ViewState.loading:
-            self.pause_dirty_events(True)
-
-        self.view_state = state
 
     def get_column_by_index(self, index):
         return self.columns[index]
