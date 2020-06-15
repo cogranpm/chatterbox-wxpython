@@ -27,10 +27,103 @@ class ColumnSpec:
 
 class BaseEntityModel(dv.PyDataViewModel):
 
-    def __init__(self, parent_key: int):
+    def __init__(self, parent_key: int, columns: List[ColumnSpec]):
         super().__init__()
         self.parent_key = parent_key
+        self.columns = columns
+        self.data = dict()
 
+    def change_data(self, records):
+        self.data = records
+        # cleared doesn't work on linux
+        # so need to delete by item and
+        # add by item
+
+        if self.data is not None:
+            for item in self.data:
+                object = self.ObjectToItem(item)
+                if object is not None:
+                    self.ItemDeleted(dv.NullDataViewItem, self.ObjectToItem(item))
+
+        for record in self.data:
+            self.ItemAdded(dv.NullDataViewItem, self.ObjectToItem(record))
+
+    def get_column_by_index(self, index):
+        return self.columns[index]
+
+    def GetChildren(self, item, children):
+        if self.data is None:
+            return
+        for row in self.data:
+            children.append(self.ObjectToItem(row))
+        return len(self.data)
+
+    def IsContainer(self, item):
+        if not item:
+            return True
+        return False
+
+    def GetParent(self, item):
+        return dv.NullDataViewItem
+
+    def GetColumnType(self, col):
+        # global column_type_map
+        col_type = column_type_map[self.get_column_by_index(col).data_type]
+        return col_type
+
+    def GetColumnCount(self):
+        return len(self.columns)
+
+    def GetValue(self, item, col):
+        try:
+            row = self.ItemToObject(item)
+        except Exception as ex:
+            print(ex)
+        column_spec: ColumnSpec = self.get_column_by_index(col)
+        value = row[column_spec.key]
+        if column_spec.format_fn is not None:
+            return column_spec.format_fn(value)
+        return value
+
+    def GetAttr(self, item, col, attr):
+        # if col == 1:
+        #    attr.SetColour('blue')
+        #    attr.SetBold(True)
+        #    return True
+        return False
+
+    def SetValue(self, variant, item, col):
+        try:
+            row = self.ItemToObject(item)
+            row[self.get_column_by_index(col).key] = variant
+        except Exception as ex:
+            print(ex)
+        return True
+
+    def Compare(self, item1, item2, col, ascending):
+        try:
+            if not ascending:  # swap sort order?
+                item2, item1 = item1, item2
+
+            row1 = self.ItemToObject(item1)
+            row2 = self.ItemToObject(item2)
+
+            # different sort depending on column
+            if self.get_column_by_index(col).data_type == ColumnType.int:
+                a = int(row1[self.get_column_by_index(col).key])
+                b = int(row2[self.get_column_by_index(col).key])
+                return (a > b) - (a < b)
+            # elif self.get_column_by_index(col).data_type == ColumnType.date:
+            #    return 0
+            else:
+                a = row1[self.get_column_by_index(col).key]
+                b = row2[self.get_column_by_index(col).key]
+                return (a > b) - (a < b)
+        except Exception as ex:
+            print(ex)
+            return 0
+
+#
 
 # this is a wxPython xtra model based class
 # has a ItemToObject mapper built in which makes
@@ -118,7 +211,6 @@ class EntityModel(dv.PyDataViewModel):
             if not ascending: # swap sort order?
                 item2, item1 = item1, item2
 
-            print("comparing")
             row1 = self.ItemToObject(item1)
             row2 = self.ItemToObject(item2)
 

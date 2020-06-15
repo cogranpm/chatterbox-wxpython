@@ -17,7 +17,7 @@ def create_list_column(index: int, dvc: dv.DataViewCtrl, column_spec: ColumnSpec
                                                               mode=dv.DATAVIEW_CELL_ACTIVATABLE)
     else:
         list_column = dvc.AppendTextColumn(column_spec.label, index, width=column_spec.width,
-                                           mode=dv.DATAVIEW_CELL_EDITABLE)
+                                           mode=dv.DATAVIEW_CELL_ACTIVATABLE)
     return list_column
 
 
@@ -39,6 +39,18 @@ def get_selected_item(list: dv.DataViewCtrl) -> dv.DataViewItem:
         return list.GetSelection()
     else:
         return None 
+
+
+# new version with proper separation of concerns
+# no model set or used in this function
+def create_list(parent, columns: List[ColumnSpec]) -> dv.DataViewCtrl:
+    dvc = dv.DataViewCtrl(parent, wx.ID_ANY, style=wx.BORDER_THEME)
+    for i, column in enumerate(columns):
+        if column.browseable:
+            list_column = create_list_column(i, dvc, column)
+        for c in dvc.Columns:
+            c.Sortable = True
+    return dvc
 
 
 def make_list(parent, model: BaseEntityModel, columns: List[ColumnSpec]) -> dv.DataViewCtrl:
