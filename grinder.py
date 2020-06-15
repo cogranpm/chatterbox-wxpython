@@ -4,7 +4,7 @@ a grinder is an exercise to practice something
 this ui is for navigating the grinders for a particular subject
 """
 
-from typing import Callable, Dict
+from typing import Callable, Dict, List
 from enum import Enum
 
 import wx
@@ -168,14 +168,26 @@ class GrinderTaskPresenter:
         # instead or running the ITEM_ACTIVATED event
         self.view.list.Bind(dv.EVT_DATAVIEW_ITEM_START_EDITING, self.start_editing)
 
-        form_spec = frm.form(self.form_panel, "frmGrinder", "Grinder Tasks", GrinderTaskModel.help, [
-            frm.edit_line("Task", [frm.TextField(GrinderTaskModel.task_column, frm.large(), style=wx.TE_MULTILINE,
-                                                 validator=FieldValidator(None, GrinderTaskModel.task_column, [not_empty]))]),
-            frm.edit_line("Solution", [frm.CodeEditor(GrinderTaskModel.solution_column, frm.large(),
-                                                      validator=FieldValidator(None, GrinderTaskModel.solution_column,
-                                                                               [not_empty]))])
-        ])
-        self.view.set_form(form_spec.build())
+        task_field_def: frm.EditFieldDef = frm.TextFieldDef(name=GrinderTaskModel.task_column, width=frm.large(),
+                                                            validator=FieldValidator(None, GrinderTaskModel.task_column, [not_empty]),
+                                                            multi_line=True)
+        solution_field_def: frm.EditFieldDef = frm.CodeEditorDef(name=GrinderTaskModel.solution_column, width=frm.large(),
+                                                                 validator=FieldValidator(None, GrinderTaskModel.solution_column, [not_empty]))
+        edit_lines: List[frm.FormLineDef] = [frm.FormLineDef("Task", [task_field_def]),
+                                             frm.FormLineDef("Solution", [solution_field_def])]
+
+        form_def: frm.FormLineDef = frm.FormDef(title='Grinder Task', help=GrinderTaskModel.help, edit_lines=edit_lines, name='frmGrinderTask')
+
+        # form_spec = frm.form(self.form_panel, "frmGrinder", "Grinder Tasks", GrinderTaskModel.help, [
+        #     frm.edit_line("Task", [frm.TextField(GrinderTaskModel.task_column, frm.large(), style=wx.TE_MULTILINE,
+        #                                          validator=FieldValidator(None, GrinderTaskModel.task_column, [not_empty]))]),
+        #     frm.edit_line("Solution", [frm.CodeEditor(GrinderTaskModel.solution_column, frm.large(),
+        #                                               validator=FieldValidator(None, GrinderTaskModel.solution_column,
+        #                                                                        [not_empty]))])
+        # ])
+        # self.view.set_form(form_spec.build())
+
+
         self.model.change_data(self.model.create_data())
 
         wx.py.dispatcher.connect(receiver=self.save, signal=c.SIGNAL_SAVE)

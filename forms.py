@@ -31,34 +31,37 @@ field_border_width = 5
 
 class EditFieldDef:
 
-    def __init__(self, name: str, width: EditFieldWidth):
+    def __init__(self, name: str, width: EditFieldWidth, validator: wx.PyValidator):
         self.name = name
         self.width = width
+        self.validator = validator
+
 
 class TextFieldDef(EditFieldDef):
 
-    def __init__(self, name: str, width: EditFieldWidth, multi_line: bool):
-        super().__init__(name, width)
+    def __init__(self, name: str, width: EditFieldWidth, validator: wx.PyValidator, multi_line: bool = False):
+        super().__init__(name, width, validator)
         self.multi_line = multi_line
 
 
 class CodeEditorDef(EditFieldDef):
 
-    def __init__(self, name: str, width: EditFieldWidth):
-        super().__init__(name, width)
+    def __init__(self, name: str, width: EditFieldWidth, validator: wx.PyValidator):
+        super().__init__(name, width, validator)
 
 
 class CheckboxFieldDef(EditFieldDef):
 
-    def __init__(self, name: str, width: EditFieldWidth):
-        super().__init__(name, width)
+    def __init__(self, name: str, width: EditFieldWidth, validator: wx.PyValidator):
+        super().__init__(name, width, validator)
 
 
 class ComboFieldDef(EditFieldDef):
 
-    def __init__(self, name: str, width: EditFieldWidth, contents: List[ListItem]):
-        super().__init__(name, width)
+    def __init__(self, name: str, width: EditFieldWidth, contents: List[ListItem], validator: wx.PyValidator):
+        super().__init__(name, width, validator)
         self.contents = contents
+
 
 @dataclass(frozen=True)
 class FormLineDef:
