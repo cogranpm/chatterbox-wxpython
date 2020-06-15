@@ -68,7 +68,6 @@ def make_list(parent, model: BaseEntityModel, columns: List[ColumnSpec]) -> dv.D
 
 
 
-
 # would like to make this frozen, but model is a problem 
 # as it is set in postinit
 @dataclass()

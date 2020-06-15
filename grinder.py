@@ -119,14 +119,19 @@ class GrinderTaskModel(BaseEntityModel):
     solution_column = 'solution'
     created_column = 'created'
 
+    columns = [
+        ColumnSpec(key=task_column, data_type=ColumnType.str, label='Task', width=400, sortable=True,
+                   browseable=True, format_fn=fmt.trunc),
+        ColumnSpec(key=solution_column, data_type=ColumnType.str, label='Solution', width=100,
+                   sortable=False, browseable=False, format_fn=fmt.trunc),
+        ColumnSpec(key=created_column, data_type=ColumnType.date, label='Created', width=300,
+                   sortable=True, browseable=True, format_fn=None)
+    ]
+
     def __init__(self, parent_key: int):
-        super().__init__(parent_key)
+        super().__init__(parent_key, GrinderTaskModel.columns)
         df.create_entity(GrinderTaskModel.collection_name)
-        self.columns = [
-                ColumnSpec(key=GrinderTaskModel.task_column, data_type=ColumnType.str, label='Task', width=400, sortable=True, browseable=True, format_fn=fmt.trunc),
-                ColumnSpec(key=GrinderTaskModel.solution_column, data_type=ColumnType.str, label='Solution', width=100, sortable=False, browseable=False, format_fn=fmt.trunc),
-                ColumnSpec(key=GrinderTaskModel.created_column, data_type=ColumnType.date, label='Created', width=300, sortable=True, browseable=True, format_fn=None)
-            ]
+
 
     def make_new_record(self):
         return {c.FIELD_NAME_ID: None, 'grinder_id': self.parent_key, GrinderTask.task_column: '',
@@ -162,16 +167,34 @@ class GrinderTaskPresenter:
         self.view.list.Bind(dv.EVT_DATAVIEW_ITEM_START_EDITING, self.start_editing)
         self.view.set_form(None)
 
-        # self.view.form = ....
-        # self.view.layout(....)
+        self.model.change_data(self.model.create_data())
 
         wx.py.dispatcher.connect(receiver=self.save, signal=c.SIGNAL_SAVE)
         wx.py.dispatcher.connect(receiver=self.add, signal=c.SIGNAL_ADD)
         wx.py.dispatcher.connect(receiver=self.delete, signal=c.SIGNAL_DELETE)
 
-    def selection_handler(self, event):
-        pass
+        # figuring out how to seperate list and form into tabs
+        # wx.py.dispatcher.send(signal=c.SIGNAL_VIEW_ACTIVATED, sender=self, command=c.COMMAND_VIEW_ACTIVATED, more=self)
 
+    def selection_handler(self, event: dv.DataViewEvent):
+        pass
+        # self.form.set_viewstate(ViewState.loading)
+        # selected_item = self.list.GetSelection()
+        # record = self.list_spec.model.ItemToObject(selected_item)
+        # self.form.bind(record)
+        # self.form_panel.TransferDataToWindow()
+        # self.form.set_viewstate(ViewState.loaded)
+
+    def edit_handler(self, event: dv.DataViewEvent):
+        pass
+        # self.notebook.SetSelection(1)
+
+    # this is required for linux
+    # need to veto the EVT_DATAVIEW_ITEM_START_EDITING
+    # otherwise list will just start editing what was
+    # double clicked on
+    def start_editing(self, event):
+        event.Veto()
 
     # these may not be needed
     def edited_record(self, record):
@@ -214,29 +237,13 @@ class GrinderTask(wx.Panel):
             self.notebook: wx.aui.AuiNotebook = w.notebook(self)
             main_sizer = wx.BoxSizer(wx.VERTICAL)
             self.SetSizer(main_sizer)
-
-            # ListSpec needs to be replaced with something else
-            # self.list_spec = ListSpec(columns=[
-            #     ColumnSpec(key=GrinderTask.task_column, data_type=ColumnType.str, label='Task', width=400, sortable=True, browseable=True, format_fn=fmt.trunc),
-            #     ColumnSpec(key=GrinderTask.solution_column, data_type=ColumnType.str, label='Solution', width=100, sortable=False, browseable=False, format_fn=fmt.trunc),
-            #     ColumnSpec(key=GrinderTask.created_column, data_type=ColumnType.date, label='Created', width=300, sortable=True, browseable=True, format_fn=None)
-            # ],
-            #     selection_handler=self.list_selection_change,
-            #     edit_handler=self.list_selection_edit,
-            #     data=GrinderTask.create_data(self.grinder_data[c.FIELD_NAME_ID], df.get_grinder_tasks_by_grinder))
-            # self.list = self.list_spec.make_list(self)
-            # self.notebook.AddPage(self.list, "List", True)
-
             main_sizer.Add(self.notebook, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
-
-            # figuring out how to seperate list and form into tabs
-            wx.py.dispatcher.send(signal=c.SIGNAL_VIEW_ACTIVATED, sender=self, command=c.COMMAND_VIEW_ACTIVATED, more=self)
         except BaseException as ex:
             print('Error in GrindTask __init__: ' + str(ex))
 
     def set_list(self, list):
         self.list = list
-        self.view.notebook.AddPage(list, "List", True)
+        self.notebook.AddPage(list, "List", True)
 
     def set_form(self, form):
         # to-do change this to use passed in form
