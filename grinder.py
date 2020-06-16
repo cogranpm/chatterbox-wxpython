@@ -176,7 +176,11 @@ class GrinderTaskPresenter:
         edit_lines: List[frm.FormLineDef] = [frm.FormLineDef("Task", [task_field_def]),
                                              frm.FormLineDef("Solution", [solution_field_def])]
 
-        form_def: frm.FormLineDef = frm.FormDef(title='Grinder Task', help=GrinderTaskModel.help, edit_lines=edit_lines, name='frmGrinderTask')
+        self.form_def: frm.FormDef = frm.FormDef(title='Grinder Task',
+                                            help=GrinderTaskModel.help,
+                                            edit_lines=edit_lines,
+                                            name='frmGrinderTask')
+        self.view.set_form(self.form_def)
 
         # form_spec = frm.form(self.form_panel, "frmGrinder", "Grinder Tasks", GrinderTaskModel.help, [
         #     frm.edit_line("Task", [frm.TextField(GrinderTaskModel.task_column, frm.large(), style=wx.TE_MULTILINE,
@@ -293,12 +297,14 @@ class GrinderTask(wx.Panel):
         self.list = list
         self.notebook.AddPage(list, "List", True)
 
-    def set_form(self, form):
+    def set_form(self, form_def: frm.FormDef):
         # to-do change this to use passed in form
         self.form_panel = w.panel(self, [])
         self.form_panel.SetSizer(w.sizer())
+        form_def.make_form(self.form_panel)
         self.notebook.AddPage(self.form_panel, "Task", False)
-        self.form.set_viewstate(ViewState.empty)
+
+        # self.form.set_viewstate(ViewState.empty)
 
     def save(self, command, more):
         if more is self:
