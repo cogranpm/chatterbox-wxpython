@@ -164,7 +164,7 @@ class GrinderTaskPresenter:
         self.view.list.AssociateModel(self.model)
         self.model.DecRef()
 
-        # self.view.list.Bind... event handlers
+        # don't really need this
         # self.view.list.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.selection_handler)
         self.view.list.Bind(dv.EVT_DATAVIEW_ITEM_ACTIVATED, self.edit_handler)
         # required for linux, otherwise double clicking or hitting enter
@@ -214,10 +214,6 @@ class GrinderTaskPresenter:
 
         self.view_state = state
 
-    # not sure need this because of seperate tab and edit
-    #def selection_handler(self, event: dv.DataViewEvent):
-    #    pass
-
     def edit_handler(self, event: dv.DataViewEvent):
         self.set_view_state(ViewState.loading)
         selected_item = self.view.list.GetSelection()
@@ -233,17 +229,17 @@ class GrinderTaskPresenter:
             if self.view_state == ViewState.adding:
                 record = self.model.make_new_record()
                 self.form_def.bind(record)
-            if self.Validate():
-                self.bind(BindDirection.from_window)
+            if self.view.Validate():
+                self.view.bind(BindDirection.from_window)
                 if self.view_state == ViewState.adding:
-                    #self.list_spec.added_record(record)
+                    self.added_record(record)
                     df.add_record(GrinderTaskModel.collection_name, record)
                 else:
                     selected_item = self.view.list.GetSelection()
                     record = self.model.ItemToObject(selected_item)
                     df.update_record(GrinderTaskModel.collection_name, record)
-                    #self.list_spec.edited_record(record)
-                self.set_viewstate(ViewState.loaded)
+                    self.edited_record(record)
+                self.set_view_state(ViewState.loaded)
 
     def add(self, command, more):
         if more is self.view:
@@ -272,11 +268,6 @@ class GrinderTask(wx.Panel):
     hints?
     This class forms the View
     """
-    collection_name = c.COLLECTION_NAME_GRINDERTASK
-    task_column = 'task'
-    solution_column = 'solution'
-    created_column = 'created'
-    help = 'Grinder Task'
 
     def __init__(self, parent):
         try:
@@ -299,7 +290,6 @@ class GrinderTask(wx.Panel):
         self.form_panel.SetSizer(w.sizer())
         form_def.make_form(self.form_panel)
         self.notebook.AddPage(self.form_panel, "Task", False)
-
 
     def set_current_tab(self, index):
         self.notebook.SetSelection(index)
