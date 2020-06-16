@@ -272,6 +272,33 @@ class FormDef:
 
         parent.Sizer.Add(sizer, wx.SizerFlags(1).Expand())
 
+    def setfocusfirst(self):
+        first_line = self.edit_lines[0]
+        if first_line is not None:
+            first_control = first_line.edit_fields[0]
+            if first_control is not None:
+                first_control.focus()
+
+    def reset_fields(self):
+        for line in self.edit_lines:
+            for edit_field in line.edit_fields:
+                edit_field.reset()
+
+    def enable_fields(self, flag):
+        for line in self.edit_lines:
+            for edit_field in line.edit_fields:
+                edit_field.enable(flag)
+
+    def pause_dirty_events(self, flag):
+        for line in self.edit_lines:
+            for edit_field in line.edit_fields:
+                edit_field.pause_dirty_events = flag
+
+    def bind(self, record):
+        for line in self.edit_lines:
+            for edit_field in line.edit_fields:
+                if edit_field.control is not None and edit_field.control.Validator is not None:
+                    edit_field.control.Validator.set_data(record)
 
 # _____________________
 # older stuff appears below

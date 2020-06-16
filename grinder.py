@@ -5,7 +5,7 @@ this ui is for navigating the grinders for a particular subject
 """
 
 from typing import Callable, Dict, List
-from enum import Enum
+from enum import IntEnum
 
 import wx
 import wx.dataview as dv
@@ -120,7 +120,7 @@ class GrinderTaskModel(BaseEntityModel):
     created_column = 'created'
     help = 'Grinder Task'
 
-    columns = [
+    columns: List[ColumnSpec] = [
         ColumnSpec(key=task_column, data_type=ColumnType.str, label='Task', width=400, sortable=True,
                    browseable=True, format_fn=fmt.trunc),
         ColumnSpec(key=solution_column, data_type=ColumnType.str, label='Solution', width=100,
@@ -146,8 +146,13 @@ class GrinderTaskModel(BaseEntityModel):
         return data_list
 
 
-
 class GrinderTaskPresenter:
+
+    edit_tab_index = 1
+
+    @staticmethod
+    def start_editing(event):
+        event.Veto()
 
     def __init__(self, grinder: Grinder, grinder_data, parent):
         self.Grinder = grinder
@@ -156,7 +161,7 @@ class GrinderTaskPresenter:
         self.model = GrinderTaskModel(grinder_data[c.FIELD_NAME_ID])
         self.view_state = ViewState.empty
         self.view = GrinderTask(parent)
-        self.view.set_list(create_list(parent, self.model.columns))
+        self.view.set_list(self.model.columns)
         self.view.list.AssociateModel(self.model)
         self.model.DecRef()
 
@@ -166,7 +171,7 @@ class GrinderTaskPresenter:
         # required for linux, otherwise double clicking or hitting enter
         # on selected list item results in text of column being edited
         # instead or running the ITEM_ACTIVATED event
-        self.view.list.Bind(dv.EVT_DATAVIEW_ITEM_START_EDITING, self.start_editing)
+        self.view.list.Bind(dv.EVT_DATAVIEW_ITEM_START_EDITING, GrinderTaskPresenter.start_editing)
 
         task_field_def: frm.EditFieldDef = frm.TextFieldDef(name=GrinderTaskModel.task_column, width=frm.large(),
                                                             validator=FieldValidator(None, GrinderTaskModel.task_column, [not_empty]),
@@ -181,69 +186,57 @@ class GrinderTaskPresenter:
                                             edit_lines=edit_lines,
                                             name='frmGrinderTask')
         self.view.set_form(self.form_def)
-
-        # form_spec = frm.form(self.form_panel, "frmGrinder", "Grinder Tasks", GrinderTaskModel.help, [
-        #     frm.edit_line("Task", [frm.TextField(GrinderTaskModel.task_column, frm.large(), style=wx.TE_MULTILINE,
-        #                                          validator=FieldValidator(None, GrinderTaskModel.task_column, [not_empty]))]),
-        #     frm.edit_line("Solution", [frm.CodeEditor(GrinderTaskModel.solution_column, frm.large(),
-        #                                               validator=FieldValidator(None, GrinderTaskModel.solution_column,
-        #                                                                        [not_empty]))])
-        # ])
-        # self.view.set_form(form_spec.build())
-
-
         self.model.change_data(self.model.create_data())
 
         wx.py.dispatcher.connect(receiver=self.save, signal=c.SIGNAL_SAVE)
         wx.py.dispatcher.connect(receiver=self.add, signal=c.SIGNAL_ADD)
         wx.py.dispatcher.connect(receiver=self.delete, signal=c.SIGNAL_DELETE)
 
-        # figuring out how to seperate list and form into tabs
-        # wx.py.dispatcher.send(signal=c.SIGNAL_VIEW_ACTIVATED, sender=self, command=c.COMMAND_VIEW_ACTIVATED, more=self)
+        wx.py.dispatcher.send(signal=c.SIGNAL_VIEW_ACTIVATED, sender=self, command=c.COMMAND_VIEW_ACTIVATED, more=self)
 
-    def set_viewstate(self, state: ViewState):
+    def set_view_state(self, state: ViewState):
         # need to update the form
         if state == ViewState.adding:
-            #self.reset_fields()
-            #self.enable_fields(True)
-            #self.setfocusfirst()
+            self.form_def.reset_fields()
+            self.form_def.enable_fields(True)
+            self.form_def.setfocusfirst()
             wx.py.dispatcher.send(signal=c.SIGNAL_VIEWSTATE, sender=self, command=c.COMMAND_ADDING, more=self)
         elif state == ViewState.empty:
-            #self.reset_fields()
-            #self.enable_fields(False)
+            self.form_def.reset_fields()
+            self.form_def.enable_fields(False)
             wx.py.dispatcher.send(signal=c.SIGNAL_VIEWSTATE, sender=self, command=c.COMMAND_EMPTY, more=self)
         elif state == ViewState.loaded:
-            #self.enable_fields(True)
-            #self.setfocusfirst()
+            self.form_def.enable_fields(True)
+            self.form_def.setfocusfirst()
             wx.py.dispatcher.send(signal=c.SIGNAL_VIEWSTATE, sender=self, command=c.COMMAND_LOADED, more=self)
-            self.pause_dirty_events(False)
+            self.form_def.pause_dirty_events(False)
         elif state == ViewState.loading:
-            self.pause_dirty_events(True)
+            self.form_def.pause_dirty_events(True)
 
         self.view_state = state
 
-    def pause_dirty_events(self, flag: bool):
-        pass
-
     def selection_handler(self, event: dv.DataViewEvent):
-        pass
-        # self.form.set_viewstate(ViewState.loading)
-        # selected_item = self.list.GetSelection()
-        # record = self.list_spec.model.ItemToObject(selected_item)
-        # self.form.bind(record)
-        # self.form_panel.TransferDataToWindow()
-        # self.form.set_viewstate(ViewState.loaded)
+        self.set_view_state(ViewState.loading)
+        selected_item = self.view.list.GetSelection()
+        record = self.model.ItemToObject(selected_item)
+        self.form_def.bind(record)
+        self.view.refresh()
+        self.set_view_state(ViewState.loaded)
+        self.view.set_current_tab(self.edit_tab_index)
 
     def edit_handler(self, event: dv.DataViewEvent):
-        pass
-        # self.notebook.SetSelection(1)
+        self.view.set_current_tab(self.edit_tab_index)
 
-    # this is required for linux
-    # need to veto the EVT_DATAVIEW_ITEM_START_EDITING
-    # otherwise list will just start editing what was
-    # double clicked on
-    def start_editing(self, event):
-        event.Veto()
+    # handle the toolbar buttons
+    def save(self, command, more):
+        pass
+
+    def add(self, command, more):
+        self.set_view_state(ViewState.adding)
+        self.view.set_current_tab(self.edit_tab_index)
+
+    def delete(self, command, more):
+        pass
 
     # these may not be needed
     def edited_record(self, record):
@@ -256,18 +249,6 @@ class GrinderTaskPresenter:
         self.model.data.append(record)
         self.model.ItemAdded(dv.NullDataViewItem, self.model.ObjectToItem(record))
 
-    # handle the toolbar buttons
-    def save(self, command, more):
-        pass
-
-    def add(self, command, more):
-        self.set_viewstate(ViewState.adding)
-        self.view.add()
-
-
-
-    def delete(self, command, more):
-        pass
 
 class GrinderTask(wx.Panel):
     """ has a list of grinder tasks - such as ;
@@ -293,9 +274,9 @@ class GrinderTask(wx.Panel):
         except BaseException as ex:
             print('Error in GrindTask __init__: ' + str(ex))
 
-    def set_list(self, list):
-        self.list = list
-        self.notebook.AddPage(list, "List", True)
+    def set_list(self, columns: List[ColumnSpec]):
+        self.list = create_list(self.parent, columns)
+        self.notebook.AddPage(self.list, "List", True)
 
     def set_form(self, form_def: frm.FormDef):
         # to-do change this to use passed in form
@@ -323,21 +304,9 @@ class GrinderTask(wx.Panel):
                     self.list_spec.edited_record(record)
                 self.form.set_viewstate(ViewState.loaded)
 
-    def add(self):
-        self.notebook.SetSelection(1)
+    def set_current_tab(self, index):
+        self.notebook.SetSelection(index)
 
-
-
-    def delete(self, command, more):
-        pass
-
-    def list_selection_change(self, event: dv.DataViewEvent):
-        self.form.set_viewstate(ViewState.loading)
-        selected_item = self.list.GetSelection()
-        record = self.list_spec.model.ItemToObject(selected_item)
-        self.form.bind(record)
+    def refresh(self):
         self.form_panel.TransferDataToWindow()
-        self.form.set_viewstate(ViewState.loaded)
 
-    def list_selection_edit(self, event: dv.DataViewEvent):
-        self.notebook.SetSelection(1)
