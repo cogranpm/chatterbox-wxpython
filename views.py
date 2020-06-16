@@ -14,7 +14,7 @@ import chatterbox_constants as c
 
 
 class BaseView(wx.Panel):
-
+    """ panel based ui with list and form """
     def __init__(self, parent):
         super().__init__(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         self.list = None
@@ -29,6 +29,12 @@ class BaseView(wx.Panel):
         else:
             self.form_panel.TransferDataToWindow()
 
+    def set_list(self, columns: List[ColumnSpec]):
+        self.list = create_list(self.Parent, columns)
+
+    def set_form(self, form_def: frm.FormDef):
+        form_def.make_form(self.form_panel)
+
 
 class BaseViewNotebook(BaseView):
     """ panel ui that separates editing form from list via a notebook """
@@ -38,11 +44,11 @@ class BaseViewNotebook(BaseView):
         self.Sizer.Add(self.notebook, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
 
     def set_list(self, columns: List[ColumnSpec]):
-        self.list = create_list(self.Parent, columns)
+        super().set_list(columns)
         self.notebook.AddPage(self.list, "List", True)
 
     def set_form(self, form_def: frm.FormDef):
-        form_def.make_form(self.form_panel)
+        super().set_form(form_def)
         self.notebook.AddPage(self.form_panel, "Task", False)
 
     def set_current_tab(self, index):
