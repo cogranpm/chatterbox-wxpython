@@ -129,135 +129,61 @@ class GrinderTaskModel(BaseEntityModel):
     ]
 
     def __init__(self, parent_key: int):
-        super().__init__(parent_key, GrinderTaskModel.columns, c.COLLECTION_NAME_GRINDERTASK)
-
+        super().__init__(parent_key, self.columns, c.COLLECTION_NAME_GRINDERTASK)
 
     def make_new_record(self):
         return {c.FIELD_NAME_ID: None, 'grinder_id': self.parent_key, self.task_column: '',
                 self.solution_column: '', self.created_column: dt.datetime.today()}
 
-    def create_data(self):
-        records = df.get_grinder_tasks_by_grinder(self.parent_key)
-        data_list = []
-        for record in records:
-            data_list.append(record)
-        return data_list
+    def get_records(self):
+        return df.get_grinder_tasks_by_grinder(self.parent_key)
 
 
 class GrinderTaskPresenter(BasePresenter):
 
     edit_tab_index = 1
+    task_field_def: frm.EditFieldDef = frm.TextFieldDef(name=GrinderTaskModel.task_column, width=frm.large(),
+                                                        validator=FieldValidator(None, GrinderTaskModel.task_column,
+                                                                                 [not_empty]),
+                                                        multi_line=True)
+    solution_field_def: frm.EditFieldDef = frm.CodeEditorDef(name=GrinderTaskModel.solution_column, width=frm.large(),
+                                                             validator=FieldValidator(None,
+                                                                                      GrinderTaskModel.solution_column,
+                                                                                      [not_empty]))
+    edit_lines: List[frm.FormLineDef] = [frm.FormLineDef("Task", [task_field_def]),
+                                         frm.FormLineDef("Solution", [solution_field_def])]
 
     def __init__(self, grinder: Grinder, grinder_data, parent):
-        super().__init__(parent, GrinderTaskModel(grinder_data[c.FIELD_NAME_ID]))
+        super().__init__(parent=parent,
+                         model=GrinderTaskModel(grinder_data[c.FIELD_NAME_ID]),
+                         view=GrinderTaskView(parent))
         self.Grinder = grinder
         self.grinder_data = grinder_data
-        self.view = GrinderTask(parent)
-        self.view.set_list(self.model.columns)
-        self.view.list.AssociateModel(self.model)
-        self.model.DecRef()
 
-        # don't really need this
-        self.view.list.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.selection_handler)
-        self.view.list.Bind(dv.EVT_DATAVIEW_ITEM_ACTIVATED, self.edit_handler)
-        # required for linux, otherwise double clicking or hitting enter
-        # on selected list item results in text of column being edited
-        # instead or running the ITEM_ACTIVATED event
-        self.view.list.Bind(dv.EVT_DATAVIEW_ITEM_START_EDITING, self.start_editing)
-
-        task_field_def: frm.EditFieldDef = frm.TextFieldDef(name=GrinderTaskModel.task_column, width=frm.large(),
-                                                            validator=FieldValidator(None, GrinderTaskModel.task_column, [not_empty]),
-                                                            multi_line=True)
-        solution_field_def: frm.EditFieldDef = frm.CodeEditorDef(name=GrinderTaskModel.solution_column, width=frm.large(),
-                                                                 validator=FieldValidator(None, GrinderTaskModel.solution_column, [not_empty]))
-        edit_lines: List[frm.FormLineDef] = [frm.FormLineDef("Task", [task_field_def]),
-                                             frm.FormLineDef("Solution", [solution_field_def])]
 
         self.form_def: frm.FormDef = frm.FormDef(title='Grinder Task',
                                             help=GrinderTaskModel.help,
-                                            edit_lines=edit_lines,
+                                            edit_lines=self.edit_lines,
                                             name='frmGrinderTask')
         self.view.set_form(self.form_def)
         self.model.change_data(self.model.create_data())
-
-        wx.py.dispatcher.connect(receiver=self.save, signal=c.SIGNAL_SAVE)
-        wx.py.dispatcher.connect(receiver=self.add, signal=c.SIGNAL_ADD)
-        wx.py.dispatcher.connect(receiver=self.delete, signal=c.SIGNAL_DELETE)
-
+        # this next line must occur after the form_def is created
+        self.set_view_state(ViewState.empty)
         wx.py.dispatcher.send(signal=c.SIGNAL_VIEW_ACTIVATED, sender=self, command=c.COMMAND_VIEW_ACTIVATED, more=self)
 
-    def set_view_state(self, state: ViewState):
-        # need to update the form
-        if state == ViewState.adding:
-            self.form_def.reset_fields()
-            self.form_def.enable_fields(True)
-            self.form_def.setfocusfirst()
-            wx.py.dispatcher.send(signal=c.SIGNAL_VIEWSTATE, sender=self, command=c.COMMAND_ADDING, more=self)
-        elif state == ViewState.empty:
-            self.form_def.reset_fields()
-            self.form_def.enable_fields(False)
-            wx.py.dispatcher.send(signal=c.SIGNAL_VIEWSTATE, sender=self, command=c.COMMAND_EMPTY, more=self)
-        elif state == ViewState.loaded:
-            self.form_def.enable_fields(True)
-            self.form_def.setfocusfirst()
-            wx.py.dispatcher.send(signal=c.SIGNAL_VIEWSTATE, sender=self, command=c.COMMAND_LOADED, more=self)
-            self.form_def.pause_dirty_events(False)
-        elif state == ViewState.loading:
-            self.form_def.pause_dirty_events(True)
-
-        self.view_state = state
-
-    def selection_handler(self, event):
-        # not quite sure what to do, load the selection so it can be deleted?
-        pass
-
-    def edit_handler(self, event: dv.DataViewEvent):
-        self.set_view_state(ViewState.loading)
-        selected_item = self.view.list.GetSelection()
-        record = self.model.ItemToObject(selected_item)
-        # this sets the data property on all the validators that are defined for all the fields
-        self.form_def.bind(record)
-        # this tells view to push data from model to the controls
-        self.view.bind(BindDirection.to_window)
-        self.set_view_state(ViewState.loaded)
-        self.view.set_current_tab(self.edit_tab_index)
-
-    # handle the toolbar buttons
-    def save(self, command, more):
-        if more is self.view:
-            if self.view_state == ViewState.adding:
-                record = self.model.make_new_record()
-                self.form_def.bind(record)
-            if self.view.Validate():
-                self.view.bind(BindDirection.from_window)
-                if self.view_state == ViewState.adding:
-                    self.added_record(record)
-                    df.add_record(self.model.collection_name, record)
-                else:
-                    selected_item = self.view.list.GetSelection()
-                    record = self.model.ItemToObject(selected_item)
-                    df.update_record(self.model.collection_name, record)
-                    self.edited_record(record)
-                self.set_view_state(ViewState.loaded)
 
     def add(self, command, more):
-        if more is self.view:
-            self.set_view_state(ViewState.adding)
-            self.view.set_current_tab(self.edit_tab_index)
+        super().add(command, more)
+        self.view.set_current_tab(self.edit_tab_index)
 
-    def delete(self, command, more):
-        if more is self.view:
-            selected_item = self.view.list.GetSelection()
-            if selected_item is not None:
-                if frm.confirm_delete(self.view):
-                    self.model.ItemDeleted(dv.NullDataViewItem, selected_item)
-                    record = self.model.ItemToObject(selected_item)
-                    df.delete_record(self.model.collection_name, record)
-                    self.model.data.remove(record)
-                    self.set_view_state(ViewState.empty)
+    def edit_handler(self, event: dv.DataViewEvent):
+        super().edit_handler(event)
+        self.view.set_current_tab(self.edit_tab_index)
 
 
-class GrinderTask(v.BaseViewNotebook):
+
+
+class GrinderTaskView(v.BaseViewNotebook):
     """ has a list of grinder tasks - such as ;
     write an abstract base class etc etc
     each task needs to have a text solution

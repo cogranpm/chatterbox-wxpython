@@ -2,13 +2,17 @@
 from typing import List, Dict, Callable
 from dataclasses import dataclass
 from enum import Enum
+from abc import ABCMeta, ABC, abstractmethod
 
 # ---------- lib imports --------------
 import wx.dataview as dv
 import wx
 
 # ---------- project imports -----------
+# import views as v
 import data_functions as df
+import chatterbox_constants as c
+import forms as frm
 
 ViewState = Enum('ViewState', 'adding dirty loaded loading empty')
 BindDirection = Enum('BindDirection', 'from_window to_window')
@@ -29,16 +33,97 @@ class ColumnSpec:
     sortable: bool = False
 
 
-class BasePresenter:
+class BasePresenter(ABC):
 
     @staticmethod
     def start_editing(event):
         event.Veto()
 
-    def __init__(self, parent: wx.Window, model: 'BaseEntityModel'):
+    def __init__(self, parent: wx.Window, model: 'BaseEntityModel', view):
         self.parent = parent
         self.model = model
-        self.view_state = ViewState.empty
+        self.view = view
+        self.view.set_list(self.model.columns)
+        self.view.list.AssociateModel(self.model)
+        self.model.DecRef()
+        # required for linux, veto the editing event
+        self.view.list.Bind(dv.EVT_DATAVIEW_ITEM_START_EDITING, self.start_editing)
+        self.view.list.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.selection_handler)
+        self.view.list.Bind(dv.EVT_DATAVIEW_ITEM_ACTIVATED, self.edit_handler)
+        wx.py.dispatcher.connect(receiver=self.save, signal=c.SIGNAL_SAVE)
+        wx.py.dispatcher.connect(receiver=self.add, signal=c.SIGNAL_ADD)
+        wx.py.dispatcher.connect(receiver=self.delete, signal=c.SIGNAL_DELETE)
+
+    # handle the toolbar buttons
+    def save(self, command, more):
+        if more is self.view:
+            if self.view_state == ViewState.adding:
+                record = self.model.make_new_record()
+                self.form_def.bind(record)
+            if self.view.Validate():
+                self.view.bind(BindDirection.from_window)
+                if self.view_state == ViewState.adding:
+                    self.added_record(record)
+                    df.add_record(self.model.collection_name, record)
+                else:
+                    selected_item = self.view.list.GetSelection()
+                    record = self.model.ItemToObject(selected_item)
+                    df.update_record(self.model.collection_name, record)
+                    self.edited_record(record)
+                self.set_view_state(ViewState.loaded)
+
+    def add(self, command, more):
+        if more is self.view:
+            self.set_view_state(ViewState.adding)
+
+    def delete(self, command, more):
+        if more is self.view:
+            selected_item = self.view.list.GetSelection()
+            if selected_item is not None:
+                if frm.confirm_delete(self.view):
+                    self.model.ItemDeleted(dv.NullDataViewItem, selected_item)
+                    record = self.model.ItemToObject(selected_item)
+                    df.delete_record(self.model.collection_name, record)
+                    self.model.data.remove(record)
+                    self.set_view_state(ViewState.empty)
+
+    def set_view_state(self, state: ViewState):
+        # need to update the form
+        if state == ViewState.adding:
+            self.form_def.reset_fields()
+            self.form_def.enable_fields(True)
+            self.form_def.setfocusfirst()
+            wx.py.dispatcher.send(signal=c.SIGNAL_VIEWSTATE, sender=self, command=c.COMMAND_ADDING, more=self)
+        elif state == ViewState.empty:
+            self.form_def.reset_fields()
+            self.form_def.enable_fields(False)
+            wx.py.dispatcher.send(signal=c.SIGNAL_VIEWSTATE, sender=self, command=c.COMMAND_EMPTY, more=self)
+        elif state == ViewState.loaded:
+            self.form_def.enable_fields(True)
+            self.form_def.setfocusfirst()
+            wx.py.dispatcher.send(signal=c.SIGNAL_VIEWSTATE, sender=self, command=c.COMMAND_LOADED, more=self)
+            self.form_def.pause_dirty_events(False)
+        elif state == ViewState.loading:
+            self.form_def.pause_dirty_events(True)
+
+        self.view_state = state
+
+
+    def selection_handler(self, event):
+        # not quite sure what to do, load the selection so it can be deleted?
+        pass
+
+    def edit_handler(self, event: dv.DataViewEvent):
+        self.set_view_state(ViewState.loading)
+        selected_item = self.view.list.GetSelection()
+        record = self.model.ItemToObject(selected_item)
+        # this sets the data property on all the validators that are defined for all the fields
+        self.form_def.bind(record)
+        # this tells view to push data from model to the controls
+        self.view.bind(BindDirection.to_window)
+        self.set_view_state(ViewState.loaded)
+
+
 
     def edited_record(self, record):
         self.model.ItemChanged(self.model.ObjectToItem(record))
@@ -61,6 +146,22 @@ class BaseEntityModel(dv.PyDataViewModel):
         self.data = dict()
         self.view_state = ViewState.empty
         df.create_entity(self.collection_name)
+
+    @abstractmethod
+    def get_records(self):
+        pass
+
+    @abstractmethod
+    def make_new_record(self):
+        pass
+
+    def create_data(self):
+        records = self.get_records()
+        data_list = []
+        for record in records:
+            data_list.append(record)
+        return data_list
+
 
     def change_data(self, records):
         self.data = records
