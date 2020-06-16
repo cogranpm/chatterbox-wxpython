@@ -1,18 +1,17 @@
+# -------- python imports -------------
 from typing import List, Dict, Callable
-
 from dataclasses import dataclass
 from enum import Enum
 
+# ---------- lib imports --------------
 import wx.dataview as dv
 import wx
 
-import chatterbox_constants as c
+# ---------- project imports -----------
 import data_functions as df
 
 ViewState = Enum('ViewState', 'adding dirty loaded loading empty')
 BindDirection = Enum('BindDirection', 'from_window to_window')
-
-# not sure how to do date time
 ColumnType = Enum('ColumnType', 'str bool float int date')
 column_type_map: Dict[ColumnType, str] = {ColumnType.str: 'string', ColumnType.bool: 'bool',
                                           ColumnType.float: 'double', ColumnType.int: 'string',
@@ -50,7 +49,6 @@ class BasePresenter:
     def added_record(self, record):
         self.model.data.append(record)
         self.model.ItemAdded(dv.NullDataViewItem, self.model.ObjectToItem(record))
-
 
 
 class BaseEntityModel(dv.PyDataViewModel):
@@ -154,8 +152,6 @@ class BaseEntityModel(dv.PyDataViewModel):
         except Exception as ex:
             print(ex)
             return 0
-
-#
 
 # this is a wxPython xtra model based class
 # has a ItemToObject mapper built in which makes

@@ -13,6 +13,7 @@ import datetime as dt
 
 import chatterbox_constants as c
 import data_functions as df
+import views as v
 from lists import create_list, ListSpec, ColumnType, ColumnSpec, get_selected_item, get_record_from_item
 from panels import PanelSpec, BasePanel
 import forms as frm
@@ -256,8 +257,7 @@ class GrinderTaskPresenter(BasePresenter):
                     self.set_view_state(ViewState.empty)
 
 
-
-class GrinderTask(wx.Panel):
+class GrinderTask(v.BaseViewNotebook):
     """ has a list of grinder tasks - such as ;
     write an abstract base class etc etc
     each task needs to have a text solution
@@ -267,33 +267,9 @@ class GrinderTask(wx.Panel):
 
     def __init__(self, parent):
         try:
-            super().__init__(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
-            self.parent = parent
-            self.notebook: wx.aui.AuiNotebook = w.notebook(self)
-            main_sizer = wx.BoxSizer(wx.VERTICAL)
-            self.SetSizer(main_sizer)
-            main_sizer.Add(self.notebook, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
+            super().__init__(parent)
         except BaseException as ex:
             print('Error in GrindTask __init__: ' + str(ex))
 
-    def set_list(self, columns: List[ColumnSpec]):
-        self.list = create_list(self.parent, columns)
-        self.notebook.AddPage(self.list, "List", True)
-
-    def set_form(self, form_def: frm.FormDef):
-        # to-do change this to use passed in form
-        self.form_panel = w.panel(self, [])
-        self.form_panel.SetSizer(w.sizer())
-        form_def.make_form(self.form_panel)
-        self.notebook.AddPage(self.form_panel, "Task", False)
-
-    def set_current_tab(self, index):
-        self.notebook.SetSelection(index)
-
-    def bind(self, direction: BindDirection):
-        if direction == BindDirection.from_window:
-            self.form_panel.TransferDataFromWindow()
-        else:
-            self.form_panel.TransferDataToWindow()
 
 
