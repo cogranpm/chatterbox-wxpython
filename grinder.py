@@ -17,7 +17,7 @@ from lists import create_list, ListSpec, ColumnType, ColumnSpec, get_selected_it
 from panels import PanelSpec, BasePanel
 import forms as frm
 from validators import not_empty, FieldValidator
-from models import ViewState, BaseEntityModel
+from models import ViewState, BaseEntityModel, BindDirection
 import fn_format as fmt
 import fn_widget as w
 
@@ -92,7 +92,6 @@ class Grinder:
         selected_item = get_selected_item(self.panel.list)
         record = get_record_from_item(self.__list_spec.model, selected_item)
         presenter = GrinderTaskPresenter(self, record, self.parent.frame)
-        # task_panel = GrinderTask(self, record, self.parent.frame)
         self.parent.frame.add_page(key="grinder_task", title=c.NOTEBOOK_TITLE_GRINDER,
                                    window=presenter.view, page_data=None)
 
@@ -216,21 +215,35 @@ class GrinderTaskPresenter:
         self.view_state = state
 
     # not sure need this because of seperate tab and edit
-    def selection_handler(self, event: dv.DataViewEvent):
-        pass
+    #def selection_handler(self, event: dv.DataViewEvent):
+    #    pass
 
     def edit_handler(self, event: dv.DataViewEvent):
         self.set_view_state(ViewState.loading)
         selected_item = self.view.list.GetSelection()
         record = self.model.ItemToObject(selected_item)
         self.form_def.bind(record)
-        self.view.refresh()
+        self.view.bind(BindDirection.to_window)
         self.set_view_state(ViewState.loaded)
         self.view.set_current_tab(self.edit_tab_index)
 
     # handle the toolbar buttons
     def save(self, command, more):
-        pass
+        if more is self.view:
+            if self.view_state == ViewState.adding:
+                record = self.model.make_new_record()
+                self.form_def.bind(record)
+            if self.Validate():
+                self.bind(BindDirection.from_window)
+                if self.view_state == ViewState.adding:
+                    #self.list_spec.added_record(record)
+                    df.add_record(GrinderTaskModel.collection_name, record)
+                else:
+                    selected_item = self.view.list.GetSelection()
+                    record = self.model.ItemToObject(selected_item)
+                    df.update_record(GrinderTaskModel.collection_name, record)
+                    #self.list_spec.edited_record(record)
+                self.set_viewstate(ViewState.loaded)
 
     def add(self, command, more):
         if more is self.view:
@@ -287,28 +300,14 @@ class GrinderTask(wx.Panel):
         form_def.make_form(self.form_panel)
         self.notebook.AddPage(self.form_panel, "Task", False)
 
-        # self.form.set_viewstate(ViewState.empty)
-
-    def save(self, command, more):
-        if more is self:
-            if self.form.view_state == ViewState.adding:
-                record = GrinderTask.make_new_record(self.grinder_data[c.FIELD_NAME_ID])
-                self.form.bind(record)
-            if self.Validate():
-                self.form_panel.TransferDataFromWindow()
-                if self.form.view_state == ViewState.adding:
-                    self.list_spec.added_record(record)
-                    df.add_record(GrinderTask.collection_name, record)
-                else:
-                    selected_item = self.list.GetSelection()
-                    record = self.list_spec.model.ItemToObject(selected_item)
-                    df.update_record(GrinderTask.collection_name, record)
-                    self.list_spec.edited_record(record)
-                self.form.set_viewstate(ViewState.loaded)
 
     def set_current_tab(self, index):
         self.notebook.SetSelection(index)
 
-    def refresh(self):
-        self.form_panel.TransferDataToWindow()
+    def bind(self, direction: BindDirection):
+        if direction == BindDirection.from_window:
+            self.form_panel.TransferDataFromWindow()
+        else:
+            self.form_panel.TransferDataToWindow()
+
 

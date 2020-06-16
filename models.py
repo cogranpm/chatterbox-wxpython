@@ -9,6 +9,7 @@ import wx
 import chatterbox_constants as c
 
 ViewState = Enum('ViewState', 'adding dirty loaded loading empty')
+BindDirection = Enum('BindDirection', 'from_window to_window')
 
 # not sure how to do date time
 ColumnType = Enum('ColumnType', 'str bool float int date')
