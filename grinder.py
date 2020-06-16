@@ -166,7 +166,7 @@ class GrinderTaskPresenter:
         self.model.DecRef()
 
         # self.view.list.Bind... event handlers
-        self.view.list.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.selection_handler)
+        # self.view.list.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.selection_handler)
         self.view.list.Bind(dv.EVT_DATAVIEW_ITEM_ACTIVATED, self.edit_handler)
         # required for linux, otherwise double clicking or hitting enter
         # on selected list item results in text of column being edited
@@ -215,7 +215,11 @@ class GrinderTaskPresenter:
 
         self.view_state = state
 
+    # not sure need this because of seperate tab and edit
     def selection_handler(self, event: dv.DataViewEvent):
+        pass
+
+    def edit_handler(self, event: dv.DataViewEvent):
         self.set_view_state(ViewState.loading)
         selected_item = self.view.list.GetSelection()
         record = self.model.ItemToObject(selected_item)
@@ -224,16 +228,14 @@ class GrinderTaskPresenter:
         self.set_view_state(ViewState.loaded)
         self.view.set_current_tab(self.edit_tab_index)
 
-    def edit_handler(self, event: dv.DataViewEvent):
-        self.view.set_current_tab(self.edit_tab_index)
-
     # handle the toolbar buttons
     def save(self, command, more):
         pass
 
     def add(self, command, more):
-        self.set_view_state(ViewState.adding)
-        self.view.set_current_tab(self.edit_tab_index)
+        if more is self.view:
+            self.set_view_state(ViewState.adding)
+            self.view.set_current_tab(self.edit_tab_index)
 
     def delete(self, command, more):
         pass
