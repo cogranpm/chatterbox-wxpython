@@ -113,7 +113,6 @@ class Grinder:
 
 class GrinderTaskModel(BaseEntityModel):
 
-    collection_name = c.COLLECTION_NAME_GRINDERTASK
     task_column = 'task'
     solution_column = 'solution'
     created_column = 'created'
@@ -129,8 +128,7 @@ class GrinderTaskModel(BaseEntityModel):
     ]
 
     def __init__(self, parent_key: int):
-        super().__init__(parent_key, GrinderTaskModel.columns)
-        df.create_entity(GrinderTaskModel.collection_name)
+        super().__init__(parent_key, GrinderTaskModel.columns, c.COLLECTION_NAME_GRINDERTASK)
 
 
     def make_new_record(self):
@@ -233,11 +231,11 @@ class GrinderTaskPresenter:
                 self.view.bind(BindDirection.from_window)
                 if self.view_state == ViewState.adding:
                     self.added_record(record)
-                    df.add_record(GrinderTaskModel.collection_name, record)
+                    df.add_record(self.model.collection_name, record)
                 else:
                     selected_item = self.view.list.GetSelection()
                     record = self.model.ItemToObject(selected_item)
-                    df.update_record(GrinderTaskModel.collection_name, record)
+                    df.update_record(self.model.collection_name, record)
                     self.edited_record(record)
                 self.set_view_state(ViewState.loaded)
 
@@ -253,7 +251,7 @@ class GrinderTaskPresenter:
                 if frm.confirm_delete(self.view):
                     self.model.ItemDeleted(dv.NullDataViewItem, selected_item)
                     record = self.model.ItemToObject(selected_item)
-                    df.delete_record(GrinderTaskModel.collection_name, record)
+                    df.delete_record(self.model.collection_name, record)
                     self.model.data.remove(record)
                     self.set_view_state(ViewState.empty)
 

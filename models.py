@@ -7,6 +7,7 @@ import wx.dataview as dv
 import wx
 
 import chatterbox_constants as c
+import data_functions as df
 
 ViewState = Enum('ViewState', 'adding dirty loaded loading empty')
 BindDirection = Enum('BindDirection', 'from_window to_window')
@@ -31,12 +32,14 @@ class ColumnSpec:
 
 class BaseEntityModel(dv.PyDataViewModel):
 
-    def __init__(self, parent_key: int, columns: List[ColumnSpec]):
+    def __init__(self, parent_key: int, columns: List[ColumnSpec], collection_name: str):
         super().__init__()
+        self.collection_name = collection_name
         self.parent_key = parent_key
         self.columns = columns
         self.data = dict()
         self.view_state = ViewState.empty
+        df.create_entity(self.collection_name)
 
     def change_data(self, records):
         self.data = records
