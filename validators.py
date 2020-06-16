@@ -56,10 +56,10 @@ class FieldValidator(wx.Validator):
 class CheckboxValidator(wx.Validator):
 
     def __init__(self, data, key, validators):
-        super().__init__(data, key, validators)
-        # self.data = data
-        # self.key = key
-        # self.validators = validators
+        super().__init__()
+        self.data = data
+        self.key = key
+        self.validators = validators
 
     def Clone(self):
         return CheckboxValidator(self.data, self.key, self.validators)
@@ -90,10 +90,10 @@ class CheckboxValidator(wx.Validator):
 class ComboValidator(wx.Validator):
 
     def __init__(self, data, key, validators):
-        super().__init__(data, key, validators)
-        # self.data = data
-        # self.key = key
-        # self.validators = validators
+        super().__init__()
+        self.data = data
+        self.key = key
+        self.validators = validators
 
     def Clone(self):
         return ComboValidator(self.data, self.key, self.validators)

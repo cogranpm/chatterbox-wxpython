@@ -1,5 +1,7 @@
-from configobj import ConfigObj
 import os, sys
+from enum import Enum
+
+from configobj import ConfigObj
 
 APPLICATION_NAME = "chatterbox"
 CONFIG_KEY_DATA_DIRECTORY = "datadirectory"
@@ -45,6 +47,9 @@ ICON_ADD = 'Add.png'
 ICON_CANCEL = 'Cancel.png'
 
 FIELD_NAME_ID = 'id'
+
+ViewState = Enum('ViewState', 'adding dirty loaded loading empty')
+BindDirection = Enum('BindDirection', 'from_window to_window')
 
 config = ConfigObj("chatterbox.ini")
 

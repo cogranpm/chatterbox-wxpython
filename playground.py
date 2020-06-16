@@ -8,7 +8,6 @@ import wx.dataview as dv
 import forms as frm
 from lists import states, ColumnSpec, ColumnType, ListSpec, create_data
 from validators import FieldValidator, CheckboxValidator, ComboValidator, not_empty
-from models import ViewState
 import data_functions as df
 
 
@@ -85,23 +84,20 @@ class PlaygroundPanel(wx.Panel):
 
         # parameterize this somehow maybe in derived class an an override
         self.edit_form()
-        self.form.set_viewstate(ViewState.empty)
+        # self.form.set_viewstate(ViewState.empty)
         py.dispatcher.send(signal=c.SIGNAL_VIEW_ACTIVATED, sender=self, command=c.COMMAND_VIEW_ACTIVATED, more=self)
 
     def save(self, command, more):
         if more is self:
-            if self.form.view_state == ViewState.adding:
+            if self.form.view_state == c.ViewState.adding:
                 record = add_record()
                 self.form.bind(record)
-            #else:
-            #    selected_item = self.list.GetSelection()
-            #    record = self.listspec.model.ItemToObject(selected_item)
             is_valid = self.Validate()
             if is_valid:
                 # save to backend
                 self.TransferDataFromWindow()
 
-                if self.form.view_state == ViewState.adding:
+                if self.form.view_state == c.ViewState.adding:
                     self.listspec.model.data.append(record)
                     self.listspec.model.ItemAdded(dv.NullDataViewItem, self.listspec.model.ObjectToItem(record))
                     self.db.add(collection_name, record)
@@ -111,16 +107,14 @@ class PlaygroundPanel(wx.Panel):
                     selected_item = self.list.GetSelection()
                     record = self.listspec.model.ItemToObject(selected_item)
                     self.db.update(collection_name, record)
-                    #py.dispatcher.send(signal=c.SIGNAL_STORE, sender=self, command=c.COMMAND_SAVE,
-                    #                   more=record)
 
-                self.form.set_viewstate(ViewState.loaded)
+                self.form.set_viewstate(c.ViewState.loaded)
 
 
     def add(self, command, more):
         """ prepares for an add by asking to save changes if dirty, then cleaning out the controls for new entry """
         if more is self:
-            self.form.set_viewstate(ViewState.adding)
+            self.form.set_viewstate(c.ViewState.adding)
 
     def delete(self, command, more):
         if more is self:
@@ -131,16 +125,16 @@ class PlaygroundPanel(wx.Panel):
                     record = self.listspec.model.ItemToObject(selected_item)
                     self.db.remove(collection_name, record)
                     self.listspec.model.data.remove(record)
-                    self.form.set_viewstate(ViewState.empty)
+                    self.form.set_viewstate(c.ViewState.empty)
 
     def list_selection_change(self, event: dv.DataViewEvent):
         # testing dispatcher stuff
-        self.form.set_viewstate(ViewState.loading)
+        self.form.set_viewstate(c.ViewState.loading)
         selected_item = self.list.GetSelection()
         record = self.listspec.model.ItemToObject(selected_item)
         self.form.bind(record)
         self.TransferDataToWindow()
-        self.form.set_viewstate(ViewState.loaded)
+        self.form.set_viewstate(c.ViewState.loaded)
 
     def edit_form(self):
         helpstr = """

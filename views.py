@@ -10,7 +10,7 @@ import wx
 from lists import create_list, ColumnSpec
 import fn_widget as w
 import forms as frm
-from models import BindDirection
+import chatterbox_constants as c
 
 
 class BaseView(wx.Panel):
@@ -23,8 +23,8 @@ class BaseView(wx.Panel):
         main_sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(main_sizer)
 
-    def bind(self, direction: BindDirection):
-        if direction == BindDirection.from_window:
+    def bind(self, direction: c.BindDirection):
+        if direction == c.BindDirection.from_window:
             self.form_panel.TransferDataFromWindow()
         else:
             self.form_panel.TransferDataToWindow()

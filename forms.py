@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from typing import List, Tuple
 from lists import ListItem
-from models import ViewState
 import chatterbox_constants as c
 import wx
 import wx.py as py
@@ -363,7 +362,9 @@ class FormSpec():
         self.edit_lines = edit_lines
         self.name = name
         self.sizer = vsizer()
-        self.view_state = ViewState.empty
+        # this need to go away after playground is updated
+        self.view_state = c.ViewState.empty
+
 
     def build(self, display_type=DisplayType.PANEL, ok_handler=None, cancel_handler=None):
 
@@ -405,22 +406,23 @@ class FormSpec():
 
         self.parent.Sizer.Add(self.sizer, wx.SizerFlags(1).Expand())
 
-    def set_viewstate(self, state: ViewState):
-        if state == ViewState.adding:
+    # this needs to go later on, current used by playground sample app
+    def set_viewstate(self, state: c.ViewState):
+        if state == c.ViewState.adding:
             self.reset_fields()
             self.enable_fields(True)
             self.setfocusfirst()
             py.dispatcher.send(signal=c.SIGNAL_VIEWSTATE, sender=self, command=c.COMMAND_ADDING, more=self)
-        elif state == ViewState.empty:
+        elif state == c.ViewState.empty:
             self.reset_fields()
             self.enable_fields(False)
             py.dispatcher.send(signal=c.SIGNAL_VIEWSTATE, sender=self, command=c.COMMAND_EMPTY, more=self)
-        elif state == ViewState.loaded:
+        elif state == c.ViewState.loaded:
             self.enable_fields(True)
             self.setfocusfirst()
             py.dispatcher.send(signal=c.SIGNAL_VIEWSTATE, sender=self, command=c.COMMAND_LOADED, more=self)
             self.pause_dirty_events(False)
-        elif state == ViewState.loading:
+        elif state == c.ViewState.loading:
             self.pause_dirty_events(True)
 
         self.view_state = state

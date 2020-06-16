@@ -18,7 +18,8 @@ from lists import create_list, ListSpec, ColumnType, ColumnSpec, get_selected_it
 from panels import PanelSpec, BasePanel
 import forms as frm
 from validators import not_empty, FieldValidator
-from models import ViewState, BaseEntityModel, BasePresenter, BindDirection
+from models import BaseEntityModel
+from presenters import BasePresenter
 import fn_format as fmt
 import fn_widget as w
 
@@ -154,22 +155,16 @@ class GrinderTaskPresenter(BasePresenter):
                                          frm.FormLineDef("Solution", [solution_field_def])]
 
     def __init__(self, grinder: Grinder, grinder_data, parent):
+        form_def: frm.FormDef = frm.FormDef(title='Grinder Task',
+                                                 help=GrinderTaskModel.help,
+                                                 edit_lines=self.edit_lines,
+                                                 name='frmGrinderTask')
         super().__init__(parent=parent,
                          model=GrinderTaskModel(grinder_data[c.FIELD_NAME_ID]),
-                         view=GrinderTaskView(parent))
-        self.Grinder = grinder
-        self.grinder_data = grinder_data
-
-
-        self.form_def: frm.FormDef = frm.FormDef(title='Grinder Task',
-                                            help=GrinderTaskModel.help,
-                                            edit_lines=self.edit_lines,
-                                            name='frmGrinderTask')
-        self.view.set_form(self.form_def)
-        self.model.change_data(self.model.create_data())
-        # this next line must occur after the form_def is created
-        self.set_view_state(ViewState.empty)
-        wx.py.dispatcher.send(signal=c.SIGNAL_VIEW_ACTIVATED, sender=self, command=c.COMMAND_VIEW_ACTIVATED, more=self)
+                         view=GrinderTaskView(parent),
+                         form_def=form_def)
+        # self.Grinder = grinder
+        # self.grinder_data = grinder_data
 
 
     def add(self, command, more):
