@@ -17,7 +17,7 @@ from lists import create_list, ListSpec, ColumnType, ColumnSpec, get_selected_it
 from panels import PanelSpec, BasePanel
 import forms as frm
 from validators import not_empty, FieldValidator
-from models import ViewState, BaseEntityModel, BindDirection
+from models import ViewState, BaseEntityModel, BasePresenter, BindDirection
 import fn_format as fmt
 import fn_widget as w
 
@@ -143,32 +143,26 @@ class GrinderTaskModel(BaseEntityModel):
         return data_list
 
 
-class GrinderTaskPresenter:
+class GrinderTaskPresenter(BasePresenter):
 
     edit_tab_index = 1
 
-    @staticmethod
-    def start_editing(event):
-        event.Veto()
-
     def __init__(self, grinder: Grinder, grinder_data, parent):
+        super().__init__(parent, GrinderTaskModel(grinder_data[c.FIELD_NAME_ID]))
         self.Grinder = grinder
-        self.parent = parent
         self.grinder_data = grinder_data
-        self.model = GrinderTaskModel(grinder_data[c.FIELD_NAME_ID])
-        self.view_state = ViewState.empty
         self.view = GrinderTask(parent)
         self.view.set_list(self.model.columns)
         self.view.list.AssociateModel(self.model)
         self.model.DecRef()
 
         # don't really need this
-        # self.view.list.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.selection_handler)
+        self.view.list.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.selection_handler)
         self.view.list.Bind(dv.EVT_DATAVIEW_ITEM_ACTIVATED, self.edit_handler)
         # required for linux, otherwise double clicking or hitting enter
         # on selected list item results in text of column being edited
         # instead or running the ITEM_ACTIVATED event
-        self.view.list.Bind(dv.EVT_DATAVIEW_ITEM_START_EDITING, GrinderTaskPresenter.start_editing)
+        self.view.list.Bind(dv.EVT_DATAVIEW_ITEM_START_EDITING, self.start_editing)
 
         task_field_def: frm.EditFieldDef = frm.TextFieldDef(name=GrinderTaskModel.task_column, width=frm.large(),
                                                             validator=FieldValidator(None, GrinderTaskModel.task_column, [not_empty]),
@@ -212,11 +206,17 @@ class GrinderTaskPresenter:
 
         self.view_state = state
 
+    def selection_handler(self, event):
+        # not quite sure what to do, load the selection so it can be deleted?
+        pass
+
     def edit_handler(self, event: dv.DataViewEvent):
         self.set_view_state(ViewState.loading)
         selected_item = self.view.list.GetSelection()
         record = self.model.ItemToObject(selected_item)
+        # this sets the data property on all the validators that are defined for all the fields
         self.form_def.bind(record)
+        # this tells view to push data from model to the controls
         self.view.bind(BindDirection.to_window)
         self.set_view_state(ViewState.loaded)
         self.view.set_current_tab(self.edit_tab_index)
@@ -255,16 +255,6 @@ class GrinderTaskPresenter:
                     self.model.data.remove(record)
                     self.set_view_state(ViewState.empty)
 
-    # these may not be needed
-    def edited_record(self, record):
-        self.model.ItemChanged(self.model.ObjectToItem(record))
-
-    def update_data(self, data):
-        self.model.change_data(data)
-
-    def added_record(self, record):
-        self.model.data.append(record)
-        self.model.ItemAdded(dv.NullDataViewItem, self.model.ObjectToItem(record))
 
 
 class GrinderTask(wx.Panel):

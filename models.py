@@ -30,6 +30,29 @@ class ColumnSpec:
     sortable: bool = False
 
 
+class BasePresenter:
+
+    @staticmethod
+    def start_editing(event):
+        event.Veto()
+
+    def __init__(self, parent: wx.Window, model: 'BaseEntityModel'):
+        self.parent = parent
+        self.model = model
+        self.view_state = ViewState.empty
+
+    def edited_record(self, record):
+        self.model.ItemChanged(self.model.ObjectToItem(record))
+
+    def update_data(self, data):
+        self.model.change_data(data)
+
+    def added_record(self, record):
+        self.model.data.append(record)
+        self.model.ItemAdded(dv.NullDataViewItem, self.model.ObjectToItem(record))
+
+
+
 class BaseEntityModel(dv.PyDataViewModel):
 
     def __init__(self, parent_key: int, columns: List[ColumnSpec], collection_name: str):
