@@ -31,3 +31,7 @@ def add_record(collection_name: str, record):
 def update_record(collection_name: str, record):
     get_data_store().update(collection_name, record)
 
+
+def delete_record(collection_name: str, record):
+    get_data_store().remove(collection_name, record)
+

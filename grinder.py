@@ -134,8 +134,8 @@ class GrinderTaskModel(BaseEntityModel):
 
 
     def make_new_record(self):
-        return {c.FIELD_NAME_ID: None, 'grinder_id': self.parent_key, GrinderTask.task_column: '',
-                GrinderTaskModel.solution_column: '', GrinderTaskModel.created_column: dt.datetime.today()}
+        return {c.FIELD_NAME_ID: None, 'grinder_id': self.parent_key, self.task_column: '',
+                self.solution_column: '', self.created_column: dt.datetime.today()}
 
     def create_data(self):
         records = df.get_grinder_tasks_by_grinder(self.parent_key)
@@ -247,7 +247,15 @@ class GrinderTaskPresenter:
             self.view.set_current_tab(self.edit_tab_index)
 
     def delete(self, command, more):
-        pass
+        if more is self.view:
+            selected_item = self.view.list.GetSelection()
+            if selected_item is not None:
+                if frm.confirm_delete(self.view):
+                    self.model.ItemDeleted(dv.NullDataViewItem, selected_item)
+                    record = self.model.ItemToObject(selected_item)
+                    df.delete_record(GrinderTaskModel.collection_name, record)
+                    self.model.data.remove(record)
+                    self.set_view_state(ViewState.empty)
 
     # these may not be needed
     def edited_record(self, record):
