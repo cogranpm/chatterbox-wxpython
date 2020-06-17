@@ -135,4 +135,7 @@ class ModalEditPresenter(BasePresenter):
 
     def __init__(self, parent: wx.Window, model: BaseEntityModel, view: BaseView, form_def: frm.FormDef):
         super().__init__(parent, model, view, form_def)
+        self.view.set_list(self.model.columns)
+        self.view.list.AssociateModel(self.model)
+        self.model.DecRef()
 

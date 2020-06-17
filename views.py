@@ -11,6 +11,7 @@ from lists import create_list, ColumnSpec
 import fn_widget as w
 import forms as frm
 import chatterbox_constants as c
+from fn_app import make_icon
 
 
 class BaseView(wx.Panel):
@@ -58,19 +59,16 @@ class BaseViewNotebook(BaseView):
 class ModalEditView(BaseView):
     """ a panel that shows data in a list with add, delete, edit buttons for modal editing """
 
-    def tool_button(self, parent, text, icon):
-        return frm.generic_button(parent, id, text, wx.Size(20, 20), icon)
-
     def __init__(self, parent, caption):
         super().__init__(parent)
 
         header_panel = frm.panel(parent, "header_panel")
         caption = frm.label(header_panel, caption, "lblCaption")
         caption.Wrap(-1)
-        self.btn_add_shelf = self.tool_button(header_panel, c.ID_ADD_SHELF, wx.EmptyString, c.ICON_ADD)
-        self.btn_delete_shelf = self.tool_button(header_panel, c.ID_DELETE_SHELF, wx.EmptyString, c.ICON_CANCEL)
+        self.btn_add_shelf = self.tool_button(header_panel, c.ID_ADD_SHELF, c.ICON_ADD)
+        self.btn_delete_shelf = self.tool_button(header_panel, c.ID_DELETE_SHELF, c.ICON_CANCEL)
         # btn_delete_shelf.Enable(False)
-        self.btn_edit_shelf = self.tool_button(header_panel, c.ID_EDIT_SHELF, wx.EmptyString, c.ICON_EDIT)
+        self.btn_edit_shelf = self.tool_button(header_panel, c.ID_EDIT_SHELF, c.ICON_EDIT)
         # btn_edit_shelf.Enable(False)
         header_sizer = frm.hsizer([caption, self.btn_add_shelf, self.btn_delete_shelf, self.btn_edit_shelf])
         header_panel.SetSizer(header_sizer)
@@ -78,4 +76,12 @@ class ModalEditView(BaseView):
         header_sizer.Fit(header_panel)
         self.Sizer.Add(header_panel, 0, 0, 5)
 
+    def set_list(self, columns: List[ColumnSpec]):
+        super().set_list(columns)
+        self.Sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
+
+    def tool_button(self, parent, id, icon):
+        btn = wx.Button(parent, id, wx.EmptyString, wx.DefaultPosition, wx.Size(20, 20), 0)
+        btn.SetBitmap(make_icon(icon))
+        return btn
 

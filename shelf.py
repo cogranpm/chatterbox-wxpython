@@ -68,7 +68,8 @@ class MainPanel(wx.Panel):
         self.__subject = sb.Subject(self, subject_splitter, self.__grinder)
 
         # shelf
-        self.shelf = Shelf(self, splitter, self.__subject)
+        # self.shelf = Shelf(self, splitter, self.__subject)
+        presenter = ShelfPresenter(splitter)
 
         # subject children
         subject_notebook = w.notebook(subject_splitter)
@@ -88,8 +89,8 @@ class MainPanel(wx.Panel):
         subject_splitter.SplitHorizontally(self.__subject.panel, subject_notebook, 248)
         subject_sizer.Add(subject_splitter, wx.SizerFlags(1).Expand())
 
-
-        splitter.SplitVertically(self.shelf.panel, subject_container, 248)
+        #splitter.SplitVertically(self.shelf.panel, subject_container, 248)
+        splitter.SplitVertically(presenter.view, subject_container, 248)
         # splitter.SetMinimumPaneSize(200)
         # splitter.SetSashGravity(0.5)
         main_sizer.Add(splitter, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
@@ -130,28 +131,29 @@ class ShelfPresenter(ModalEditPresenter):
 
     name_field_def: frm.EditFieldDef = frm.TextFieldDef(name_column, large(), validator=FieldValidator(None, name_column, [not_empty]))
     edit_lines: List[frm.FormLineDef] = frm.FormLineDef("Name", [name_field_def])
+    form_def: frm.FormDef = frm.FormDef(title='Shelf',
+                                        help=ShelfModel.help,
+                                        edit_lines=edit_lines,
+                                        name='Shelf')
 
     def __init__(self, parent):
-        form_def: frm.FormDef = frm.FormDef(title='Shelf',
-                                                 help=ShelfModel.help,
-                                                 edit_lines=self.edit_lines,
-                                                 name='Shelf')
+
         super().__init__(parent=parent,
                          model=ShelfModel(),
                          view=ShelfView(parent),
-                         form_def=form_def)
+                         form_def=self.form_def)
 
 
 class ShelfView(ModalEditView):
 
     def __init__(self, parent):
         try:
-            super().__init__(parent)
+            super().__init__(parent, "Shelf")
         except BaseException as ex:
             print('Error in  __init__: ' + str(ex))
 
 
-
+# ----------- old stuff -------------------------
 class Shelf:
 
     def __init__(self, parent, container, subject: sb.Subject):
