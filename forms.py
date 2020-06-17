@@ -113,6 +113,7 @@ class CodeEditorDef(EditFieldDef):
     def __init__(self, name: str, width: EditFieldWidth, validator: wx.PyValidator):
         super().__init__(name, width, validator)
 
+
     def make_field(self, parent, multi_column: bool = False):
         size = self.get_size(multi_column)
         self.control = wx.py.editwindow.EditWindow(parent=parent)
@@ -162,6 +163,7 @@ class ComboFieldDef(EditFieldDef):
 
     def __init__(self, name: str, width: EditFieldWidth, contents: List[ListItem], validator: wx.PyValidator):
         super().__init__(name, width, validator)
+        self.control = wx.ComboBox()
         self.contents = contents
 
     def make_field(self, parent,  multi_column: bool = False):
