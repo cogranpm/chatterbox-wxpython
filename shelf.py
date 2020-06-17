@@ -143,6 +143,19 @@ class ShelfPresenter(ModalEditPresenter):
                          view=ShelfView(parent),
                          form_def=self.form_def)
 
+        frm.bind_button(self.view.btn_add, self.add)
+        frm.bind_button(self.view.btn_edit, self.edit)
+        frm.bind_button(self.view.btn_delete, self.delete)
+
+    def add(self, event):
+        pass
+
+    def edit(self, event):
+        pass
+
+    def delete(self, event):
+        pass
+
 
 class ShelfView(ModalEditView):
 

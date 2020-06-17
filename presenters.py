@@ -138,4 +138,11 @@ class ModalEditPresenter(BasePresenter):
         self.view.set_list(self.model.columns)
         self.view.list.AssociateModel(self.model)
         self.model.DecRef()
+        self.model.change_data(self.model.create_data())
+        self.view.list.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.selection_handler)
 
+    def selection_handler(self, event):
+        selected_item = self.view.list.GetSelection()
+        record = self.model.ItemToObject(selected_item)
+        print(record)
+        #self.subject.parent_changed(record[c.FIELD_NAME_ID])
