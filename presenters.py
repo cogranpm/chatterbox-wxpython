@@ -145,4 +145,5 @@ class ModalEditPresenter(BasePresenter):
         selected_item = self.view.list.GetSelection()
         record = self.model.ItemToObject(selected_item)
         print(record)
+        # should broadcast this
         #self.subject.parent_changed(record[c.FIELD_NAME_ID])
