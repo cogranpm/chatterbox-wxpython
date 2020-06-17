@@ -3,25 +3,27 @@ module for grinders view
 a grinder is an exercise to practice something
 this ui is for navigating the grinders for a particular subject
 """
-
+# ----------- python imports ---------------------
 from typing import Callable, Dict, List
 from enum import IntEnum
 
+# ----------- lib imports ------------------------
 import wx
 import wx.dataview as dv
 import datetime as dt
 
+# ----------- project imports ---------------------
 import chatterbox_constants as c
 import data_functions as df
 import views as v
-from lists import create_list, ListSpec, ColumnType, ColumnSpec, get_selected_item, get_record_from_item
+from lists import ListSpec, ColumnType, ColumnSpec, get_selected_item, get_record_from_item
 from panels import PanelSpec, BasePanel
 import forms as frm
 from validators import not_empty, FieldValidator
 from models import BaseEntityModel
-from presenters import BasePresenter
+from presenters import PanelEditPresenter
 import fn_format as fmt
-import fn_widget as w
+
 
 name_column = 'name'
 description_column = 'description'
@@ -140,7 +142,7 @@ class GrinderTaskModel(BaseEntityModel):
         return df.get_grinder_tasks_by_grinder(self.parent_key)
 
 
-class GrinderTaskPresenter(BasePresenter):
+class GrinderTaskPresenter(PanelEditPresenter):
 
     edit_tab_index = 1
     task_field_def: frm.EditFieldDef = frm.TextFieldDef(name=GrinderTaskModel.task_column, width=frm.large(),

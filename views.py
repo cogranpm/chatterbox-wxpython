@@ -1,6 +1,6 @@
 
 # ------- python imports ---------------------
-from typing import List
+from typing import List, Callable
 
 # ----- Lib imports --------------------------
 import wx
@@ -53,4 +53,29 @@ class BaseViewNotebook(BaseView):
 
     def set_current_tab(self, index):
         self.notebook.SetSelection(index)
+
+
+class ModalEditView(BaseView):
+    """ a panel that shows data in a list with add, delete, edit buttons for modal editing """
+
+    def tool_button(self, parent, text, icon):
+        return frm.generic_button(parent, id, text, wx.Size(20, 20), icon)
+
+    def __init__(self, parent, caption):
+        super().__init__(parent)
+
+        header_panel = frm.panel(parent, "header_panel")
+        caption = frm.label(header_panel, caption, "lblCaption")
+        caption.Wrap(-1)
+        self.btn_add_shelf = self.tool_button(header_panel, c.ID_ADD_SHELF, wx.EmptyString, c.ICON_ADD)
+        self.btn_delete_shelf = self.tool_button(header_panel, c.ID_DELETE_SHELF, wx.EmptyString, c.ICON_CANCEL)
+        # btn_delete_shelf.Enable(False)
+        self.btn_edit_shelf = self.tool_button(header_panel, c.ID_EDIT_SHELF, wx.EmptyString, c.ICON_EDIT)
+        # btn_edit_shelf.Enable(False)
+        header_sizer = frm.hsizer([caption, self.btn_add_shelf, self.btn_delete_shelf, self.btn_edit_shelf])
+        header_panel.SetSizer(header_sizer)
+        header_panel.Layout()
+        header_sizer.Fit(header_panel)
+        self.Sizer.Add(header_panel, 0, 0, 5)
+
 

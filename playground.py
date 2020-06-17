@@ -16,7 +16,7 @@ from lists import states, ColumnSpec, ColumnType, ListSpec, create_data
 from validators import FieldValidator, CheckboxValidator, ComboValidator, not_empty
 import data_functions as df
 from models import BaseEntityModel
-from presenters import BasePresenter
+from presenters import PanelEditPresenter
 import views as v
 
 collection_name = 'playground'
@@ -73,7 +73,7 @@ class PlaygroundModel(BaseEntityModel):
         return df.get_all(collection_name)
 
 
-class PlaygroundPresenter(BasePresenter):
+class PlaygroundPresenter(PanelEditPresenter):
 
     name_validator = FieldValidator(None, name_column, [not_empty])
     age_validator = FieldValidator(None, age_column, [not_empty])
@@ -128,6 +128,9 @@ class PlaygroundView(v.BaseViewNotebook):
             print('Error in __init__: ' + str(ex))
 
 
+
+# ----------------------------------------------------------------------------------------------------------
+# this is all the old stuff before the model view presenter redesign
 
 # this is the panel version
 # both panel and dialog version are in this file

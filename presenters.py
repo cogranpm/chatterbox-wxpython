@@ -10,6 +10,8 @@ import wx
 import data_functions as df
 import chatterbox_constants as c
 import forms as frm
+from models import BaseEntityModel
+from views import BaseView
 
 
 class BasePresenter(ABC):
@@ -23,6 +25,26 @@ class BasePresenter(ABC):
         self.model = model
         self.view = view
         self.form_def = form_def
+
+    def edited_record(self, record):
+        self.model.ItemChanged(self.model.ObjectToItem(record))
+
+    def update_data(self, data):
+        self.model.change_data(data)
+
+    def added_record(self, record):
+        self.model.data.append(record)
+        self.model.ItemAdded(dv.NullDataViewItem, self.model.ObjectToItem(record))
+
+
+class PanelEditPresenter(BasePresenter):
+
+    @staticmethod
+    def start_editing(event):
+        event.Veto()
+
+    def __init__(self, parent: wx.Window, model: BaseEntityModel, view: BaseView, form_def: frm.FormDef):
+        super().__init__(parent, model, view, form_def)
         self.view.set_list(self.model.columns)
         self.view.list.AssociateModel(self.model)
         self.model.DecRef()
@@ -108,13 +130,9 @@ class BasePresenter(ABC):
         self.view.bind(c.BindDirection.to_window)
         self.set_view_state(c.ViewState.loaded)
 
-    def edited_record(self, record):
-        self.model.ItemChanged(self.model.ObjectToItem(record))
 
-    def update_data(self, data):
-        self.model.change_data(data)
+class ModalEditPresenter(BasePresenter):
 
-    def added_record(self, record):
-        self.model.data.append(record)
-        self.model.ItemAdded(dv.NullDataViewItem, self.model.ObjectToItem(record))
+    def __init__(self, parent: wx.Window, model: BaseEntityModel, view: BaseView, form_def: frm.FormDef):
+        super().__init__(parent, model, view, form_def)
 

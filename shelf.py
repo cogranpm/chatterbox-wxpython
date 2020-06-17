@@ -7,11 +7,16 @@ subject can have child:
   publications - topics, notes, exercises, audio recordings
   snippets - example code for anything
 """
-
-import wx
+# ---------- python imports -------------------
 import logging
-import chatterbox_constants as c
+from typing import List
+
+# ----------- lib imports --------------------
+import wx
 import wx.dataview as dv
+
+# ----------- project imports ----------------
+import chatterbox_constants as c
 import forms as frm
 from lists import states, ColumnSpec, ColumnType, ListSpec, create_data, get_selected_item, get_record_from_item
 from validators import FieldValidator, CheckboxValidator, ComboValidator, not_empty
@@ -22,6 +27,9 @@ import subject as sb
 import grinder as gr
 import data_functions as df
 import fn_widget as w
+from models import BaseEntityModel
+from presenters import ModalEditPresenter
+from views import ModalEditView
 
 name_column = 'name'
 collection_name = c.COLLECTION_NAME_SHELF
@@ -31,6 +39,7 @@ form_name = "frmShelf"
 
 def make_new_record():
     return {'id': None, 'name': ''}
+
 
 class MainPanel(wx.Panel):
     """ shows a list of shelves and all the children """
@@ -96,6 +105,51 @@ class MainPanel(wx.Panel):
     #     if selected_item is not None:
     #         record = get_record_from_item(self.shelf.list_spec.model, selected_item)
     #         self.__subject.parent_changed(record[c.FIELD_NAME_ID])
+
+
+class ShelfModel(BaseEntityModel):
+
+    help = 'Shelf'
+
+    columns: List[ColumnSpec] = [
+        ColumnSpec(key=name_column, data_type=ColumnType.str, label='Name', width=100, sortable=True, browseable=True,
+                   format_fn=None)
+    ]
+
+    def __init__(self):
+        super().__init__(None, self.columns, c.COLLECTION_NAME_SHELF)
+
+    def make_new_record(self):
+        return {'id': None, 'name': ''}
+
+    def get_records(self):
+        return df.get_all(self.collection_name)
+
+
+class ShelfPresenter(ModalEditPresenter):
+
+    name_field_def: frm.EditFieldDef = frm.TextFieldDef(name_column, large(), validator=FieldValidator(None, name_column, [not_empty]))
+    edit_lines: List[frm.FormLineDef] = frm.FormLineDef("Name", [name_field_def])
+
+    def __init__(self, parent):
+        form_def: frm.FormDef = frm.FormDef(title='Shelf',
+                                                 help=ShelfModel.help,
+                                                 edit_lines=self.edit_lines,
+                                                 name='Shelf')
+        super().__init__(parent=parent,
+                         model=ShelfModel(),
+                         view=ShelfView(parent),
+                         form_def=form_def)
+
+
+class ShelfView(ModalEditView):
+
+    def __init__(self, parent):
+        try:
+            super().__init__(parent)
+        except BaseException as ex:
+            print('Error in  __init__: ' + str(ex))
+
 
 
 class Shelf:
