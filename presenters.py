@@ -11,6 +11,7 @@ import data_functions as df
 import chatterbox_constants as c
 import forms as frm
 
+
 class BasePresenter(ABC):
 
     @staticmethod

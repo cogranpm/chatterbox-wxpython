@@ -1,15 +1,23 @@
 # a dialog for just about anything
+# ------ python imports ------------
+import logging
+from typing import List
+
+# -------- lib imports -------------
 import wx
 import wx.py as py
-import logging
+import wx.dataview as dv
+
+# ---------- project imports -------------
 import chatterbox_constants as c
 import fn_widget as w
-import wx.dataview as dv
 import forms as frm
 from lists import states, ColumnSpec, ColumnType, ListSpec, create_data
 from validators import FieldValidator, CheckboxValidator, ComboValidator, not_empty
 import data_functions as df
-
+from models import BaseEntityModel
+from presenters import BasePresenter
+import views as v
 
 collection_name = 'playground'
 name_column = 'name'
@@ -27,6 +35,99 @@ email_column = 'email'
 def add_record():
     return {'id': None, 'name': '', 'age': None, 'member': False, 'address1': "", 'address2': "",
              'city': '', 'zip': '', 'state': '', 'phone': '', 'email': ''}
+
+
+class PlaygroundModel(BaseEntityModel):
+
+    help = """
+        This is the FlexGrid Sizer demo 
+        specify  which columns or rows should grow
+        grow flexibly in either direction meaning,
+        you can specify proportional amounts for child elements
+        and specify behaviour in the non flexible direction
+        growable row means in the vertical direction
+        growable col means in the horizontal direction
+        use the proportion argument in the Add method to make cell grow at different amount """
+
+    columns: List[ColumnSpec] = [
+            ColumnSpec(name_column, ColumnType.str, 'Name', 100, sortable=True, browseable=True, format_fn=None),
+            ColumnSpec(age_column, ColumnType.int, 'Age', 40, sortable=True, browseable=True, format_fn=None),
+            ColumnSpec(member_column, ColumnType.bool, 'Member', 40, sortable=True, browseable=True, format_fn=None),
+            ColumnSpec(address1_column, ColumnType.str, 'Address', 120, sortable=True, browseable=True, format_fn=None),
+            ColumnSpec(address2_column, ColumnType.str, 'Address 2', 120, sortable=True, browseable=True, format_fn=None),
+            ColumnSpec(city_column, ColumnType.str, 'City', 80, sortable=True, browseable=True, format_fn=None),
+            ColumnSpec(zip_column, ColumnType.str, 'Zip', 45, sortable=True, browseable=True, format_fn=None),
+            ColumnSpec(state_column, ColumnType.str, 'State', 45, sortable=True, browseable=True, format_fn=None),
+            ColumnSpec(phone_column, ColumnType.str, 'Phone', 145, sortable=True, browseable=True, format_fn=None),
+            ColumnSpec(email_column, ColumnType.str, 'Email', 145, sortable=True, browseable=True, format_fn=None)
+        ]
+
+    def __init__(self):
+        super().__init__(None, self.columns, collection_name)
+
+    def make_new_record(self):
+        return {'id': None, 'name': '', 'age': None, 'member': False, 'address1': "", 'address2': "",
+                'city': '', 'zip': '', 'state': '', 'phone': '', 'email': ''}
+
+    def get_records(self):
+        return df.get_all(collection_name)
+
+
+class PlaygroundPresenter(BasePresenter):
+
+    name_validator = FieldValidator(None, name_column, [not_empty])
+    age_validator = FieldValidator(None, age_column, [not_empty])
+    address1_validator = FieldValidator(None, address1_column, [])
+    address2_validator = FieldValidator(None, address2_column, [])
+    member_validator = CheckboxValidator(None, member_column, [])
+    email_validator = FieldValidator(None, email_column, [])
+    phone_validator = FieldValidator(None, phone_column, [])
+    city_validator = FieldValidator(None, city_column, [])
+    state_validator = ComboValidator(None, state_column, [])
+    zip_validator = FieldValidator(None, zip_column, [])
+
+
+    def __init__(self, parent):
+        edit_lines = [
+            frm.FormLineDef("Name", [frm.TextFieldDef(name_column, frm.large(), validator=self.name_validator)]),
+            frm.FormLineDef("Age", [frm.TextFieldDef(age_column, frm.small(), validator=self.age_validator)]),
+            frm.FormLineDef("Member", [frm.CheckboxFieldDef(member_column, frm.small(), validator=self.member_validator)]),
+            frm.FormLineDef("Address", [frm.TextFieldDef(address1_column, frm.large(), validator=self.address1_validator)]),
+            frm.FormLineDef(None, [frm.TextFieldDef(address2_column, frm.large(), validator=self.address2_validator)]),
+            frm.FormLineDef("City, State, Zip", [
+                frm.TextFieldDef(city_column, frm.large(), validator=self.city_validator),
+                frm.ComboFieldDef(state_column, frm.medium(), states, validator=self.state_validator),
+                frm.TextFieldDef(zip_column, frm.small(), validator=self.zip_validator)
+            ]),
+            frm.FormLineDef("Phone", [frm.TextFieldDef(phone_column, frm.small(), validator=self.phone_validator)]),
+            frm.FormLineDef("Email", [frm.TextFieldDef(email_column, frm.medium(), validator=self.email_validator)])
+        ]
+
+        form_def: frm.FormDef = frm.FormDef(title="Playgound",
+                                                 help=PlaygroundModel.help,
+                                                 edit_lines=edit_lines,
+                                                 name='frmPlayground')
+        super().__init__(parent=parent,
+                         model=PlaygroundModel(),
+                         view=PlaygroundView(parent),
+                         form_def=form_def)
+
+    def add(self, command, more):
+        super().add(command, more)
+
+    def edit_handler(self, event: dv.DataViewEvent):
+        super().edit_handler(event)
+
+
+class PlaygroundView(v.BaseViewNotebook):
+
+    def __init__(self, parent):
+        try:
+            super().__init__(parent)
+        except BaseException as ex:
+            print('Error in __init__: ' + str(ex))
+
+
 
 # this is the panel version
 # both panel and dialog version are in this file

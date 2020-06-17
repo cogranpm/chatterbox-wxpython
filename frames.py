@@ -96,7 +96,8 @@ class AppFrame(wx.Frame):
 
 
     def handle_menu_playground(self, event):
-        self.notebook.AddPage(playground.PlaygroundPanel(self), "Playground", True)
+        presenter = playground.PlaygroundPresenter(self)
+        self.notebook.AddPage(presenter.view, "Playground", True)
 
     def handle_menu_shelf(self, event):
         self.notebook.AddPage(shelf.MainPanel(self), c.NOTEBOOK_TITLE_SHELF, True)
