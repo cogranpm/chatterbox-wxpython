@@ -69,7 +69,7 @@ class MainPanel(wx.Panel):
 
         # shelf
         # self.shelf = Shelf(self, splitter, self.__subject)
-        presenter = ShelfPresenter(splitter)
+        presenter = ShelfPresenter(splitter, self.__subject)
 
         # subject children
         subject_notebook = w.notebook(subject_splitter)
@@ -129,15 +129,17 @@ class ShelfModel(BaseEntityModel):
 
 class ShelfPresenter(ModalEditPresenter):
 
+    title: str = 'Shelf'
     name_field_def: frm.EditFieldDef = frm.TextFieldDef(name_column, large(), validator=FieldValidator(None, name_column, [not_empty]))
-    edit_lines: List[frm.FormLineDef] = frm.FormLineDef("Name", [name_field_def])
-    form_def: frm.FormDef = frm.FormDef(title='Shelf',
+    edit_lines: List[frm.FormLineDef] = [frm.FormLineDef("Name", [name_field_def])]
+    form_def: frm.FormDef = frm.FormDef(title=title,
                                         help=ShelfModel.help,
                                         edit_lines=edit_lines,
-                                        name='Shelf')
+                                        name='shelf')
 
-    def __init__(self, parent):
-
+    # the subject argument is temporary
+    def __init__(self, parent, subject):
+        self.subject = subject
         super().__init__(parent=parent,
                          model=ShelfModel(),
                          view=ShelfView(parent),
@@ -147,8 +149,22 @@ class ShelfPresenter(ModalEditPresenter):
         frm.bind_button(self.view.btn_edit, self.edit)
         frm.bind_button(self.view.btn_delete, self.delete)
 
+    def selection_handler(self, event):
+        super().selection_handler(event)
+        selected_item = self.view.list.GetSelection()
+        record = self.model.ItemToObject(selected_item)
+        self.subject.parent_changed(record[c.FIELD_NAME_ID])
+
     def add(self, event):
-        pass
+        record = self.model.make_new_record()
+        dlg: FormDialog = frm.make_dialog(parent=self.parent, title='Add ' + self.title)
+        dlg.build(self.form_def)
+        self.form_def.bind(record)
+        dlg.TransferDataToWindow()
+        result = dlg.ShowModal()
+        if result == wx.ID_OK:
+            df.add_record(collection_name, record)
+            self.added_record(record)
 
     def edit(self, event):
         pass

@@ -17,24 +17,16 @@ from fn_app import make_icon
 class BaseView(wx.Panel):
     """ panel based ui with list and form """
     def __init__(self, parent):
-        super().__init__(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        super().__init__(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL, name="fred")
         self.list = None
-        self.form_panel = w.panel(self, [])
-        self.form_panel.SetSizer(w.sizer())
-        main_sizer = wx.BoxSizer(wx.VERTICAL)
+        main_sizer = frm.vsizer()
         self.SetSizer(main_sizer)
 
     def bind(self, direction: c.BindDirection):
-        if direction == c.BindDirection.from_window:
-            self.form_panel.TransferDataFromWindow()
-        else:
-            self.form_panel.TransferDataToWindow()
+        pass
 
     def set_list(self, columns: List[ColumnSpec]):
-        self.list = create_list(self.Parent, columns)
-
-    def set_form(self, form_def: frm.FormDef):
-        form_def.make_form(self.form_panel)
+        self.list = create_list(self, columns)
 
 
 class BaseViewNotebook(BaseView):
@@ -43,13 +35,21 @@ class BaseViewNotebook(BaseView):
         super().__init__(parent)
         self.notebook: wx.aui.AuiNotebook = w.notebook(self)
         self.Sizer.Add(self.notebook, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
+        self.form_panel = w.panel(self, [])
+        self.form_panel.SetSizer(w.sizer())
+
+    def bind(self, direction: c.BindDirection):
+        if direction == c.BindDirection.from_window:
+            self.form_panel.TransferDataFromWindow()
+        else:
+            self.form_panel.TransferDataToWindow()
 
     def set_list(self, columns: List[ColumnSpec]):
         super().set_list(columns)
         self.notebook.AddPage(self.list, "List", True)
 
     def set_form(self, form_def: frm.FormDef):
-        super().set_form(form_def)
+        form_def.make_form(self.form_panel)
         self.notebook.AddPage(self.form_panel, "Task", False)
 
     def set_current_tab(self, index):
@@ -61,16 +61,15 @@ class ModalEditView(BaseView):
 
     def __init__(self, parent, caption):
         super().__init__(parent)
-
-        header_panel = frm.panel(parent, "header_panel")
-        caption = frm.label(header_panel, caption, "lblCaption")
-        caption.Wrap(-1)
-        self.btn_add = self.tool_button(header_panel, c.ID_ADD_SHELF, c.ICON_ADD)
-        self.btn_delete = self.tool_button(header_panel, c.ID_DELETE_SHELF, c.ICON_CANCEL)
+        header_panel = frm.panel(self, "header_panel")
+        lbl_caption = frm.label(header_panel, caption, "lblCaption")
+        lbl_caption.Wrap(-1)
+        self.btn_add = self.tool_button(header_panel, c.ID_ADD, c.ICON_ADD)
+        self.btn_delete = self.tool_button(header_panel, c.ID_DELETE, c.ICON_CANCEL)
         # btn_delete.Enable(False)
-        self.btn_edit = self.tool_button(header_panel, c.ID_EDIT_SHELF, c.ICON_EDIT)
+        self.btn_edit = self.tool_button(header_panel, c.ID_EDIT, c.ICON_EDIT)
         # btn_edit_shelf.Enable(False)
-        header_sizer = frm.hsizer([caption, self.btn_add, self.btn_delete, self.btn_edit])
+        header_sizer = frm.hsizer([lbl_caption, self.btn_add, self.btn_delete, self.btn_edit])
         header_panel.SetSizer(header_sizer)
         header_panel.Layout()
         header_sizer.Fit(header_panel)

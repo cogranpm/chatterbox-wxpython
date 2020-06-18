@@ -229,12 +229,11 @@ class FormDef:
     edit_lines: List['FormLineDef']
     name: str
 
+    # this should be renamed render, as it doesn't make anything
     def make_form(self, parent: wx.Window, display_type=DisplayType.PANEL, ok_handler=None, cancel_handler=None):
         sizer = vsizer()
         lbl_header = wx.StaticText(parent, 0, self.title)
-
         lbl_header.SetFont(header_font())
-
         sizer.Add(lbl_header, 0, wx.ALL, 5)
         # add a static line
         sizer.Add(wx.StaticLine(parent), 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
@@ -269,7 +268,7 @@ class FormDef:
             if cancel_handler is not None:
                 bind_button(std_btn_cancel, cancel_handler)
             std_btn_sizer.Realize()
-            self.sizer.Add(std_btn_sizer, 0, wx.EXPAND, 5)
+            sizer.Add(std_btn_sizer, 0, wx.EXPAND, 5)
 
         parent.Sizer.Add(sizer, wx.SizerFlags(1).Expand())
 
@@ -301,9 +300,33 @@ class FormDef:
                 if edit_field.control is not None and edit_field.control.Validator is not None:
                     edit_field.control.Validator.set_data(record)
 
-# _____________________
-# older stuff appears below
 
+
+class FormDialog(wx.Dialog):
+
+    def __init__(self, parent, title):
+        super().__init__(parent, id=wx.ID_ANY, title=title, pos=wx.DefaultPosition,
+                           size=wx.Size(600, 800), style=wx.DEFAULT_DIALOG_STYLE | wx.WS_EX_VALIDATE_RECURSIVELY)
+        self.Bind(wx.EVT_INIT_DIALOG, self.OnInitDialog)
+
+    def build(self, form: FormDef):
+        self.SetSizeHints(wx.DefaultSize, wx.DefaultSize)
+        main_sizer = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(main_sizer)
+        form.make_form(self, display_type=DisplayType.DIALOG, ok_handler=self.on_ok, cancel_handler=self.on_cancel)
+        self.Layout()
+        self.Centre(wx.BOTH)
+        main_sizer.Fit(self)
+
+
+    def OnInitDialog(self, event):
+        pass
+
+    def on_ok(self, event):
+        event.Skip()
+
+    def on_cancel(self, event):
+        event.Skip()
 
 def is_child_of(widgets, child_widget):
     """ recursive function to find out if the child_widget is an
@@ -345,8 +368,100 @@ def default():
 def bind_button(btn, handler):
     btn.Bind(wx.EVT_BUTTON, handler)
 
+def edit_line(labelstr, edit_fields):
+    return FormLineSpec(labelstr, edit_fields)
 
 
+def make_dialog(parent, title: str) -> FormDialog:
+    return FormDialog(parent=parent, title=title)
+
+
+def form(parent, name, title, helpstr, edit_lines):
+    return FormSpec(parent, name, title, helpstr, edit_lines)
+
+
+def panel(parent, name):
+    return wx.Panel(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL, name)
+
+
+def label(parent, caption, name):
+    lbl = wx.StaticText(parent, id=wx.ID_ANY, label=caption, name=name)
+    return lbl
+
+def generic_button(parent, id, text, handler, size, icon=None):
+    btn = wx.Button(parent, id, text, wx.DefaultPosition,size, 0)
+    bind_button(btn, handler)
+    if not icon is None:
+        btn.SetBitmap(make_icon(icon))
+    return btn
+
+def panel_tool_button(parent, id, text, handler, icon):
+    return generic_button(parent, id, text, handler, wx.Size(20, 20), icon)
+
+def tool_button(parent, id, text, handler):
+    return generic_button(parent, id, text, handler, wx.Size(40, 40))
+
+def command_button(parent, id, text, handler):
+    return generic_button(parent, id, text, handler, wx.Size(220, 30))
+
+def splitter(parent):
+    return wx.SplitterWindow(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.SP_3D)
+
+def panel_header(parent, name, caption, add_handler, delete_handler, edit_handler):
+    header_panel = panel(parent, name)
+    shelf_caption = label(header_panel, caption, "lbl" + name)
+    shelf_caption.Wrap(-1)
+    btn_add_shelf = panel_tool_button(header_panel, c.ID_ADD, wx.EmptyString,
+                                      add_handler, c.ICON_ADD)
+
+    btn_delete_shelf = panel_tool_button(header_panel, c.ID_DELETE, wx.EmptyString,
+                                         delete_handler, c.ICON_CANCEL)
+    # btn_delete_shelf.Enable(False)
+    btn_edit_shelf = panel_tool_button(header_panel, c.ID_EDIT, wx.EmptyString,
+                                       edit_handler, c.ICON_EDIT)
+    # btn_edit_shelf.Enable(False)
+
+    header_sizer = hsizer([shelf_caption, btn_add_shelf, btn_delete_shelf, btn_edit_shelf])
+    header_panel.SetSizer(header_sizer)
+    header_panel.Layout()
+    header_sizer.Fit(header_panel)
+    return header_panel
+
+def single_edit(parent):
+    return wx.TextCtrl(parent, -1, "", size=(-1, -1))
+
+def multi_edit(parent):
+    return wx.TextCtrl(parent, -1, "",
+                       style=wx.TE_MULTILINE|wx.TE_PROCESS_ENTER)
+
+
+def hsizer(items):
+    sizer = wx.BoxSizer(wx.HORIZONTAL)
+    flag = wx.SizerFlags().Expand()
+    for item in items:
+        if type(item) == wx.TextCtrl:
+            flag.Proportion(1)
+        sizer.Add(item, flag)
+    return sizer
+
+
+def vsizer():
+    sizer = wx.BoxSizer(wx.VERTICAL)
+    return sizer
+
+def confirm_delete(parent):
+    dlg = wx.MessageDialog(parent, 'Delete, are you sure?',
+                           'Delete', wx.OK | wx.CANCEL | wx.CANCEL_DEFAULT | wx.ICON_EXCLAMATION)
+    result = dlg.ShowModal()
+    dlg.Destroy()
+    if result == wx.ID_OK:
+        return True
+    else:
+        return False
+
+
+# _____________________
+# older stuff appears below
 class FormSpec():
     """ for specifiying the contents of a form, a function will use this information to build up
     a 'form' and all it's contents
@@ -649,127 +764,6 @@ class CheckboxField(EditFieldSpec):
             py.dispatcher.send(signal=c.SIGNAL_VIEWSTATE, sender=self, command=c.COMMAND_DIRTY, more=self)
 
 
-class FormDialog(wx.Dialog):
-
-    def __init__(self, parent, title, record, collection_name):
-        super().__init__(parent, id=wx.ID_ANY, title=title, pos=wx.DefaultPosition,
-                           size=wx.Size(600, 800), style=wx.DEFAULT_DIALOG_STYLE | wx.WS_EX_VALIDATE_RECURSIVELY)
-        self.record = record
-        self.collection_name = collection_name
-        self.Bind(wx.EVT_INIT_DIALOG, self.OnInitDialog)
 
 
-    def build(self, form: FormSpec):
-        self.SetSizeHints(wx.DefaultSize, wx.DefaultSize)
-
-        main_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.SetSizer(main_sizer)
-
-        form.build(display_type=DisplayType.DIALOG, ok_handler=self.on_ok, cancel_handler=self.on_cancel)
-
-        self.Layout()
-        self.Centre(wx.BOTH)
-        main_sizer.Fit(self)
-        self.TransferDataToWindow()
-
-    def OnInitDialog(self, event):
-        pass
-
-    def on_ok(self, event):
-        event.Skip()
-
-    def on_cancel(self, event):
-        event.Skip()
-
-
-def edit_line(labelstr, edit_fields):
-    return FormLineSpec(labelstr, edit_fields)
-
-
-def make_dialog(parent, record, title: str, collection_name: str) -> FormDialog:
-    return FormDialog(parent=parent, title=title, record=record, collection_name=collection_name)
-
-
-def form(parent, name, title, helpstr, edit_lines):
-    return FormSpec(parent, name, title, helpstr, edit_lines)
-
-
-def panel(parent, name):
-    return wx.Panel(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL, name)
-
-
-def label(parent, caption, name):
-    lbl = wx.StaticText(parent, id=wx.ID_ANY, label=caption, name=name)
-    return lbl
-
-def generic_button(parent, id, text, handler, size, icon=None):
-    btn = wx.Button(parent, id, text, wx.DefaultPosition,size, 0)
-    bind_button(btn, handler)
-    if not icon is None:
-        btn.SetBitmap(make_icon(icon))
-    return btn
-
-def panel_tool_button(parent, id, text, handler, icon):
-    return generic_button(parent, id, text, handler, wx.Size(20, 20), icon)
-
-def tool_button(parent, id, text, handler):
-    return generic_button(parent, id, text, handler, wx.Size(40, 40))
-
-def command_button(parent, id, text, handler):
-    return generic_button(parent, id, text, handler, wx.Size(220, 30))
-
-def splitter(parent):
-    return wx.SplitterWindow(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.SP_3D)
-
-def panel_header(parent, name, caption, add_handler, delete_handler, edit_handler):
-    header_panel = panel(parent, name)
-    shelf_caption = label(header_panel, caption, "lbl" + name)
-    shelf_caption.Wrap(-1)
-    btn_add_shelf = panel_tool_button(header_panel, c.ID_ADD_SHELF, wx.EmptyString,
-                                      add_handler, c.ICON_ADD)
-
-    btn_delete_shelf = panel_tool_button(header_panel, c.ID_DELETE_SHELF, wx.EmptyString,
-                                         delete_handler, c.ICON_CANCEL)
-    # btn_delete_shelf.Enable(False)
-    btn_edit_shelf = panel_tool_button(header_panel, c.ID_EDIT_SHELF, wx.EmptyString,
-                                       edit_handler, c.ICON_EDIT)
-    # btn_edit_shelf.Enable(False)
-
-    header_sizer = hsizer([shelf_caption, btn_add_shelf, btn_delete_shelf, btn_edit_shelf])
-    header_panel.SetSizer(header_sizer)
-    header_panel.Layout()
-    header_sizer.Fit(header_panel)
-    return header_panel
-
-def single_edit(parent):
-    return wx.TextCtrl(parent, -1, "", size=(-1, -1))
-
-def multi_edit(parent):
-    return wx.TextCtrl(parent, -1, "",
-                       style=wx.TE_MULTILINE|wx.TE_PROCESS_ENTER)
-
-
-def hsizer(items):
-    sizer = wx.BoxSizer(wx.HORIZONTAL)
-    flag = wx.SizerFlags().Expand()
-    for item in items:
-        if type(item) == wx.TextCtrl:
-            flag.Proportion(1)
-        sizer.Add(item, flag)
-    return sizer
-
-
-def vsizer():
-    sizer = wx.BoxSizer(wx.VERTICAL)
-    return sizer
-
-def confirm_delete(parent):
-    dlg = wx.MessageDialog(parent, 'Delete, are you sure?',
-                           'Delete', wx.OK | wx.CANCEL | wx.CANCEL_DEFAULT | wx.ICON_EXCLAMATION)
-    result = dlg.ShowModal()
-    dlg.Destroy()
-    if result == wx.ID_OK:
-        return True
-    else:
-        return False
 
