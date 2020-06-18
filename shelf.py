@@ -145,32 +145,12 @@ class ShelfPresenter(ModalEditPresenter):
                          view=ShelfView(parent),
                          form_def=self.form_def)
 
-        frm.bind_button(self.view.btn_add, self.add)
-        frm.bind_button(self.view.btn_edit, self.edit)
-        frm.bind_button(self.view.btn_delete, self.delete)
-
     def selection_handler(self, event):
         super().selection_handler(event)
         selected_item = self.view.list.GetSelection()
         record = self.model.ItemToObject(selected_item)
         self.subject.parent_changed(record[c.FIELD_NAME_ID])
 
-    def add(self, event):
-        record = self.model.make_new_record()
-        dlg: FormDialog = frm.make_dialog(parent=self.parent, title='Add ' + self.title)
-        dlg.build(self.form_def)
-        self.form_def.bind(record)
-        dlg.TransferDataToWindow()
-        result = dlg.ShowModal()
-        if result == wx.ID_OK:
-            df.add_record(collection_name, record)
-            self.added_record(record)
-
-    def edit(self, event):
-        pass
-
-    def delete(self, event):
-        pass
 
 
 class ShelfView(ModalEditView):

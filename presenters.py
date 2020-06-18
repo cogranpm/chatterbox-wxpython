@@ -140,8 +140,38 @@ class ModalEditPresenter(BasePresenter):
             self.view.list.AssociateModel(self.model)
             self.model.DecRef()
             self.view.list.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.selection_handler)
+            self.view.list.Bind(dv.EVT_DATAVIEW_ITEM_ACTIVATED, self.edit)
+            frm.bind_button(self.view.btn_add, self.add)
+            frm.bind_button(self.view.btn_edit, self.edit)
+            frm.bind_button(self.view.btn_delete, self.delete)
         self.model.change_data(self.model.create_data())
 
     def selection_handler(self, event):
+        pass
+
+    def add(self, event):
+        record = self.model.make_new_record()
+        dlg: frm.FormDialog = frm.make_dialog(parent=self.parent, title='Add Generic')
+        dlg.build(self.form_def)
+        self.form_def.bind(record)
+        dlg.TransferDataToWindow()
+        result = dlg.ShowModal()
+        if result == wx.ID_OK:
+            df.add_record(self.model.collection_name, record)
+            self.added_record(record)
+
+    def edit(self, event):
+        selected_item = self.view.list.GetSelection()
+        record = self.model.ItemToObject(selected_item)
+        dlg: frm.FormDialog = frm.make_dialog(parent=self.parent, title='Add Generic')
+        dlg.build(self.form_def)
+        self.form_def.bind(record)
+        dlg.TransferDataToWindow()
+        result = dlg.ShowModal()
+        if result == wx.ID_OK:
+            df.update_record(self.model.collection_name, record)
+            self.edited_record(record)
+
+    def delete(self, event):
         pass
 
