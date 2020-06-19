@@ -37,7 +37,6 @@ class MainPanel(wx.Panel):
     def __init__(self, parent):
         self.frame = parent
         super().__init__(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
-        df.create_entity(gr.collection_name)
         main_sizer = frm.vsizer()
         self.SetSizer(main_sizer)
 
