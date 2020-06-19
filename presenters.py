@@ -36,6 +36,12 @@ class BasePresenter(ABC):
         self.model.data.append(record)
         self.model.ItemAdded(dv.NullDataViewItem, self.model.ObjectToItem(record))
 
+    def deleted_record(self, selected_item, record):
+        self.model.ItemDeleted(dv.NullDataViewItem, selected_item)
+        df.delete_record(self.model.collection_name, record)
+        self.model.data.remove(record)
+        self.model.Cleared()
+
 
 class PanelEditPresenter(BasePresenter):
 
@@ -173,5 +179,10 @@ class ModalEditPresenter(BasePresenter):
             self.edited_record(record)
 
     def delete(self, event):
-        pass
+        selected_item = self.view.list.GetSelection()
+        if selected_item is not None:
+            if frm.confirm_delete(self.view):
+                record = self.model.ItemToObject(selected_item)
+                self.deleted_record(selected_item, record)
+
 

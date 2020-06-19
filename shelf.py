@@ -73,23 +73,11 @@ class MainPanel(wx.Panel):
 
         # subject children
         subject_notebook = w.notebook(subject_splitter)
-
-        # grinders, child of subject
-        #gr.list_spec = gr.make_list_spec()
-        #gr.panel_spec = gr.make_panel_spec(subject_container)
-        #gr.panel = gr.make_panel(gr.panel_spec)
-        #gr.parent = subject_container
-
-        # grinder = wx.TextCtrl(subject_notebook, -1, "Grinders", style=wx.TE_MULTILINE)
         publications = wx.TextCtrl(subject_notebook, -1, "Publications", style=wx.TE_MULTILINE)
         subject_notebook.AddPage(self.__grinder.panel, "Grinders", False)
         subject_notebook.AddPage(publications, "Publications")
-        # subject_sizer.Add(sb.panel, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
-        # subject_sizer.Add(subject_notebook, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
         subject_splitter.SplitHorizontally(self.__subject.panel, subject_notebook, 248)
         subject_sizer.Add(subject_splitter, wx.SizerFlags(1).Expand())
-
-        #splitter.SplitVertically(self.shelf.panel, subject_container, 248)
         splitter.SplitVertically(presenter.view, subject_container, 248)
         # splitter.SetMinimumPaneSize(200)
         # splitter.SetSashGravity(0.5)
