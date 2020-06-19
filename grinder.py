@@ -85,7 +85,10 @@ class GrinderPresenter(ModalEditPresenter):
     def call_delete_query(self, record):
         df.delete_grinder(record)
 
-    def edit(self, event):
+    def bind_list_item_activated_event(self):
+        self.view.list.Bind(dv.EVT_DATAVIEW_ITEM_ACTIVATED, self.edit_grinder_task)
+
+    def edit_grinder_task(self, event):
         selected_item = self.view.list.GetSelection()
         record = self.model.ItemToObject(selected_item)
         presenter = GrinderTaskPresenter(record, self.frame)

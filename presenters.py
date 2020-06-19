@@ -154,11 +154,17 @@ class ModalEditPresenter(BasePresenter):
             self.view.list.AssociateModel(self.model)
             self.model.DecRef()
             self.view.list.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.selection_handler)
-            self.view.list.Bind(dv.EVT_DATAVIEW_ITEM_ACTIVATED, self.edit)
+            self.bind_list_item_activated_event()
             frm.bind_button(self.view.btn_add, self.add)
-            frm.bind_button(self.view.btn_edit, self.edit)
+            self.bind_edit_button_event()
             frm.bind_button(self.view.btn_delete, self.delete)
         self.model.change_data(self.model.create_data())
+
+    def bind_edit_button_event(self):
+        frm.bind_button(self.view.btn_edit, self.edit)
+
+    def bind_list_item_activated_event(self):
+        self.view.list.Bind(dv.EVT_DATAVIEW_ITEM_ACTIVATED, self.edit)
 
     def selection_handler(self, event):
         pass
