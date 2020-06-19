@@ -59,7 +59,6 @@ class BaseEntityModel(dv.PyDataViewModel):
             data_list.append(record)
         return data_list
 
-
     def change_data(self, records):
         # cleared doesn't work on linux
         # so need to delete by item and

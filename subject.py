@@ -56,7 +56,7 @@ class SubjectPresenter(ModalEditPresenter):
                                         edit_lines=edit_lines,
                                         name='subject')
 
-    def __init__(self, parent, grinder):
+    def __init__(self, parent, grinder: 'GrinderPresenter'):
         self.grinder = grinder
         super().__init__(parent=parent,
                          model=SubjectModel(None),
@@ -68,7 +68,7 @@ class SubjectPresenter(ModalEditPresenter):
         selected_item = self.view.list.GetSelection()
         if selected_item is not None:
             record = self.model.ItemToObject(selected_item)
-            self.grinder.parent_changed(record[c.FIELD_NAME_ID])
+            self.grinder.parent_changed(record)
 
     def call_delete_query(self, record):
         df.delete_subject(record)

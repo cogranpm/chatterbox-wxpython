@@ -24,6 +24,10 @@ from models import BaseEntityModel
 from presenters import PanelEditPresenter
 import fn_format as fmt
 
+from models import BaseEntityModel
+from presenters import ModalEditPresenter
+from views import ModalEditView
+from fn_format import trunc
 
 name_column = 'name'
 description_column = 'description'
@@ -113,6 +117,78 @@ class Grinder:
         if result == wx.ID_OK:
             df.add_record(collection_name, record)
             self.__list_spec.added_record(record)
+
+
+class GrinderModel(BaseEntityModel):
+
+    help = 'Grinder'
+    name_column = 'name'
+    description_column = 'description'
+
+    columns: List[ColumnSpec] = [
+        ColumnSpec(key=name_column, data_type=ColumnType.str, label='Name', width=100, sortable=True, browseable=True,
+                   format_fn=None),
+        ColumnSpec(key=description_column, data_type=ColumnType.str, label='Description', width=100, sortable=False, browseable=True,
+                   format_fn=trunc)
+    ]
+
+    def __init__(self, subject_id: int):
+        super().__init__(subject_id, self.columns, c.COLLECTION_NAME_GRINDER)
+
+    def make_new_record(self):
+        return {c.FIELD_NAME_ID: None, 'subject_id': self.parent_key, self.name_column: '', self.description_column: ''}
+
+    def get_records(self):
+        return df.get_grinders_by_subject(self.parent_key)
+
+
+class GrinderPresenter(ModalEditPresenter):
+
+    title: str = 'Grinder'
+    name_field_def: frm.EditFieldDef = frm.TextFieldDef(GrinderModel.name_column, frm.large(), validator=FieldValidator(None, GrinderModel.name_column, [not_empty]))
+    description_field_def: frm.EditFieldDef = frm.TextFieldDef(GrinderModel.description_column, frm.large(),
+                                                        validator=FieldValidator(None, GrinderModel.description_column,
+                                                                                 []))
+    edit_lines: List[frm.FormLineDef] = [frm.FormLineDef("Name", [name_field_def]), frm.FormLineDef("Description", [description_field_def])]
+    form_def: frm.FormDef = frm.FormDef(title=title,
+                                        help=GrinderModel.help,
+                                        edit_lines=edit_lines,
+                                        name='subject')
+
+    def __init__(self, parent, frame):
+        self.frame = frame
+        super().__init__(parent=parent,
+                         model=GrinderModel(None),
+                         view=GrinderView(parent),
+                         form_def=self.form_def)
+
+    def selection_handler(self, event):
+        pass
+        # super().selection_handler(event)
+        # selected_item = self.view.list.GetSelection()
+        # if selected_item is not None:
+        #     record = self.model.ItemToObject(selected_item)
+        #     self.grinder.parent_changed(record[c.FIELD_NAME_ID])
+
+    def call_delete_query(self, record):
+        df.delete_grinder(record)
+
+    def edit(self, event):
+        selected_item = self.view.list.GetSelection()
+        record = self.model.ItemToObject(selected_item)
+        presenter = GrinderTaskPresenter(self, record, self.frame)
+        self.frame.add_page(key="grinder_task", title=c.NOTEBOOK_TITLE_GRINDER,
+                                   window=presenter.view, page_data=None)
+
+
+class GrinderView(ModalEditView):
+
+    def __init__(self, parent):
+        try:
+            super().__init__(parent, "Grinder")
+        except BaseException as ex:
+            print('Error in  __init__: ' + str(ex))
+
 
 
 class GrinderTaskModel(BaseEntityModel):
