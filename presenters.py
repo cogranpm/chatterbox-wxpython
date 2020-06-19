@@ -38,9 +38,12 @@ class BasePresenter(ABC):
 
     def deleted_record(self, selected_item, record):
         self.model.ItemDeleted(dv.NullDataViewItem, selected_item)
-        df.delete_record(self.model.collection_name, record)
+        self.call_delete_query(record)
         self.model.data.remove(record)
         self.model.Cleared()
+
+    def call_delete_query(self, record):
+        df.delete_record(self.model.collection_name, record)
 
 
 class PanelEditPresenter(BasePresenter):

@@ -53,7 +53,7 @@ class DataStore:
         else:
             return dict()
 
-    def query(self, name: str, filters:dict):
+    def query(self, name: str, filters: dict):
         table = self.get_collection(name)
         if table is not None:
             # ** allows you to deconstruct a dict into keyword arguments
@@ -61,4 +61,9 @@ class DataStore:
         else:
             return dict()
 
+    def delete(self, name: str, filters: dict):
+        table = self.get_collection(name)
+        if table is not None:
+            # ** allows you to deconstruct a dict into keyword arguments
+            table.delete(**filters)
 
