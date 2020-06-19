@@ -37,7 +37,6 @@ class MainPanel(wx.Panel):
     def __init__(self, parent):
         self.frame = parent
         super().__init__(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
-        df.create_entity(sb.collection_name)
         df.create_entity(gr.collection_name)
         main_sizer = frm.vsizer()
         self.SetSizer(main_sizer)
@@ -55,7 +54,8 @@ class MainPanel(wx.Panel):
         self.__grinder = gr.Grinder(self, subject_container)
 
         # subject
-        self.__subject = sb.Subject(self, subject_splitter, self.__grinder)
+        #self.__subject = sb.Subject(self, subject_splitter, self.__grinder)
+        self.__subject = sb.SubjectPresenter(subject_splitter, self.__grinder)
 
         # shelf
         # self.shelf = Shelf(self, splitter, self.__subject)
@@ -66,7 +66,7 @@ class MainPanel(wx.Panel):
         publications = wx.TextCtrl(subject_notebook, -1, "Publications", style=wx.TE_MULTILINE)
         subject_notebook.AddPage(self.__grinder.panel, "Grinders", False)
         subject_notebook.AddPage(publications, "Publications")
-        subject_splitter.SplitHorizontally(self.__subject.panel, subject_notebook, 248)
+        subject_splitter.SplitHorizontally(self.__subject.view, subject_notebook, 248)
         subject_sizer.Add(subject_splitter, wx.SizerFlags(1).Expand())
         splitter.SplitVertically(presenter.view, subject_container, 248)
         # splitter.SetMinimumPaneSize(200)
@@ -94,7 +94,7 @@ class ShelfModel(BaseEntityModel):
         super().__init__(None, self.columns, c.COLLECTION_NAME_SHELF)
 
     def make_new_record(self):
-        return {'id': None, self.name_column: ''}
+        return {c.FIELD_NAME_ID: None, self.name_column: ''}
 
     def get_records(self):
         return df.get_all(self.collection_name)
@@ -111,7 +111,7 @@ class ShelfPresenter(ModalEditPresenter):
                                         name='shelf')
 
     # the subject argument is temporary
-    def __init__(self, parent, subject):
+    def __init__(self, parent, subject: sb.SubjectPresenter):
         self.subject = subject
         super().__init__(parent=parent,
                          model=ShelfModel(),
@@ -122,7 +122,7 @@ class ShelfPresenter(ModalEditPresenter):
         super().selection_handler(event)
         selected_item = self.view.list.GetSelection()
         record = self.model.ItemToObject(selected_item)
-        self.subject.parent_changed(record[c.FIELD_NAME_ID])
+        self.subject.parent_changed(record)
 
     def call_delete_query(self, record):
         df.delete_shelf(record)

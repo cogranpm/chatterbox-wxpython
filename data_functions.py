@@ -14,6 +14,8 @@ def get_all(collection_name: str):
 
 def delete_shelf(record):
     # need a cascading delete here
+    ############## this is not the right way to do this, should be handled by the presenters
+    ### so the ui lists and so forth can be updated
     # subjects
     #  grinders
     #    grindertasks

@@ -45,6 +45,11 @@ class BasePresenter(ABC):
     def call_delete_query(self, record):
         df.delete_record(self.model.collection_name, record)
 
+    def parent_changed(self, record):
+        self.model.parent_key = record[c.FIELD_NAME_ID]
+        records = self.model.create_data()
+        self.update_data(records)
+
 
 class PanelEditPresenter(BasePresenter):
 
