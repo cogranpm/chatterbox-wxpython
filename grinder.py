@@ -4,8 +4,7 @@ a grinder is an exercise to practice something
 this ui is for navigating the grinders for a particular subject
 """
 # ----------- python imports ---------------------
-from typing import Callable, Dict, List
-from enum import IntEnum
+from typing import List
 
 # ----------- lib imports ------------------------
 import wx
@@ -16,11 +15,9 @@ import datetime as dt
 import chatterbox_constants as c
 import data_functions as df
 import views as v
-from lists import ListSpec, ColumnType, ColumnSpec, get_selected_item, get_record_from_item
-from panels import PanelSpec, BasePanel
+from lists import ColumnType, ColumnSpec
 import forms as frm
 from validators import not_empty, FieldValidator
-from models import BaseEntityModel
 from presenters import PanelEditPresenter
 import fn_format as fmt
 
@@ -28,7 +25,6 @@ from models import BaseEntityModel
 from presenters import ModalEditPresenter
 from views import ModalEditView
 from fn_format import trunc
-
 
 
 class GrinderModel(BaseEntityModel):
@@ -163,8 +159,6 @@ class GrinderTaskPresenter(PanelEditPresenter):
     def edit_handler(self, event: dv.DataViewEvent):
         super().edit_handler(event)
         self.view.set_current_tab(self.edit_tab_index)
-
-
 
 
 class GrinderTaskView(v.BaseViewNotebook):
