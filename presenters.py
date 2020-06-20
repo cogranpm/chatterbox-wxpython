@@ -197,6 +197,8 @@ class ModalEditPresenter(BasePresenter):
         if selected_item is not None:
             if frm.confirm_delete(self.view):
                 record = self.model.ItemToObject(selected_item)
-                self.deleted_record(selected_item, record)
+                self.delete_record(selected_item, record)
 
+    def delete_record(self, selected_item, record):
+        self.deleted_record(selected_item, record)
 
