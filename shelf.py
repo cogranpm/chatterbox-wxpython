@@ -49,6 +49,9 @@ class MainPanel(wx.Panel):
         subject_container.SetSizer(subject_sizer)
         subject_splitter = w.splitter(subject_container)
 
+        # this stuff is all wrong
+        # the parent should own the children presenter
+        # and should provide a container into which the child view should insert itself
         # Grinder
         # self.__grinder = gr.Grinder(self, subject_container)
         self.__grinder = gr.GrinderPresenter(subject_container, self.frame)
@@ -111,6 +114,7 @@ class ShelfPresenter(ModalEditPresenter):
                                         name='shelf')
 
     # the subject argument is temporary
+    # should be created within the shelf presenter
     def __init__(self, parent, subject: sb.SubjectPresenter):
         self.subject = subject
         super().__init__(parent=parent,
