@@ -30,6 +30,7 @@ import fn_widget as w
 from models import BaseEntityModel
 from presenters import ModalEditPresenter
 from views import ModalEditView
+from subject import SubjectPresenter
 
 
 class MainPanel(wx.Panel):
@@ -122,6 +123,9 @@ class ShelfPresenter(ModalEditPresenter):
                          view=ShelfView(frame),
                          form_def=self.form_def)
 
+        self.subject_presenter = SubjectPresenter(self.view.subject_container, None)
+
+
     # def __init__(self, parent, subject: sb.SubjectPresenter):
     #     self.subject = subject
     #     super().__init__(parent=parent,
@@ -149,19 +153,10 @@ class ShelfView(ModalEditView):
         try:
             super().__init__(parent, "Shelf", True)
             # a panel for subject and it's children
-            subject_container = w.panel(self.splitter, [])
+            self.subject_container = w.panel(self.splitter, [])
             subject_sizer = frm.vsizer()
-            subject_container.SetSizer(subject_sizer)
-            subject_splitter = w.splitter(subject_container)
-
-            # subject children
-            self.subject_notebook = w.notebook(subject_splitter)
-            publications = wx.TextCtrl(self.subject_notebook, -1, "Publications", style=wx.TE_MULTILINE)
-            # subject_notebook.AddPage(self.__grinder.view, "Grinders", False)
-            self.subject_notebook.AddPage(publications, "Publications")
-            # subject_splitter.SplitHorizontally(self.__subject.view, subject_notebook, 248)
-            subject_sizer.Add(subject_splitter, wx.SizerFlags(1).Expand())
-            self.splitter.SplitVertically(self.widget_panel, subject_container, 248)
+            self.subject_container.SetSizer(subject_sizer)
+            self.splitter.SplitVertically(self.widget_panel, self.subject_container, 248)
             # splitter.SetMinimumPaneSize(200)
             # splitter.SetSashGravity(0.5)
             #self.Sizer.Add(self.splitter, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))

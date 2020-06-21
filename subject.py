@@ -4,7 +4,7 @@
 from typing import List
 
 # lib imports
-
+import wx
 
 # project imports
 from models import BaseEntityModel
@@ -18,6 +18,7 @@ import data_functions as df
 from lists import ColumnType, ColumnSpec
 from forms import large
 from validators import not_empty, FieldValidator
+import fn_widget as w
 
 
 class SubjectModel(BaseEntityModel):
@@ -78,7 +79,18 @@ class SubjectView(ModalEditView):
 
     def __init__(self, parent):
         try:
-            super().__init__(parent, "Subject")
+            super().__init__(parent, "Subject", True)
+
+            subject_splitter = w.splitter(parent)
+
+            # subject children
+            self.subject_notebook = w.notebook(subject_splitter)
+            publications = wx.TextCtrl(self.subject_notebook, -1, "Publications", style=wx.TE_MULTILINE)
+            # subject_notebook.AddPage(self.__grinder.view, "Grinders", False)
+            self.subject_notebook.AddPage(publications, "Publications")
+            subject_splitter.SplitHorizontally(self, self.subject_notebook, 248)
+            self.Sizer.Add(subject_splitter, wx.SizerFlags(1).Expand())
+
         except BaseException as ex:
             print('Error in  __init__: ' + str(ex))
 

@@ -59,22 +59,13 @@ class BaseViewNotebook(BaseView):
 class ModalEditView(BaseView):
     """ a panel that shows data in a list with add, delete, edit buttons for modal editing """
 
-    def __init__(self, parent, caption, has_children: bool = False):
+    def __init__(self, parent, caption):
         self.caption = caption
-        self.has_children = has_children
         super().__init__(parent)
-        if has_children:
-            self.splitter = frm.splitter(self)
-            self.widget_panel = frm.panel(self.splitter, "widget_panel")
-        else:
-            self.widget_panel = frm.panel(self, "widget_panel")
         self.widget_sizer = frm.vsizer()
         self.widget_panel.SetSizer(self.widget_sizer)
         self.arrange_widgets(self.widget_panel)
-        if has_children:
-            self.Sizer.Add(self.splitter, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
-        else:
-            self.Sizer.Add(self.widget_panel, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
+        self.Sizer.Add(self.widget_panel, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
 
     def arrange_widgets(self, parent):
         header_panel = frm.panel(parent, "header_panel")
@@ -101,4 +92,20 @@ class ModalEditView(BaseView):
         btn = wx.Button(parent, id, wx.EmptyString, wx.DefaultPosition, wx.Size(20, 20), 0)
         btn.SetBitmap(make_icon(icon))
         return btn
+
+
+class ModalEditViewParent(ModalEditView):
+    """ a panel that shows data in a list with add, delete, edit buttons for modal editing """
+
+    def __init__(self, parent, caption):
+        self.caption = caption
+        super().__init__(parent)
+        self.splitter = frm.splitter(self)
+        self.widget_panel = frm.panel(self.splitter, "widget_panel")
+        self.widget_sizer = frm.vsizer()
+        self.widget_panel.SetSizer(self.widget_sizer)
+        self.arrange_widgets(self.widget_panel)
+        self.Sizer.Add(self.splitter, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
+
+
 
