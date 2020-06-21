@@ -1,10 +1,13 @@
+# python imports
 from typing import Dict
 
+# lib imports
 import wx
 import wx.xrc
 import wx.aui
 import wx.py as py
 
+# project imports
 import chatterbox_constants as c
 from SettingsDialogImp import SettingsDialogImp
 from fn_app import make_icon
@@ -13,6 +16,7 @@ import playground
 import shelf
 import copyfiles
 from forms import label
+from shelf import ShelfPresenter
 
 class AppFrame(wx.Frame):
 
@@ -100,7 +104,9 @@ class AppFrame(wx.Frame):
         self.notebook.AddPage(presenter.view, "Playground", True)
 
     def handle_menu_shelf(self, event):
-        self.notebook.AddPage(shelf.MainPanel(self), c.NOTEBOOK_TITLE_SHELF, True)
+        presenter = ShelfPresenter(self)
+        self.notebook.AddPage(presenter.view, c.NOTEBOOK_TITLE_SHELF, True)
+        #self.notebook.AddPage(shelf.MainPanel(self), c.NOTEBOOK_TITLE_SHELF, True)
 
 
     def OnNotebookPageChanged(self, event):

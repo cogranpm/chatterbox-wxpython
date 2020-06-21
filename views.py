@@ -59,10 +59,26 @@ class BaseViewNotebook(BaseView):
 class ModalEditView(BaseView):
     """ a panel that shows data in a list with add, delete, edit buttons for modal editing """
 
-    def __init__(self, parent, caption):
+    def __init__(self, parent, caption, has_children: bool = False):
+        self.caption = caption
+        self.has_children = has_children
         super().__init__(parent)
-        header_panel = frm.panel(self, "header_panel")
-        lbl_caption = frm.label(header_panel, caption, "lblCaption")
+        if has_children:
+            self.splitter = frm.splitter(self)
+            self.widget_panel = frm.panel(self.splitter, "widget_panel")
+        else:
+            self.widget_panel = frm.panel(self, "widget_panel")
+        self.widget_sizer = frm.vsizer()
+        self.widget_panel.SetSizer(self.widget_sizer)
+        self.arrange_widgets(self.widget_panel)
+        if has_children:
+            self.Sizer.Add(self.splitter, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
+        else:
+            self.Sizer.Add(self.widget_panel, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
+
+    def arrange_widgets(self, parent):
+        header_panel = frm.panel(parent, "header_panel")
+        lbl_caption = frm.label(header_panel, self.caption, "lblCaption")
         lbl_caption.Wrap(-1)
         self.btn_add = self.tool_button(header_panel, c.ID_ADD, c.ICON_ADD)
         self.btn_delete = self.tool_button(header_panel, c.ID_DELETE, c.ICON_CANCEL)
@@ -73,11 +89,13 @@ class ModalEditView(BaseView):
         header_panel.SetSizer(header_sizer)
         header_panel.Layout()
         header_sizer.Fit(header_panel)
-        self.Sizer.Add(header_panel, 0, 0, 5)
+        self.widget_sizer.Add(header_panel, 0, 0, 5)
+
 
     def set_list(self, columns: List[ColumnSpec]):
-        super().set_list(columns)
-        self.Sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
+        #super().set_list(columns)
+        self.list = create_list(self.widget_panel, columns)
+        self.widget_sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
 
     def tool_button(self, parent, id, icon):
         btn = wx.Button(parent, id, wx.EmptyString, wx.DefaultPosition, wx.Size(20, 20), 0)

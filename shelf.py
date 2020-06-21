@@ -115,12 +115,19 @@ class ShelfPresenter(ModalEditPresenter):
 
     # the subject argument is temporary
     # should be created within the shelf presenter
-    def __init__(self, parent, subject: sb.SubjectPresenter):
-        self.subject = subject
-        super().__init__(parent=parent,
+    def __init__(self, frame):
+        #self.subject = subject
+        super().__init__(parent=frame,
                          model=ShelfModel(),
-                         view=ShelfView(parent),
+                         view=ShelfView(frame),
                          form_def=self.form_def)
+
+    # def __init__(self, parent, subject: sb.SubjectPresenter):
+    #     self.subject = subject
+    #     super().__init__(parent=parent,
+    #                      model=ShelfModel(),
+    #                      view=ShelfView(parent),
+    #                      form_def=self.form_def)
 
     def selection_handler(self, event):
         super().selection_handler(event)
@@ -133,12 +140,36 @@ class ShelfPresenter(ModalEditPresenter):
 
 
 class ShelfView(ModalEditView):
+    """
+    this class os outer panel for all the children and so forth
+    inner panel for shelf
 
+    """
     def __init__(self, parent):
         try:
-            super().__init__(parent, "Shelf")
+            super().__init__(parent, "Shelf", True)
+            # a panel for subject and it's children
+            subject_container = w.panel(self.splitter, [])
+            subject_sizer = frm.vsizer()
+            subject_container.SetSizer(subject_sizer)
+            subject_splitter = w.splitter(subject_container)
+
+            # subject children
+            self.subject_notebook = w.notebook(subject_splitter)
+            publications = wx.TextCtrl(self.subject_notebook, -1, "Publications", style=wx.TE_MULTILINE)
+            # subject_notebook.AddPage(self.__grinder.view, "Grinders", False)
+            self.subject_notebook.AddPage(publications, "Publications")
+            # subject_splitter.SplitHorizontally(self.__subject.view, subject_notebook, 248)
+            subject_sizer.Add(subject_splitter, wx.SizerFlags(1).Expand())
+            self.splitter.SplitVertically(self.widget_panel, subject_container, 248)
+            # splitter.SetMinimumPaneSize(200)
+            # splitter.SetSashGravity(0.5)
+            #self.Sizer.Add(self.splitter, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
+
         except BaseException as ex:
             print('Error in  __init__: ' + str(ex))
+
+
 
 
 # ----------- old stuff -------------------------
