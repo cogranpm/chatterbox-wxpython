@@ -33,56 +33,6 @@ from views import ModalEditView
 from subject import SubjectPresenter
 
 
-class MainPanel(wx.Panel):
-    """ shows a list of shelves and all the children """
-    def __init__(self, parent):
-        self.frame = parent
-        super().__init__(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
-        main_sizer = frm.vsizer()
-        self.SetSizer(main_sizer)
-
-        # splitter for shelf panel and subject panel
-        splitter = frm.splitter(self)
-
-        # a panel for subject and it's children
-        subject_container = w.panel(splitter, [])
-        subject_sizer = frm.vsizer()
-        subject_container.SetSizer(subject_sizer)
-        subject_splitter = w.splitter(subject_container)
-
-        # this stuff is all wrong
-        # the parent should own the children presenter
-        # and should provide a container into which the child view should insert itself
-        # Grinder
-        # self.__grinder = gr.Grinder(self, subject_container)
-        self.__grinder = gr.GrinderPresenter(subject_container, self.frame)
-
-        # subject
-        #self.__subject = sb.Subject(self, subject_splitter, self.__grinder)
-        self.__subject = sb.SubjectPresenter(subject_splitter, self.__grinder)
-
-        # shelf
-        # self.shelf = Shelf(self, splitter, self.__subject)
-        presenter = ShelfPresenter(splitter, self.__subject)
-
-        # subject children
-        subject_notebook = w.notebook(subject_splitter)
-        publications = wx.TextCtrl(subject_notebook, -1, "Publications", style=wx.TE_MULTILINE)
-        subject_notebook.AddPage(self.__grinder.view, "Grinders", False)
-        subject_notebook.AddPage(publications, "Publications")
-        subject_splitter.SplitHorizontally(self.__subject.view, subject_notebook, 248)
-        subject_sizer.Add(subject_splitter, wx.SizerFlags(1).Expand())
-        splitter.SplitVertically(presenter.view, subject_container, 248)
-        # splitter.SetMinimumPaneSize(200)
-        # splitter.SetSashGravity(0.5)
-        main_sizer.Add(splitter, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
-
-        # no save required
-        # wx.py.dispatcher.connect(receiver=self.save, signal=c.SIGNAL_SAVE)
-        # py.dispatcher.connect(receiver=handle_tool_add, signal=c.SIGNAL_ADD)
-        # py.dispatcher.connect(receiver=handle_tool_delete, signal=c.SIGNAL_DELETE)
-        py.dispatcher.send(signal=c.SIGNAL_VIEW_ACTIVATED, sender=self, command=c.COMMAND_VIEW_ACTIVATED, more=self)
-
 
 class ShelfModel(BaseEntityModel):
 
@@ -123,7 +73,7 @@ class ShelfPresenter(ModalEditPresenter):
                          view=ShelfView(frame),
                          form_def=self.form_def)
 
-        self.subject_presenter = SubjectPresenter(self.view.subject_container, None)
+        # self.subject_presenter = SubjectPresenter(self.view.subject_container, None)
 
 
     # def __init__(self, parent, subject: sb.SubjectPresenter):
@@ -151,12 +101,12 @@ class ShelfView(ModalEditView):
     """
     def __init__(self, parent):
         try:
-            super().__init__(parent, "Shelf", True)
+            super().__init__(parent, "Shelf")
             # a panel for subject and it's children
-            self.subject_container = w.panel(self.splitter, [])
-            subject_sizer = frm.vsizer()
-            self.subject_container.SetSizer(subject_sizer)
-            self.splitter.SplitVertically(self.widget_panel, self.subject_container, 248)
+            # self.subject_container = w.panel(self.splitter, [])
+            # subject_sizer = frm.vsizer()
+            # self.subject_container.SetSizer(subject_sizer)
+            # self.splitter.SplitVertically(self.widget_panel, self.subject_container, 248)
             # splitter.SetMinimumPaneSize(200)
             # splitter.SetSashGravity(0.5)
             #self.Sizer.Add(self.splitter, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
@@ -167,7 +117,64 @@ class ShelfView(ModalEditView):
 
 
 
+
+
 # ----------- old stuff -------------------------
+
+
+# class MainPanel(wx.Panel):
+#     """ shows a list of shelves and all the children """
+#     def __init__(self, parent):
+#         self.frame = parent
+#         super().__init__(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+#         main_sizer = frm.vsizer()
+#         self.SetSizer(main_sizer)
+#
+#         # splitter for shelf panel and subject panel
+#         splitter = frm.splitter(self)
+#
+#         # a panel for subject and it's children
+#         subject_container = w.panel(splitter, [])
+#         subject_sizer = frm.vsizer()
+#         subject_container.SetSizer(subject_sizer)
+#         subject_splitter = w.splitter(subject_container)
+#
+#         # this stuff is all wrong
+#         # the parent should own the children presenter
+#         # and should provide a container into which the child view should insert itself
+#         # Grinder
+#         # self.__grinder = gr.Grinder(self, subject_container)
+#         self.__grinder = gr.GrinderPresenter(subject_container, self.frame)
+#
+#         # subject
+#         #self.__subject = sb.Subject(self, subject_splitter, self.__grinder)
+#         self.__subject = sb.SubjectPresenter(subject_splitter, self.__grinder)
+#
+#         # shelf
+#         # self.shelf = Shelf(self, splitter, self.__subject)
+#         presenter = ShelfPresenter(splitter, self.__subject)
+#
+#         # subject children
+#         subject_notebook = w.notebook(subject_splitter)
+#         publications = wx.TextCtrl(subject_notebook, -1, "Publications", style=wx.TE_MULTILINE)
+#         subject_notebook.AddPage(self.__grinder.view, "Grinders", False)
+#         subject_notebook.AddPage(publications, "Publications")
+#         subject_splitter.SplitHorizontally(self.__subject.view, subject_notebook, 248)
+#         subject_sizer.Add(subject_splitter, wx.SizerFlags(1).Expand())
+#         splitter.SplitVertically(presenter.view, subject_container, 248)
+#         # splitter.SetMinimumPaneSize(200)
+#         # splitter.SetSashGravity(0.5)
+#         main_sizer.Add(splitter, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
+#
+#         # no save required
+#         # wx.py.dispatcher.connect(receiver=self.save, signal=c.SIGNAL_SAVE)
+#         # py.dispatcher.connect(receiver=handle_tool_add, signal=c.SIGNAL_ADD)
+#         # py.dispatcher.connect(receiver=handle_tool_delete, signal=c.SIGNAL_DELETE)
+#         py.dispatcher.send(signal=c.SIGNAL_VIEW_ACTIVATED, sender=self, command=c.COMMAND_VIEW_ACTIVATED, more=self)
+#
+
+
+
 # class Shelf:
 #
 #     def __init__(self, parent, container, subject: sb.Subject):

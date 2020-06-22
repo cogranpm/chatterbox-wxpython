@@ -62,10 +62,10 @@ class ModalEditView(BaseView):
     def __init__(self, parent, caption):
         self.caption = caption
         super().__init__(parent)
-        self.widget_sizer = frm.vsizer()
-        self.widget_panel.SetSizer(self.widget_sizer)
-        self.arrange_widgets(self.widget_panel)
-        self.Sizer.Add(self.widget_panel, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
+        self.main_panel = w.panel(parent, [])
+        self.main_panel.SetSizer(frm.vsizer())
+        self.arrange_widgets(self.main_panel)
+        self.Sizer.Add(self.main_panel, wx.SizerFlags(1).Expand())
 
     def arrange_widgets(self, parent):
         header_panel = frm.panel(parent, "header_panel")
@@ -80,13 +80,12 @@ class ModalEditView(BaseView):
         header_panel.SetSizer(header_sizer)
         header_panel.Layout()
         header_sizer.Fit(header_panel)
-        self.widget_sizer.Add(header_panel, 0, 0, 5)
-
+        self.main_panel.Sizer.Add(header_panel, 0, 0, 5)
 
     def set_list(self, columns: List[ColumnSpec]):
-        #super().set_list(columns)
-        self.list = create_list(self.widget_panel, columns)
-        self.widget_sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
+        # super().set_list(columns)
+        self.list = create_list(self.main_panel, columns)
+        self.main_panel.Sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
 
     def tool_button(self, parent, id, icon):
         btn = wx.Button(parent, id, wx.EmptyString, wx.DefaultPosition, wx.Size(20, 20), 0)
@@ -106,6 +105,11 @@ class ModalEditViewParent(ModalEditView):
         self.widget_panel.SetSizer(self.widget_sizer)
         self.arrange_widgets(self.widget_panel)
         self.Sizer.Add(self.splitter, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
+
+    def set_list(self, columns: List[ColumnSpec]):
+        #super().set_list(columns)
+        self.list = create_list(self.widget_panel, columns)
+        self.widget_sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
 
 
 

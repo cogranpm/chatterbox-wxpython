@@ -226,13 +226,11 @@ class AppFrame(wx.Frame):
 
 
     def setup_contents(self):
-        main_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer = wx.BoxSizer(wx.VERTICAL)
+        main_sizer = wx.BoxSizer(wx.VERTICAL)
         self.notebook = wx.aui.AuiNotebook(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize,  style=wx.aui.AUI_NB_CLOSE_BUTTON)
         dummy_contents = label(self.notebook, "Home", "lblHome")
         self.notebook.AddPage(dummy_contents, u"Home", False, wx.NullBitmap)
-        sizer.Add(self.notebook, 1, wx.EXPAND | wx.ALL, 5)
-        main_sizer.Add(sizer, 1, wx.EXPAND, 5)
+        main_sizer.Add(self.notebook, 1, wx.EXPAND | wx.ALL, 5)
         self.SetSizer(main_sizer)
         self.Layout()
         self.Centre(wx.BOTH)
