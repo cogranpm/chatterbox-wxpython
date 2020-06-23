@@ -64,13 +64,10 @@ class ModalEditView(BaseView):
     def __init__(self, parent, caption):
         self.caption = caption
         super().__init__(parent)
-        self.main_panel = self.make_main_container()
-        self.main_panel.SetSizer(frm.vsizer())
-        self.arrange_widgets(self.main_panel)
-        self.Sizer.Add(self.main_panel, wx.SizerFlags(1).Expand())
+        self.SetSizer(frm.vsizer())
+        self.arrange_widgets(self)
+        self.Sizer.Add(self, wx.SizerFlags(1).Expand())
 
-    def make_main_container(self):
-        return w.panel(self.Parent, [])
 
     def arrange_widgets(self, parent):
         header_panel = frm.panel(parent, "header_panel")
@@ -85,12 +82,12 @@ class ModalEditView(BaseView):
         header_panel.SetSizer(header_sizer)
         header_panel.Layout()
         header_sizer.Fit(header_panel)
-        self.main_panel.Sizer.Add(header_panel, 0, 0, 5)
+        self.Sizer.Add(header_panel, 0, 0, 5)
 
     def set_list(self, columns: List[ColumnSpec]):
         # super().set_list(columns)
-        self.list = create_list(self.main_panel, columns)
-        self.main_panel.Sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
+        self.list = create_list(self, columns)
+        self.Sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
 
 
 class ModalEditViewParent:
@@ -105,8 +102,8 @@ class ModalEditViewParent:
         self.main_panel = self.make_main_container(splitter)
         self.main_panel.SetSizer(frm.vsizer())
         self.arrange_widgets(self.main_panel)
-        self.SplitVertically(self.main_panel, self.child_panel, 248)
-        self.Sizer.Add(self.main_panel, wx.SizerFlags(1).Expand())
+        self.splitter.SplitVertically(self.main_panel, self.child_panel, 248)
+        #self.Sizer.Add(self.main_panel, wx.SizerFlags(1).Expand())
 
     def get_main_panel(self):
         return self.main_panel

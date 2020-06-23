@@ -79,17 +79,17 @@ class SubjectView(ModalEditView):
 
     def __init__(self, parent):
         try:
-            super().__init__(parent, "Subject", True)
+            super().__init__(parent, "Subject")
 
-            subject_splitter = w.splitter(parent)
-
-            # subject children
-            self.subject_notebook = w.notebook(subject_splitter)
-            publications = wx.TextCtrl(self.subject_notebook, -1, "Publications", style=wx.TE_MULTILINE)
-            # subject_notebook.AddPage(self.__grinder.view, "Grinders", False)
-            self.subject_notebook.AddPage(publications, "Publications")
-            subject_splitter.SplitHorizontally(self, self.subject_notebook, 248)
-            self.Sizer.Add(subject_splitter, wx.SizerFlags(1).Expand())
+            # subject_splitter = w.splitter(parent)
+            #
+            # # subject children
+            # self.subject_notebook = w.notebook(subject_splitter)
+            # publications = wx.TextCtrl(self.subject_notebook, -1, "Publications", style=wx.TE_MULTILINE)
+            # # subject_notebook.AddPage(self.__grinder.view, "Grinders", False)
+            # self.subject_notebook.AddPage(publications, "Publications")
+            # subject_splitter.SplitHorizontally(self, self.subject_notebook, 248)
+            # self.Sizer.Add(subject_splitter, wx.SizerFlags(1).Expand())
 
         except BaseException as ex:
             print('Error in  __init__: ' + str(ex))

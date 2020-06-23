@@ -63,13 +63,14 @@ class ShelfPresenter(ModalEditPresenter):
     # the subject argument is temporary
     # should be created within the shelf presenter
     def __init__(self, frame):
-        #self.subject = subject
+
         super().__init__(parent=frame,
                          model=ShelfModel(),
                          view=ShelfView(frame),
                          form_def=self.form_def)
 
-        # self.subject_presenter = SubjectPresenter(self.view.subject_container, None)
+        # set if we can "put" the subject in the child container
+        self.subject_presenter = SubjectPresenter(self.view.subject_container, None)
 
 
     # def __init__(self, parent, subject: sb.SubjectPresenter):
@@ -83,7 +84,7 @@ class ShelfPresenter(ModalEditPresenter):
         super().selection_handler(event)
         selected_item = self.view.list.GetSelection()
         record = self.model.ItemToObject(selected_item)
-        self.subject.parent_changed(record)
+        self.subject_presenter.parent_changed(record)
 
     def call_delete_query(self, record):
         df.delete_shelf(record)
@@ -96,8 +97,8 @@ class ShelfView(ModalEditViewParent):
     def __init__(self, parent):
         try:
             splitter = frm.splitter(parent)
-            subject_container = w.panel(splitter, [])
-            super().__init__(splitter, subject_container, "Shelf")
+            self.subject_container = w.panel(splitter, [])
+            super().__init__(splitter, self.subject_container, "Shelf")
             #self.subject_container = w.panel(self.splitter, [])
             #self.main_panel.SplitVertically(self.widget_panel, self.subject_container, 248)
             # a panel for subject and it's children
