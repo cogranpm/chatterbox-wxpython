@@ -29,6 +29,21 @@ class BaseView(wx.Panel):
         self.list = create_list(self, columns)
 
 
+class SplitterView(wx.SplitterWindow):
+    """ splitter view for child parent views """
+    def __init__(self, parent):
+        super().__init__(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.SP_3D)
+        self.list = None
+        main_sizer = frm.vsizer()
+        self.SetSizer(main_sizer)
+
+    def bind(self, direction: c.BindDirection):
+        pass
+
+    def set_list(self, columns: List[ColumnSpec]):
+        self.list = create_list(self, columns)
+
+
 class BaseViewNotebook(BaseView):
     """ panel ui that separates editing form from list via a notebook """
     def __init__(self, parent):
@@ -56,16 +71,20 @@ class BaseViewNotebook(BaseView):
         self.notebook.SetSelection(index)
 
 
+
 class ModalEditView(BaseView):
     """ a panel that shows data in a list with add, delete, edit buttons for modal editing """
 
     def __init__(self, parent, caption):
         self.caption = caption
         super().__init__(parent)
-        self.main_panel = w.panel(parent, [])
+        self.main_panel = self.make_main_container()
         self.main_panel.SetSizer(frm.vsizer())
         self.arrange_widgets(self.main_panel)
         self.Sizer.Add(self.main_panel, wx.SizerFlags(1).Expand())
+
+    def make_main_container(self):
+        return w.panel(self.Parent, [])
 
     def arrange_widgets(self, parent):
         header_panel = frm.panel(parent, "header_panel")
@@ -93,25 +112,47 @@ class ModalEditView(BaseView):
         return btn
 
 
-class ModalEditViewParent(ModalEditView):
+class ModalEditViewParent(SplitterView):
     """ a panel that shows data in a list with add, delete, edit buttons for modal editing """
 
     def __init__(self, parent, caption):
         self.caption = caption
         super().__init__(parent)
-        # wrong - wrong, base class already has a main_panel
-        # nned to make main panel an override and set up a splitter instead
-        self.splitter = frm.splitter(self)
-        self.widget_panel = frm.panel(self.splitter, "widget_panel")
-        self.widget_sizer = frm.vsizer()
-        self.widget_panel.SetSizer(self.widget_sizer)
-        self.arrange_widgets(self.widget_panel)
-        self.Sizer.Add(self.splitter, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
+        self.main_panel = self.make_main_container()
+        self.dummy_panel = self.make_main_container()
+        self.main_panel.SetSizer(frm.vsizer())
+        self.arrange_widgets(self.main_panel)
+        self.SplitVertically(self.main_panel, self.dummy_panel, 248)
+        self.Sizer.Add(self.main_panel, wx.SizerFlags(1).Expand())
+
+    def make_main_container(self):
+        return w.panel(self, [])
+
+    def arrange_widgets(self, parent):
+        header_panel = frm.panel(parent, "header_panel")
+        lbl_caption = frm.label(header_panel, self.caption, "lblCaption")
+        lbl_caption.Wrap(-1)
+        self.btn_add = self.tool_button(header_panel, c.ID_ADD, c.ICON_ADD)
+        self.btn_delete = self.tool_button(header_panel, c.ID_DELETE, c.ICON_CANCEL)
+        # btn_delete.Enable(False)
+        self.btn_edit = self.tool_button(header_panel, c.ID_EDIT, c.ICON_EDIT)
+        # btn_edit_shelf.Enable(False)
+        header_sizer = frm.hsizer([lbl_caption, self.btn_add, self.btn_delete, self.btn_edit])
+        header_panel.SetSizer(header_sizer)
+        header_panel.Layout()
+        header_sizer.Fit(header_panel)
+        self.main_panel.Sizer.Add(header_panel, 0, 0, 5)
 
     def set_list(self, columns: List[ColumnSpec]):
-        #super().set_list(columns)
-        self.list = create_list(self.widget_panel, columns)
-        self.widget_sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
+        # super().set_list(columns)
+        self.list = create_list(self.main_panel, columns)
+        self.main_panel.Sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
+
+    def tool_button(self, parent, id, icon):
+        btn = wx.Button(parent, id, wx.EmptyString, wx.DefaultPosition, wx.Size(20, 20), 0)
+        btn.SetBitmap(make_icon(icon))
+        return btn
+
 
 
 

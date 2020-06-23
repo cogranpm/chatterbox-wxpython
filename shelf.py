@@ -20,16 +20,11 @@ import chatterbox_constants as c
 import forms as frm
 from lists import states, ColumnSpec, ColumnType, ListSpec, create_data, get_selected_item, get_record_from_item
 from validators import FieldValidator, CheckboxValidator, ComboValidator, not_empty
-import wx.py as py
 from forms import FormSpec, FormDialog, FormLineSpec, edit_line, large, TextField
-from panels import BasePanel, PanelSpec, make_panel_spec, make_panel
-import subject as sb
-import grinder as gr
 import data_functions as df
-import fn_widget as w
 from models import BaseEntityModel
 from presenters import ModalEditPresenter
-from views import ModalEditView
+from views import ModalEditViewParent
 from subject import SubjectPresenter
 
 
@@ -93,7 +88,7 @@ class ShelfPresenter(ModalEditPresenter):
         df.delete_shelf(record)
 
 
-class ShelfView(ModalEditView):
+class ShelfView(ModalEditViewParent):
     """
     this class os outer panel for all the children and so forth
     inner panel for shelf
@@ -102,8 +97,8 @@ class ShelfView(ModalEditView):
     def __init__(self, parent):
         try:
             super().__init__(parent, "Shelf")
-            self.subject_container = w.panel(self.splitter, [])
-            self.splitter.SplitVertically(self.widget_panel, self.subject_container, 248)
+            #self.subject_container = w.panel(self.splitter, [])
+            #self.main_panel.SplitVertically(self.widget_panel, self.subject_container, 248)
             # a panel for subject and it's children
             # self.subject_container = w.panel(self.splitter, [])
             # subject_sizer = frm.vsizer()
