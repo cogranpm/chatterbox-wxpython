@@ -99,6 +99,8 @@ class ModalEditViewParent(ModalEditView):
     def __init__(self, parent, caption):
         self.caption = caption
         super().__init__(parent)
+        # wrong - wrong, base class already has a main_panel
+        # nned to make main panel an override and set up a splitter instead
         self.splitter = frm.splitter(self)
         self.widget_panel = frm.panel(self.splitter, "widget_panel")
         self.widget_sizer = frm.vsizer()

@@ -102,6 +102,8 @@ class ShelfView(ModalEditView):
     def __init__(self, parent):
         try:
             super().__init__(parent, "Shelf")
+            self.subject_container = w.panel(self.splitter, [])
+            self.splitter.SplitVertically(self.widget_panel, self.subject_container, 248)
             # a panel for subject and it's children
             # self.subject_container = w.panel(self.splitter, [])
             # subject_sizer = frm.vsizer()
