@@ -105,7 +105,7 @@ class AppFrame(wx.Frame):
 
     def handle_menu_shelf(self, event):
         presenter = ShelfPresenter(self)
-        self.notebook.AddPage(presenter.view, c.NOTEBOOK_TITLE_SHELF, True)
+        self.notebook.AddPage(presenter.view.get_main_panel(), c.NOTEBOOK_TITLE_SHELF, True)
         #self.notebook.AddPage(shelf.MainPanel(self), c.NOTEBOOK_TITLE_SHELF, True)
 
 

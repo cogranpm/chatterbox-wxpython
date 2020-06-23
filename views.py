@@ -29,20 +29,6 @@ class BaseView(wx.Panel):
         self.list = create_list(self, columns)
 
 
-class SplitterView(wx.SplitterWindow):
-    """ splitter view for child parent views """
-    def __init__(self, parent):
-        super().__init__(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.SP_3D)
-        self.list = None
-        main_sizer = frm.vsizer()
-        self.SetSizer(main_sizer)
-
-    def bind(self, direction: c.BindDirection):
-        pass
-
-    def set_list(self, columns: List[ColumnSpec]):
-        self.list = create_list(self, columns)
-
 
 class BaseViewNotebook(BaseView):
     """ panel ui that separates editing form from list via a notebook """
@@ -90,10 +76,10 @@ class ModalEditView(BaseView):
         header_panel = frm.panel(parent, "header_panel")
         lbl_caption = frm.label(header_panel, self.caption, "lblCaption")
         lbl_caption.Wrap(-1)
-        self.btn_add = self.tool_button(header_panel, c.ID_ADD, c.ICON_ADD)
-        self.btn_delete = self.tool_button(header_panel, c.ID_DELETE, c.ICON_CANCEL)
+        self.btn_add = tool_button(header_panel, c.ID_ADD, c.ICON_ADD)
+        self.btn_delete = tool_button(header_panel, c.ID_DELETE, c.ICON_CANCEL)
         # btn_delete.Enable(False)
-        self.btn_edit = self.tool_button(header_panel, c.ID_EDIT, c.ICON_EDIT)
+        self.btn_edit = tool_button(header_panel, c.ID_EDIT, c.ICON_EDIT)
         # btn_edit_shelf.Enable(False)
         header_sizer = frm.hsizer([lbl_caption, self.btn_add, self.btn_delete, self.btn_edit])
         header_panel.SetSizer(header_sizer)
@@ -106,36 +92,38 @@ class ModalEditView(BaseView):
         self.list = create_list(self.main_panel, columns)
         self.main_panel.Sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
 
-    def tool_button(self, parent, id, icon):
-        btn = wx.Button(parent, id, wx.EmptyString, wx.DefaultPosition, wx.Size(20, 20), 0)
-        btn.SetBitmap(make_icon(icon))
-        return btn
 
+class ModalEditViewParent:
+    """ no visual parent
+      is passed a splitter and a child component
+     """
 
-class ModalEditViewParent(SplitterView):
-    """ a panel that shows data in a list with add, delete, edit buttons for modal editing """
-
-    def __init__(self, parent, caption):
+    def __init__(self, splitter, child_panel, caption):
         self.caption = caption
-        super().__init__(parent)
-        self.main_panel = self.make_main_container()
-        self.dummy_panel = self.make_main_container()
+        self.child_panel = child_panel
+        self.splitter = splitter
+        self.main_panel = self.make_main_container(splitter)
         self.main_panel.SetSizer(frm.vsizer())
         self.arrange_widgets(self.main_panel)
-        self.SplitVertically(self.main_panel, self.dummy_panel, 248)
+        self.SplitVertically(self.main_panel, self.child_panel, 248)
         self.Sizer.Add(self.main_panel, wx.SizerFlags(1).Expand())
 
-    def make_main_container(self):
-        return w.panel(self, [])
+    def get_main_panel(self):
+        return self.main_panel
 
+    def make_main_container(self, parent):
+        return w.panel(parent, [])
+
+    # to do, factor this out into a single re-usable function
+    # it is shared by modaleditview
     def arrange_widgets(self, parent):
         header_panel = frm.panel(parent, "header_panel")
         lbl_caption = frm.label(header_panel, self.caption, "lblCaption")
         lbl_caption.Wrap(-1)
-        self.btn_add = self.tool_button(header_panel, c.ID_ADD, c.ICON_ADD)
-        self.btn_delete = self.tool_button(header_panel, c.ID_DELETE, c.ICON_CANCEL)
+        self.btn_add = tool_button(header_panel, c.ID_ADD, c.ICON_ADD)
+        self.btn_delete = tool_button(header_panel, c.ID_DELETE, c.ICON_CANCEL)
         # btn_delete.Enable(False)
-        self.btn_edit = self.tool_button(header_panel, c.ID_EDIT, c.ICON_EDIT)
+        self.btn_edit = tool_button(header_panel, c.ID_EDIT, c.ICON_EDIT)
         # btn_edit_shelf.Enable(False)
         header_sizer = frm.hsizer([lbl_caption, self.btn_add, self.btn_delete, self.btn_edit])
         header_panel.SetSizer(header_sizer)
@@ -148,10 +136,10 @@ class ModalEditViewParent(SplitterView):
         self.list = create_list(self.main_panel, columns)
         self.main_panel.Sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
 
-    def tool_button(self, parent, id, icon):
-        btn = wx.Button(parent, id, wx.EmptyString, wx.DefaultPosition, wx.Size(20, 20), 0)
-        btn.SetBitmap(make_icon(icon))
-        return btn
+def tool_button(parent, id, icon):
+    btn = wx.Button(parent, id, wx.EmptyString, wx.DefaultPosition, wx.Size(20, 20), 0)
+    btn.SetBitmap(make_icon(icon))
+    return btn
 
 
 

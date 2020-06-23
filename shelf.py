@@ -26,6 +26,7 @@ from models import BaseEntityModel
 from presenters import ModalEditPresenter
 from views import ModalEditViewParent
 from subject import SubjectPresenter
+import fn_widget as w
 
 
 
@@ -90,13 +91,13 @@ class ShelfPresenter(ModalEditPresenter):
 
 class ShelfView(ModalEditViewParent):
     """
-    this class os outer panel for all the children and so forth
-    inner panel for shelf
 
     """
     def __init__(self, parent):
         try:
-            super().__init__(parent, "Shelf")
+            splitter = frm.splitter(parent)
+            subject_container = w.panel(splitter, [])
+            super().__init__(splitter, subject_container, "Shelf")
             #self.subject_container = w.panel(self.splitter, [])
             #self.main_panel.SplitVertically(self.widget_panel, self.subject_container, 248)
             # a panel for subject and it's children
