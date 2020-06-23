@@ -9,3 +9,7 @@ __pycache__/
 /*.pyc
 /*.project
 /.pydevproject
+/main.build/
+/build/main/
+/dist/main/
+/main.spec
