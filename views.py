@@ -17,7 +17,7 @@ from fn_app import make_icon
 class BaseView(wx.Panel):
     """ panel based ui with list and form """
     def __init__(self, parent):
-        super().__init__(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL, name="fred")
+        super().__init__(parent, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL, name="pnlMain")
         self.list = None
         main_sizer = frm.vsizer()
         self.SetSizer(main_sizer)
@@ -90,20 +90,20 @@ class ModalEditView(BaseView):
         self.Sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
 
 
-class ModalEditViewParent:
-    """ no visual parent
-      is passed a splitter and a child component
+class ModalEditViewParent(BaseView):
+    """
+    a panel subclass that is designed to be added to frame notebook
      """
 
-    def __init__(self, splitter, child_panel, caption):
+    def __init__(self, parent, caption):
         self.caption = caption
-        self.child_panel = child_panel
-        self.splitter = splitter
-        self.main_panel = self.make_main_container(splitter)
+        super().__init__(parent)
+        self.splitter = frm.splitter(self)
+        self.main_panel = self.make_main_container(self.splitter)
         self.main_panel.SetSizer(frm.vsizer())
         self.arrange_widgets(self.main_panel)
-        self.splitter.SplitVertically(self.main_panel, self.child_panel, 248)
-        #self.Sizer.Add(self.main_panel, wx.SizerFlags(1).Expand())
+        self.Sizer.Add(self.splitter, wx.SizerFlags(1).Expand())
+        parent.Sizer.Add(self, wx.SizerFlags(1).Expand())
 
     def get_main_panel(self):
         return self.main_panel
@@ -128,6 +128,7 @@ class ModalEditViewParent:
         header_sizer.Fit(header_panel)
         self.main_panel.Sizer.Add(header_panel, 0, 0, 5)
 
+    # override list because the parent argument must change
     def set_list(self, columns: List[ColumnSpec]):
         # super().set_list(columns)
         self.list = create_list(self.main_panel, columns)
