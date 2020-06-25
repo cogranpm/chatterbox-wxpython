@@ -14,12 +14,7 @@ def get_all(collection_name: str):
 
 def delete_shelf(record):
     # need a cascading delete here
-    ############## this is not the right way to do this, should be handled by the presenters
-    ### so the ui lists and so forth can be updated
     # subjects
-    #  grinders
-    #    grindertasks
-    #  publications
     subjects = get_subjects_by_shelf(record[c.FIELD_NAME_ID])
     for subject in subjects:
         delete_subject(subject)
@@ -41,6 +36,7 @@ def delete_grinder(record):
 
     # delete the grinder
     delete_record(c.COLLECTION_NAME_GRINDER, record)
+
 
 def delete_publication(record):
     # grinder_tasks = get_grinder_tasks_by_grinder(record[c.FIELD_NAME_ID])

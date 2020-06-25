@@ -59,16 +59,18 @@ class BaseEntityModel(dv.PyDataViewModel):
             data_list.append(record)
         return data_list
 
-    def change_data(self, records):
-        # cleared doesn't work on linux
-        # so need to delete by item and
-        # add by item
+    def clear_data(self):
         if self.data is not None:
             for item in self.data:
                 object = self.ObjectToItem(item)
                 if object is not None:
                     self.ItemDeleted(dv.NullDataViewItem, self.ObjectToItem(item))
 
+    def change_data(self, records):
+        # cleared doesn't work on linux
+        # so need to delete by item and
+        # add by item
+        self.clear_data()
         self.data = records
         for record in self.data:
             self.ItemAdded(dv.NullDataViewItem, self.ObjectToItem(record))

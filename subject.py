@@ -17,7 +17,7 @@ import forms as frm
 
 import chatterbox_constants as c
 import data_functions as df
-from lists import ColumnType, ColumnSpec
+from lists import ColumnType, ColumnSpec, get_selected_item, get_record_from_item
 from forms import large
 from validators import not_empty, FieldValidator
 import fn_widget as w
@@ -66,29 +66,22 @@ class SubjectPresenter(ModalEditPresenter):
                          form_def=self.form_def)
         self.grinder_presenter = GrinderPresenter(self.view.notebook)
         self.publication_presenter = PublicationPresenter(self.view.notebook)
-        self.view.notebook.AddPage(self.grinder_presenter.view, "Grinders", True)
-        self.view.notebook.AddPage(self.publication_presenter.view, "Publications", True)
-        self.view.splitter.SplitHorizontally(self.view.main_panel, self.view.child_container, 248)
+        self.child_presenters = [self.grinder_presenter, self.publication_presenter]
+        self.view.add_child_page(self.grinder_presenter.view, "Grinders", True)
+        self.view.add_child_page(self.publication_presenter.view, "Publications", False)
+        self.view.init_children()
 
     def selection_handler(self, event):
         super().selection_handler(event)
-        selected_item = self.view.list.GetSelection()
-        if selected_item is not None:
-            record = self.model.ItemToObject(selected_item)
-            self.grinder_presenter.parent_changed(record)
-            self.publication_presenter.parent_changed(record)
+        record = get_record_from_item(self.model, get_selected_item(self.view.list))
+        if record is not None:
+            for presenter in self.child_presenters:
+                presenter.parent_changed(record)
 
     def call_delete_query(self, record):
         df.delete_subject(record)
-
-    def shelf_deleted(self, shelf_presenter):
-        """ the parent entity, shelf has been deleted
-        all dependent subjects must also be deleted
-        as well as all children of subjects
-        and if the lists are visible they need to be updated as well
-        via the models
-        """
-        pass
+        for presenter in self.child_presenters:
+            presenter.parent_deleted()
 
 
 class SubjectView(ModalEditViewParent):
@@ -103,9 +96,13 @@ class SubjectView(ModalEditViewParent):
         except BaseException as ex:
             print('Error in  __init__: ' + str(ex))
 
+    def init_children(self):
+        self.splitter.SplitHorizontally(self.main_panel, self.child_container, 248)
 
+    def add_child_page(self, view, caption: str, default: bool):
+        self.notebook.AddPage(view, caption, default)
 
-
+        
 # class Subject:
 #
 #     def __init__(self, parent, parent_container, grinder: gr.Grinder):

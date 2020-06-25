@@ -50,6 +50,9 @@ class BasePresenter(ABC):
         records = self.model.create_data()
         self.update_data(records)
 
+    def parent_deleted(self):
+        self.model.clear_data()
+
 
 class PanelEditPresenter(BasePresenter):
 

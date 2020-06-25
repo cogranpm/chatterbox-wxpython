@@ -71,17 +71,19 @@ class ShelfPresenter(ModalEditPresenter):
 
         # set if we can "put" the subject in the child container
         self.subject_presenter = SubjectPresenter(self.view.subject_container)
-        self.view.splitter.SplitVertically(self.view.main_panel, self.view.subject_container, 248)
+        self.view.init_children()
+
 
     def selection_handler(self, event):
         super().selection_handler(event)
-        selected_item = self.view.list.GetSelection()
-        record = self.model.ItemToObject(selected_item)
-        self.subject_presenter.parent_changed(record)
+        #selected_item = self.view.list.GetSelection()
+        #record = self.model.ItemToObject(selected_item)
+        self.subject_presenter.parent_changed(get_record_from_item(self.model, get_selected_item(self.view.list)))
 
     # replace this, need to pass on delete request to subject presenter
     def call_delete_query(self, record):
         df.delete_shelf(record)
+        self.subject_presenter.parent_deleted()
 
 
 class ShelfView(ModalEditViewParent):
@@ -95,6 +97,9 @@ class ShelfView(ModalEditViewParent):
             self.subject_container.SetSizer(frm.vsizer())
         except BaseException as ex:
             print('Error in  __init__: ' + str(ex))
+
+    def init_children(self):
+        self.splitter.SplitVertically(self.main_panel, self.subject_container, 248)
 
 
 
