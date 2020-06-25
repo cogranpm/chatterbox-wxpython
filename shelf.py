@@ -70,16 +70,8 @@ class ShelfPresenter(ModalEditPresenter):
                          form_def=self.form_def)
 
         # set if we can "put" the subject in the child container
-        self.subject_presenter = SubjectPresenter(self.view.subject_container, None)
+        self.subject_presenter = SubjectPresenter(self.view.subject_container)
         self.view.splitter.SplitVertically(self.view.main_panel, self.view.subject_container, 248)
-
-
-    # def __init__(self, parent, subject: sb.SubjectPresenter):
-    #     self.subject = subject
-    #     super().__init__(parent=parent,
-    #                      model=ShelfModel(),
-    #                      view=ShelfView(parent),
-    #                      form_def=self.form_def)
 
     def selection_handler(self, event):
         super().selection_handler(event)
@@ -100,23 +92,8 @@ class ShelfView(ModalEditViewParent):
             super().__init__(parent, "Shelf")
             self.subject_container = w.panel(self.splitter, [])
             self.subject_container.SetSizer(frm.vsizer())
-
-
-
-            # a panel for subject and it's children
-            # self.subject_container = w.panel(self.splitter, [])
-            # subject_sizer = frm.vsizer()
-            # self.subject_container.SetSizer(subject_sizer)
-            # self.splitter.SplitVertically(self.widget_panel, self.subject_container, 248)
-            # splitter.SetMinimumPaneSize(200)
-            # splitter.SetSashGravity(0.5)
-            #self.Sizer.Add(self.splitter, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
-
         except BaseException as ex:
             print('Error in  __init__: ' + str(ex))
-
-
-
 
 
 

@@ -96,7 +96,6 @@ class ModalEditView(BaseModalEditView):
         self.Parent.Sizer.Add(self, wx.SizerFlags(1).Expand())
 
 
-
 class ModalEditViewParent(BaseModalEditView):
     """
     a panel subclass that is designed to be added to frame notebook

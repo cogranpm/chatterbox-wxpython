@@ -9,7 +9,7 @@ import wx
 # project imports
 from models import BaseEntityModel
 from presenters import ModalEditPresenter
-from views import ModalEditView
+from views import ModalEditViewParent
 from fn_format import trunc
 import forms as frm
 
@@ -57,12 +57,13 @@ class SubjectPresenter(ModalEditPresenter):
                                         edit_lines=edit_lines,
                                         name='subject')
 
-    def __init__(self, parent, grinder: 'GrinderPresenter'):
-        self.grinder = grinder
+    def __init__(self, parent):
         super().__init__(parent=parent,
                          model=SubjectModel(None),
                          view=SubjectView(parent),
                          form_def=self.form_def)
+        #self.subject_presenter = SubjectPresenter(self.view.subject_container, None)
+        self.view.splitter.SplitHorizontally(self.view.main_panel, self.view.child_container, 248)
 
     def selection_handler(self, event):
         super().selection_handler(event)
@@ -75,11 +76,19 @@ class SubjectPresenter(ModalEditPresenter):
         df.delete_subject(record)
 
 
-class SubjectView(ModalEditView):
+class SubjectView(ModalEditViewParent):
 
     def __init__(self, parent):
         try:
             super().__init__(parent, "Subject")
+            self.child_container = w.panel(self.splitter, [])
+            self.child_container.SetSizer(frm.vsizer())
+            self.notebook = w.notebook(self.child_container)
+            grinders = wx.TextCtrl(self.notebook, -1, "Grinders", style=wx.TE_MULTILINE)
+            publications = wx.TextCtrl(self.notebook, -1, "Publications", style=wx.TE_MULTILINE)
+            self.notebook.AddPage(grinders, "Grinders", True)
+            self.notebook.AddPage(publications, "Publications", False)
+            self.child_container.Sizer.Add(self.notebook, wx.SizerFlags(1).Expand())
 
             # subject_splitter = w.splitter(parent)
             #
