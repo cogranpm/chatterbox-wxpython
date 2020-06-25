@@ -58,16 +58,11 @@ class BaseViewNotebook(BaseView):
 
 
 
-class ModalEditView(BaseView):
-    """ a panel that shows data in a list with add, delete, edit buttons for modal editing """
+class BaseModalEditView(BaseView):
 
     def __init__(self, parent, caption):
         self.caption = caption
         super().__init__(parent)
-        self.SetSizer(frm.vsizer())
-        self.arrange_widgets(self)
-        self.Sizer.Add(self, wx.SizerFlags(1).Expand())
-
 
     def arrange_widgets(self, parent):
         header_panel = frm.panel(parent, "header_panel")
@@ -82,7 +77,7 @@ class ModalEditView(BaseView):
         header_panel.SetSizer(header_sizer)
         header_panel.Layout()
         header_sizer.Fit(header_panel)
-        self.Sizer.Add(header_panel, 0, 0, 5)
+        parent.Sizer.Add(header_panel, 0, 0, 5)
 
     def set_list(self, columns: List[ColumnSpec]):
         # super().set_list(columns)
@@ -90,14 +85,25 @@ class ModalEditView(BaseView):
         self.Sizer.Add(self.list, wx.SizerFlags(1).Expand().Border(wx.ALL, 5))
 
 
-class ModalEditViewParent(BaseView):
+class ModalEditView(BaseModalEditView):
+    """ a panel that shows data in a list with add, delete, edit buttons for modal editing """
+
+    def __init__(self, parent, caption):
+
+        super().__init__(parent, caption)
+        self.SetSizer(frm.vsizer())
+        self.arrange_widgets(self)
+        self.Parent.Sizer.Add(self, wx.SizerFlags(1).Expand())
+
+
+
+class ModalEditViewParent(BaseModalEditView):
     """
     a panel subclass that is designed to be added to frame notebook
      """
 
     def __init__(self, parent, caption):
-        self.caption = caption
-        super().__init__(parent)
+        super().__init__(parent, caption)
         self.splitter = frm.splitter(self)
         self.main_panel = self.make_main_container(self.splitter)
         self.main_panel.SetSizer(frm.vsizer())
@@ -110,23 +116,6 @@ class ModalEditViewParent(BaseView):
 
     def make_main_container(self, parent):
         return w.panel(parent, [])
-
-    # to do, factor this out into a single re-usable function
-    # it is shared by modaleditview
-    def arrange_widgets(self, parent):
-        header_panel = frm.panel(parent, "header_panel")
-        lbl_caption = frm.label(header_panel, self.caption, "lblCaption")
-        lbl_caption.Wrap(-1)
-        self.btn_add = tool_button(header_panel, c.ID_ADD, c.ICON_ADD)
-        self.btn_delete = tool_button(header_panel, c.ID_DELETE, c.ICON_CANCEL)
-        # btn_delete.Enable(False)
-        self.btn_edit = tool_button(header_panel, c.ID_EDIT, c.ICON_EDIT)
-        # btn_edit_shelf.Enable(False)
-        header_sizer = frm.hsizer([lbl_caption, self.btn_add, self.btn_delete, self.btn_edit])
-        header_panel.SetSizer(header_sizer)
-        header_panel.Layout()
-        header_sizer.Fit(header_panel)
-        self.main_panel.Sizer.Add(header_panel, 0, 0, 5)
 
     # override list because the parent argument must change
     def set_list(self, columns: List[ColumnSpec]):

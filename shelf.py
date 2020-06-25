@@ -71,6 +71,7 @@ class ShelfPresenter(ModalEditPresenter):
 
         # set if we can "put" the subject in the child container
         self.subject_presenter = SubjectPresenter(self.view.subject_container, None)
+        self.view.splitter.SplitVertically(self.view.main_panel, self.view.subject_container, 248)
 
 
     # def __init__(self, parent, subject: sb.SubjectPresenter):
@@ -98,7 +99,8 @@ class ShelfView(ModalEditViewParent):
         try:
             super().__init__(parent, "Shelf")
             self.subject_container = w.panel(self.splitter, [])
-            self.splitter.SplitVertically(self.main_panel, self.subject_container, 248)
+            self.subject_container.SetSizer(frm.vsizer())
+
 
 
             # a panel for subject and it's children
