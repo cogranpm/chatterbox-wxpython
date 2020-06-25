@@ -11,6 +11,7 @@ from models import BaseEntityModel
 from presenters import ModalEditPresenter
 from views import ModalEditViewParent
 from grinder import GrinderPresenter
+from publication import PublicationPresenter
 from fn_format import trunc
 import forms as frm
 
@@ -64,7 +65,9 @@ class SubjectPresenter(ModalEditPresenter):
                          view=SubjectView(parent),
                          form_def=self.form_def)
         self.grinder_presenter = GrinderPresenter(self.view.notebook)
+        self.publication_presenter = PublicationPresenter(self.view.notebook)
         self.view.notebook.AddPage(self.grinder_presenter.view, "Grinders", True)
+        self.view.notebook.AddPage(self.publication_presenter.view, "Publications", True)
         self.view.splitter.SplitHorizontally(self.view.main_panel, self.view.child_container, 248)
 
     def selection_handler(self, event):
@@ -73,9 +76,19 @@ class SubjectPresenter(ModalEditPresenter):
         if selected_item is not None:
             record = self.model.ItemToObject(selected_item)
             self.grinder_presenter.parent_changed(record)
+            self.publication_presenter.parent_changed(record)
 
     def call_delete_query(self, record):
         df.delete_subject(record)
+
+    def shelf_deleted(self, shelf_presenter):
+        """ the parent entity, shelf has been deleted
+        all dependent subjects must also be deleted
+        as well as all children of subjects
+        and if the lists are visible they need to be updated as well
+        via the models
+        """
+        pass
 
 
 class SubjectView(ModalEditViewParent):
@@ -86,22 +99,7 @@ class SubjectView(ModalEditViewParent):
             self.child_container = w.panel(self.splitter, [])
             self.child_container.SetSizer(frm.vsizer())
             self.notebook = w.notebook(self.child_container)
-            # grinders = wx.TextCtrl(self.notebook, -1, "Grinders", style=wx.TE_MULTILINE)
-            # publications = wx.TextCtrl(self.notebook, -1, "Publications", style=wx.TE_MULTILINE)
-            # self.notebook.AddPage(grinders, "Grinders", True)
-            # self.notebook.AddPage(publications, "Publications", False)
             self.child_container.Sizer.Add(self.notebook, wx.SizerFlags(1).Expand())
-
-            # subject_splitter = w.splitter(parent)
-            #
-            # # subject children
-            # self.subject_notebook = w.notebook(subject_splitter)
-            # publications = wx.TextCtrl(self.subject_notebook, -1, "Publications", style=wx.TE_MULTILINE)
-            # # subject_notebook.AddPage(self.__grinder.view, "Grinders", False)
-            # self.subject_notebook.AddPage(publications, "Publications")
-            # subject_splitter.SplitHorizontally(self, self.subject_notebook, 248)
-            # self.Sizer.Add(subject_splitter, wx.SizerFlags(1).Expand())
-
         except BaseException as ex:
             print('Error in  __init__: ' + str(ex))
 

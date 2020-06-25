@@ -140,3 +140,8 @@ states = [ListItem('VIC', 'Victoria'),
           ListItem('SA', 'South Australia'),
           ListItem('WA', 'West Australia')]
 
+
+publication_types = [ListItem('book', 'Book'),
+          ListItem('av', 'Audio Visual'),
+          ListItem('url', 'URL')]
+

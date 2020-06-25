@@ -79,6 +79,7 @@ class ShelfPresenter(ModalEditPresenter):
         record = self.model.ItemToObject(selected_item)
         self.subject_presenter.parent_changed(record)
 
+    # replace this, need to pass on delete request to subject presenter
     def call_delete_query(self, record):
         df.delete_shelf(record)
 

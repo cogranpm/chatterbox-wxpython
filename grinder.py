@@ -5,11 +5,11 @@ this ui is for navigating the grinders for a particular subject
 """
 # ----------- python imports ---------------------
 from typing import List
+import datetime as dt
 
 # ----------- lib imports ------------------------
 import wx
 import wx.dataview as dv
-import datetime as dt
 
 # ----------- project imports ---------------------
 import chatterbox_constants as c

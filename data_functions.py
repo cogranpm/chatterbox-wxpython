@@ -42,6 +42,13 @@ def delete_grinder(record):
     # delete the grinder
     delete_record(c.COLLECTION_NAME_GRINDER, record)
 
+def delete_publication(record):
+    # grinder_tasks = get_grinder_tasks_by_grinder(record[c.FIELD_NAME_ID])
+    # for grinder_task in grinder_tasks:
+    #     # delete the grinder_task
+    #     delete_grinder_task(grinder_task)
+    delete_record(c.COLLECTION_NAME_PUBLICATION, record)
+
 
 def delete_grinder_task(record):
     delete_record(c.COLLECTION_NAME_GRINDERTASK, record)
@@ -53,6 +60,10 @@ def get_subjects_by_shelf(shelf_id):
 
 def get_grinders_by_subject(subject_id):
     return get_data_store().query(c.COLLECTION_NAME_GRINDER, {'subject_id': subject_id})
+
+
+def get_publications_by_subject(subject_id):
+    return get_data_store().query(c.COLLECTION_NAME_PUBLICATION, {'subject_id': subject_id})
 
 
 def get_grinder_tasks_by_grinder(grinder_id):
