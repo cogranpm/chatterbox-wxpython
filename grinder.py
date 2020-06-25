@@ -63,8 +63,7 @@ class GrinderPresenter(ModalEditPresenter):
                                         edit_lines=edit_lines,
                                         name='subject')
 
-    def __init__(self, parent, frame):
-        self.frame = frame
+    def __init__(self, parent):
         super().__init__(parent=parent,
                          model=GrinderModel(None),
                          view=GrinderView(parent),
@@ -87,8 +86,8 @@ class GrinderPresenter(ModalEditPresenter):
     def edit_grinder_task(self, event):
         selected_item = self.view.list.GetSelection()
         record = self.model.ItemToObject(selected_item)
-        presenter = GrinderTaskPresenter(record, self.frame)
-        self.frame.add_page(key="grinder_task", title=c.NOTEBOOK_TITLE_GRINDER,
+        presenter = GrinderTaskPresenter(record, wx.GetApp().get_frame())
+        wx.GetApp().get_frame().add_page(key="grinder_task", title=c.NOTEBOOK_TITLE_GRINDER,
                                    window=presenter.view, page_data=None)
 
 

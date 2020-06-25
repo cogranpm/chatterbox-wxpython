@@ -1,11 +1,11 @@
 import wx
-#from MainFrameImp import  MainFrameImp
 from frames import AppFrame
 import chatterbox_constants as cc
 from fn_app import load_default_settings, set_default_paths, config_logging
 import logging
 import datastore
 import os, sys
+
 
 class ChatterboxApp(wx.App):
 
@@ -37,6 +37,9 @@ class ChatterboxApp(wx.App):
         self.frame.Show()
         self.SetTopWindow(self.frame)
         return True
+
+    def get_frame(self):
+        return self.frame
 
     def OnExit(self) -> int:
         # cleanup tasks here
