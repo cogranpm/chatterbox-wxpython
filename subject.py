@@ -102,7 +102,7 @@ class SubjectView(ModalEditViewParent):
     def add_child_page(self, view, caption: str, default: bool):
         self.notebook.AddPage(view, caption, default)
 
-  
+
 # class Subject:
 #
 #     def __init__(self, parent, parent_container, grinder: gr.Grinder):
