@@ -12,6 +12,7 @@ from presenters import ModalEditPresenter
 from views import ModalEditViewParent
 from grinder import GrinderPresenter
 from publication import PublicationPresenter
+from snippet import SnippetHeaderPresenter
 from fn_format import trunc
 import forms as frm
 
@@ -66,9 +67,11 @@ class SubjectPresenter(ModalEditPresenter):
                          form_def=self.form_def)
         self.grinder_presenter = GrinderPresenter(self.view.notebook)
         self.publication_presenter = PublicationPresenter(self.view.notebook)
-        self.child_presenters = [self.grinder_presenter, self.publication_presenter]
+        self.snippet_header_presenter = SnippetHeaderPresenter(self.view.notebook)
+        self.child_presenters = [self.grinder_presenter, self.publication_presenter, self.snippet_header_presenter]
         self.view.add_child_page(self.grinder_presenter.view, "Grinders", True)
         self.view.add_child_page(self.publication_presenter.view, "Publications", False)
+        self.view.add_child_page(self.snippet_header_presenter.view, "Snippets", False)
         self.view.init_children()
 
     def selection_handler(self, event):
