@@ -74,7 +74,7 @@ class SnippetHeaderPresenter(ModalEditPresenter):
         selected_item = self.view.list.GetSelection()
         record = self.model.ItemToObject(selected_item)
         presenter = SnippetPresenter(record, wx.GetApp().get_frame())
-        wx.GetApp().get_frame().add_page(key="snippet", title=c.NOTEBOOK_TITLE_GRINDER,
+        wx.GetApp().get_frame().add_page(key="snippet", title=c.NOTEBOOK_TITLE_SNIPPET,
                                    window=presenter.view, page_data=None)
 
 
