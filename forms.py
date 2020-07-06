@@ -113,7 +113,6 @@ class CodeEditorDef(EditFieldDef):
     def __init__(self, name: str, width: EditFieldWidth, validator: wx.PyValidator):
         super().__init__(name, width, validator)
 
-
     def make_field(self, parent, multi_column: bool = False):
         size = self.get_size(multi_column)
         self.control = wx.py.editwindow.EditWindow(parent=parent)

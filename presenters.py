@@ -53,6 +53,9 @@ class BasePresenter(ABC):
     def parent_deleted(self):
         self.model.clear_data()
 
+    def validate_record(self, record):
+        return True
+
 
 class PanelEditPresenter(BasePresenter):
 
@@ -88,11 +91,15 @@ class PanelEditPresenter(BasePresenter):
             if self.view.Validate():
                 self.view.bind(c.BindDirection.from_window)
                 if self.view_state == c.ViewState.adding:
+                    if not self.validate_record(record):
+                        return
                     self.added_record(record)
                     df.add_record(self.model.collection_name, record)
                 else:
                     selected_item = self.view.list.GetSelection()
                     record = self.model.ItemToObject(selected_item)
+                    if not self.validate_record(record):
+                        return
                     df.update_record(self.model.collection_name, record)
                     self.edited_record(record)
                 self.set_view_state(c.ViewState.loaded)
@@ -131,6 +138,8 @@ class PanelEditPresenter(BasePresenter):
         elif state == c.ViewState.loading:
             self.form_def.pause_dirty_events(True)
         self.view_state = state
+
+
 
 
     def selection_handler(self, event):
@@ -180,6 +189,8 @@ class ModalEditPresenter(BasePresenter):
         dlg.TransferDataToWindow()
         result = dlg.ShowModal()
         if result == wx.ID_OK:
+            if not self.validate_record(record):
+                return
             df.add_record(self.model.collection_name, record)
             self.added_record(record)
 
@@ -192,6 +203,8 @@ class ModalEditPresenter(BasePresenter):
         dlg.TransferDataToWindow()
         result = dlg.ShowModal()
         if result == wx.ID_OK:
+            if not self.validate_record(record):
+                return
             df.update_record(self.model.collection_name, record)
             self.edited_record(record)
 

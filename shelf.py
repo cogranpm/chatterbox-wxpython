@@ -27,6 +27,7 @@ from presenters import ModalEditPresenter
 from views import ModalEditViewParent
 from subject import SubjectPresenter
 import fn_widget as w
+from Exception import InvalidParentKeyError
 
 
 
@@ -76,14 +77,15 @@ class ShelfPresenter(ModalEditPresenter):
 
     def selection_handler(self, event):
         super().selection_handler(event)
-        #selected_item = self.view.list.GetSelection()
-        #record = self.model.ItemToObject(selected_item)
-        self.subject_presenter.parent_changed(get_record_from_item(self.model, get_selected_item(self.view.list)))
+        # print(get_record_from_item(self.model, get_selected_item(self.view.list)))
+        self.subject_presenter.parent_changed(get_record_from_item(
+            self.model, get_selected_item(self.view.list)))
 
     # replace this, need to pass on delete request to subject presenter
     def call_delete_query(self, record):
         df.delete_shelf(record)
         self.subject_presenter.parent_deleted()
+
 
 
 class ShelfView(ModalEditViewParent):

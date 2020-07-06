@@ -51,7 +51,7 @@ class BaseViewNotebook(BaseView):
 
     def set_form(self, form_def: frm.FormDef):
         form_def.make_form(self.form_panel)
-        self.notebook.AddPage(self.form_panel, "Task", False)
+        self.notebook.AddPage(self.form_panel, "View", False)
 
     def set_current_tab(self, index):
         self.notebook.SetSelection(index)

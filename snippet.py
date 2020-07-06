@@ -15,12 +15,14 @@ from presenters import ModalEditPresenter, PanelEditPresenter
 import forms as frm
 from validators import FieldValidator, not_empty
 from views import ModalEditView, BaseViewNotebook
+from Exception import InvalidParentKeyError
 
 
 class SnippetHeaderModel(BaseEntityModel):
     help = 'Snippet Header'
     name_column = 'name'
     description_column = 'description'
+    subject_id_column = 'subject_id'
 
     columns: List[ColumnSpec] = [
         ColumnSpec(key=name_column, data_type=ColumnType.str, label='Name', width=100, sortable=True, browseable=True,
@@ -33,7 +35,9 @@ class SnippetHeaderModel(BaseEntityModel):
         super().__init__(subject_id, self.columns, c.COLLECTION_NAME_SNIPPET_HEADER)
 
     def make_new_record(self):
-        return {c.FIELD_NAME_ID: None, 'subject_id': self.parent_key, self.name_column: '', self.description_column: ''}
+        if self.parent_key is None:
+            raise InvalidParentKeyError
+        return {c.FIELD_NAME_ID: None, self.subject_id_column: self.parent_key, self.name_column: '', self.description_column: ''}
 
     def get_records(self):
         return df.get_snippet_headers_by_subject(self.parent_key)
@@ -77,6 +81,11 @@ class SnippetHeaderPresenter(ModalEditPresenter):
         wx.GetApp().get_frame().add_page(key="snippet", title=c.NOTEBOOK_TITLE_SNIPPET,
                                    window=presenter.view, page_data=None)
 
+    def validate_record(self, record):
+        if record(SnippetHeaderModel.subject_id_column) is None:
+            raise InvalidParentKeyError
+        return super().validate_record(record)
+
 
 class SnippetHeaderView(ModalEditView):
 
@@ -95,6 +104,7 @@ class SnippetModel(BaseEntityModel):
     name_column = 'name'
     description_column = 'description'
     body_column = 'body'
+    snippet_header_column = 'snippet_header_id'
 
     columns: List[ColumnSpec] = [
         ColumnSpec(key=name_column, data_type=ColumnType.str, label='Name', width=100, sortable=True, browseable=True,
@@ -111,7 +121,9 @@ class SnippetModel(BaseEntityModel):
         super().__init__(snippet_header_id, self.columns, c.COLLECTION_NAME_SNIPPET)
 
     def make_new_record(self):
-        return {c.FIELD_NAME_ID: None, 'snippet_header_id': self.parent_key, self.name_column: '',
+        if self.parent_key is None:
+            raise InvalidParentKeyError
+        return {c.FIELD_NAME_ID: None, self.snippet_header_column: self.parent_key, self.name_column: '',
                 self.description_column: '',
                 self.body_column: ''}
 
@@ -159,6 +171,11 @@ class SnippetPresenter(PanelEditPresenter):
     def edit_handler(self, event: dv.DataViewEvent):
         super().edit_handler(event)
         self.view.set_current_tab(self.edit_tab_index)
+
+    def validate_record(self, record):
+        if record[SnippetModel.snippet_header_column] is None:
+            raise InvalidParentKeyError
+        return super().validate_record(record)
 
 
 class SnippetView(BaseViewNotebook):

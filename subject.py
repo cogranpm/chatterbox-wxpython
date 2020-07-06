@@ -22,6 +22,7 @@ from lists import ColumnType, ColumnSpec, get_selected_item, get_record_from_ite
 from forms import large
 from validators import not_empty, FieldValidator
 import fn_widget as w
+from Exception import InvalidParentKeyError
 
 
 class SubjectModel(BaseEntityModel):
@@ -29,6 +30,7 @@ class SubjectModel(BaseEntityModel):
     help = 'Subject'
     name_column = 'name'
     description_column = 'description'
+    shelf_id_column = 'shelf_id'
 
     columns: List[ColumnSpec] = [
         ColumnSpec(key=name_column, data_type=ColumnType.str, label='Name', width=100, sortable=True, browseable=True,
@@ -41,7 +43,7 @@ class SubjectModel(BaseEntityModel):
         super().__init__(shelf_id, self.columns, c.COLLECTION_NAME_SUBJECT)
 
     def make_new_record(self):
-        return {c.FIELD_NAME_ID: None, 'shelf_id': self.parent_key, self.name_column: '', self.description_column: ''}
+        return {c.FIELD_NAME_ID: None, self.shelf_id_column: self.parent_key, self.name_column: '', self.description_column: ''}
 
     def get_records(self):
         return df.get_subjects_by_shelf(self.parent_key)
@@ -85,6 +87,12 @@ class SubjectPresenter(ModalEditPresenter):
         df.delete_subject(record)
         for presenter in self.child_presenters:
             presenter.parent_deleted()
+
+    def validate_record(self, record):
+        if record[SubjectModel.shelf_id_column] is None:
+            raise InvalidParentKeyError
+        return super().validate_record(record)
+
 
 
 class SubjectView(ModalEditViewParent):
