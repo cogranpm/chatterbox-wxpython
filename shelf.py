@@ -71,7 +71,7 @@ class ShelfPresenter(ModalEditPresenter):
                          form_def=self.form_def)
 
         # set if we can "put" the subject in the child container
-        self.subject_presenter = SubjectPresenter(self.view.subject_container)
+        self.subject_presenter = SubjectPresenter(self, self.view.subject_container)
         self.view.init_children()
 
 

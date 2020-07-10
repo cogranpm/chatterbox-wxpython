@@ -62,11 +62,13 @@ class SubjectPresenter(ModalEditPresenter):
                                         edit_lines=edit_lines,
                                         name='subject')
 
-    def __init__(self, parent):
+    def __init__(self, shelf_presenter, parent):
         super().__init__(parent=parent,
                          model=SubjectModel(None),
                          view=SubjectView(parent),
                          form_def=self.form_def)
+
+        self.shelf_presenter = shelf_presenter
         self.grinder_presenter = GrinderPresenter(self.view.notebook)
         self.publication_presenter = PublicationPresenter(self.view.notebook)
         self.snippet_header_presenter = SnippetHeaderPresenter(self.view.notebook)
@@ -93,6 +95,21 @@ class SubjectPresenter(ModalEditPresenter):
             raise InvalidParentKeyError
         return super().validate_record(record)
 
+
+    # new experiment to PULL the parent key from parent presenter
+    def add(self, event):
+        # self.model.parent_key = ....
+        record = self.model.make_new_record()
+        dlg: frm.FormDialog = frm.make_dialog(parent=self.parent, title='Add Generic')
+        dlg.build(self.form_def)
+        self.form_def.bind(record)
+        dlg.TransferDataToWindow()
+        result = dlg.ShowModal()
+        if result == wx.ID_OK:
+            if not self.validate_record(record):
+                return
+            df.add_record(self.model.collection_name, record)
+            self.added_record(record)
 
 
 class SubjectView(ModalEditViewParent):
