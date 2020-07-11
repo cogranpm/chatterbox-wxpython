@@ -42,8 +42,8 @@ class SubjectModel(BaseEntityModel):
     def __init__(self, shelf_id: int):
         super().__init__(shelf_id, self.columns, c.COLLECTION_NAME_SUBJECT)
 
-    def make_new_record(self):
-        return {c.FIELD_NAME_ID: None, self.shelf_id_column: self.parent_key, self.name_column: '', self.description_column: ''}
+    def make_new_record(self, parent_key):
+        return {c.FIELD_NAME_ID: None, self.shelf_id_column: parent_key, self.name_column: '', self.description_column: ''}
 
     def get_records(self):
         return df.get_subjects_by_shelf(self.parent_key)
@@ -98,8 +98,8 @@ class SubjectPresenter(ModalEditPresenter):
 
     # new experiment to PULL the parent key from parent presenter
     def add(self, event):
-        # self.model.parent_key = ....
-        record = self.model.make_new_record()
+        shelf_record = (get_record_from_item(self.shelf_presenter.model, get_selected_item(self.shelf_presenter.view.list)))
+        record = self.model.make_new_record(shelf_record[c.FIELD_NAME_ID])
         dlg: frm.FormDialog = frm.make_dialog(parent=self.parent, title='Add Generic')
         dlg.build(self.form_def)
         self.form_def.bind(record)
