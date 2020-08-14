@@ -106,6 +106,13 @@ class SubjectPresenter(ModalEditPresenter):
         else:
             return self.model.make_new_record(0)
 
+
+    def parent_changed(self):
+        shelf_record = self.get_shelf_record()
+        shelf_id = shelf_record[c.FIELD_NAME_ID]
+        records = self.model.create_data(self.model.get_records(shelf_id))
+        self.update_data(records)
+
     # new experiment to PULL the parent key from parent presenter
     def add(self, event):
         shelf_record = self.get_shelf_record()

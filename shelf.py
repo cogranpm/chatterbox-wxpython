@@ -73,13 +73,13 @@ class ShelfPresenter(ModalEditPresenter):
         # set if we can "put" the subject in the child container
         self.subject_presenter = SubjectPresenter(self, self.view.subject_container)
         self.view.init_children()
+        self.model.change_data(self.model.create_data(self.model.get_records()))
 
 
     def selection_handler(self, event):
         super().selection_handler(event)
         # print(get_record_from_item(self.model, get_selected_item(self.view.list)))
-        self.subject_presenter.parent_changed(get_record_from_item(
-            self.model, get_selected_item(self.view.list)))
+        self.subject_presenter.parent_changed()
 
     # replace this, need to pass on delete request to subject presenter
     def call_delete_query(self, record):
