@@ -12,6 +12,7 @@ import chatterbox_constants as c
 import forms as frm
 from models import BaseEntityModel
 from views import BaseView
+from lists import get_selected_item, get_record_from_item
 
 
 class BasePresenter(ABC):
@@ -168,6 +169,10 @@ class ModalEditPresenter(BasePresenter):
             frm.bind_button(self.view.btn_delete, self.delete)
         # self.model.change_data(self.model.create_data())
 
+    @abstractmethod
+    def add(self, event):
+        pass
+
     def bind_edit_button_event(self):
         frm.bind_button(self.view.btn_edit, self.edit)
 
@@ -177,8 +182,7 @@ class ModalEditPresenter(BasePresenter):
     def selection_handler(self, event):
         pass
 
-    def add(self, event):
-        record = self.model.make_new_record()
+    def add_record(self, record):
         dlg: frm.FormDialog = frm.make_dialog(parent=self.parent, title='Add Generic')
         dlg.build(self.form_def)
         self.form_def.bind(record)
@@ -214,3 +218,9 @@ class ModalEditPresenter(BasePresenter):
     def delete_record(self, selected_item, record):
         self.deleted_record(selected_item, record)
 
+    # TODO - see if this can be put in the base class
+    def get_selected_record(self):
+        selected_item = get_selected_item(self.view.list)
+        if selected_item.IsOk():
+            return get_record_from_item(self.model, selected_item)
+        return None

@@ -15,7 +15,7 @@ import wx.dataview as dv
 import chatterbox_constants as c
 import data_functions as df
 import views as v
-from lists import ColumnType, ColumnSpec
+from lists import ColumnType, ColumnSpec, get_selected_item, get_record_from_item
 import forms as frm
 from validators import not_empty, FieldValidator
 from presenters import PanelEditPresenter
@@ -90,6 +90,10 @@ class GrinderPresenter(ModalEditPresenter):
         presenter = GrinderTaskPresenter(self, wx.GetApp().get_frame())
         wx.GetApp().get_frame().add_page(key="grinder_task", title=c.NOTEBOOK_TITLE_GRINDER,
                                    window=presenter.view, page_data=None)
+
+
+    def add(self, event):
+        pass
 
     def parent_changed(self):
         pass

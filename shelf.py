@@ -86,6 +86,10 @@ class ShelfPresenter(ModalEditPresenter):
         df.delete_shelf(record)
         self.subject_presenter.parent_deleted()
 
+    def add(self, event):
+        record = self.model.make_new_record()
+        super().add_record(record)
+
 
 
 class ShelfView(ModalEditViewParent):

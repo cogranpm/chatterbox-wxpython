@@ -86,6 +86,9 @@ class SnippetHeaderPresenter(ModalEditPresenter):
         return super().validate_record(record)
 
 
+    def add(self, event):
+       pass
+
     def parent_changed(self):
         pass
         # shelf_record = self.get_shelf_record()

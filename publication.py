@@ -3,7 +3,7 @@ from typing import List
 import datetime as dt
 
 # lib imports
-
+import wx
 
 # project imports
 from models import BaseEntityModel
@@ -14,7 +14,7 @@ import forms as frm
 
 import chatterbox_constants as c
 import data_functions as df
-from lists import ColumnType, ColumnSpec, publication_types
+from lists import ColumnType, ColumnSpec, publication_types, get_selected_item, get_record_from_item
 from forms import large
 from validators import not_empty, FieldValidator
 
@@ -73,12 +73,12 @@ class PublicationPresenter(ModalEditPresenter):
                          form_def=self.form_def)
         self.subject_presenter = subject_presenter
 
+
     def selection_handler(self, event):
         super().selection_handler(event)
         selected_item = self.view.list.GetSelection()
         if selected_item is not None:
             record = self.model.ItemToObject(selected_item)
-            #self.grinder_presenter.parent_changed(record)
 
     def call_delete_query(self, record):
         df.delete_publication(record)
@@ -93,11 +93,19 @@ class PublicationPresenter(ModalEditPresenter):
         pass
 
     def parent_changed(self):
-        pass
-        # shelf_record = self.get_shelf_record()
-        # shelf_id = shelf_record[c.FIELD_NAME_ID]
-        # records = self.model.create_data(self.model.get_records(shelf_id))
-        # self.update_data(records)
+        subject_record = self.subject_presenter.get_selected_record()
+        if subject_record is None:
+            return
+        subject_id = subject_record[c.FIELD_NAME_ID]
+        records = self.model.create_data(self.model.get_records(subject_id))
+        self.update_data(records)
+
+    def add(self, event):
+        subject_record = self.subject_presenter.get_selected_record()
+        if subject_record is None:
+            return
+        record = self.model.make_new_record(subject_record[c.FIELD_NAME_ID])
+        super().add_record(record)
 
 
 class PublicationView(ModalEditView):
