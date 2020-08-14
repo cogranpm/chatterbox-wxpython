@@ -81,20 +81,25 @@ class SnippetHeaderPresenter(ModalEditPresenter):
                                    window=presenter.view, page_data=None)
 
     def validate_record(self, record):
-        if record(SnippetHeaderModel.subject_id_column) is None:
+        if record[SnippetHeaderModel.subject_id_column] is None:
             raise InvalidParentKeyError
         return super().validate_record(record)
 
 
     def add(self, event):
-       pass
+        subject_record = self.subject_presenter.get_selected_record()
+        if subject_record is None:
+            return
+        record = self.model.make_new_record(subject_record[c.FIELD_NAME_ID])
+        super().add_record(record)
 
     def parent_changed(self):
-        pass
-        # shelf_record = self.get_shelf_record()
-        # shelf_id = shelf_record[c.FIELD_NAME_ID]
-        # records = self.model.create_data(self.model.get_records(shelf_id))
-        # self.update_data(records)
+        subject_record = self.subject_presenter.get_selected_record()
+        if subject_record is None:
+            return
+        subject_id = subject_record[c.FIELD_NAME_ID]
+        records = self.model.create_data(self.model.get_records(subject_id))
+        self.update_data(records)
 
 
 class SnippetHeaderView(ModalEditView):
