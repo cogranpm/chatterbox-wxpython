@@ -170,7 +170,7 @@ class ModalEditPresenter(BasePresenter):
             frm.bind_button(self.view.btn_add, self.add)
             self.bind_edit_button_event()
             frm.bind_button(self.view.btn_delete, self.delete)
-        self.model.change_data(self.model.create_data())
+        # self.model.change_data(self.model.create_data())
 
     def bind_edit_button_event(self):
         frm.bind_button(self.view.btn_edit, self.edit)

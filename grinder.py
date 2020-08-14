@@ -40,14 +40,14 @@ class GrinderModel(BaseEntityModel):
                    format_fn=trunc)
     ]
 
-    def __init__(self, subject_id: int):
-        super().__init__(subject_id, self.columns, c.COLLECTION_NAME_GRINDER)
+    def __init__(self):
+        super().__init__(self.columns, c.COLLECTION_NAME_GRINDER)
 
-    def make_new_record(self):
-        return {c.FIELD_NAME_ID: None, 'subject_id': self.parent_key, self.name_column: '', self.description_column: ''}
+    def make_new_record(self, subject_id: int):
+        return {c.FIELD_NAME_ID: None, 'subject_id': subject_id, self.name_column: '', self.description_column: ''}
 
-    def get_records(self):
-        return df.get_grinders_by_subject(self.parent_key)
+    def get_records(self, subject_id: int):
+        return df.get_grinders_by_subject(subject_id)
 
 
 class GrinderPresenter(ModalEditPresenter):
@@ -63,11 +63,12 @@ class GrinderPresenter(ModalEditPresenter):
                                         edit_lines=edit_lines,
                                         name='subject')
 
-    def __init__(self, parent):
+    def __init__(self, parent, subject_presenter):
         super().__init__(parent=parent,
-                         model=GrinderModel(None),
+                         model=GrinderModel(),
                          view=GrinderView(parent),
                          form_def=self.form_def)
+        self.subject_presenter = subject_presenter
 
     def selection_handler(self, event):
         pass
@@ -86,7 +87,7 @@ class GrinderPresenter(ModalEditPresenter):
     def edit_grinder_task(self, event):
         selected_item = self.view.list.GetSelection()
         record = self.model.ItemToObject(selected_item)
-        presenter = GrinderTaskPresenter(record, wx.GetApp().get_frame())
+        presenter = GrinderTaskPresenter(self, wx.GetApp().get_frame())
         wx.GetApp().get_frame().add_page(key="grinder_task", title=c.NOTEBOOK_TITLE_GRINDER,
                                    window=presenter.view, page_data=None)
 
@@ -116,15 +117,15 @@ class GrinderTaskModel(BaseEntityModel):
                    sortable=True, browseable=True, format_fn=None)
     ]
 
-    def __init__(self, parent_key: int):
-        super().__init__(parent_key, self.columns, c.COLLECTION_NAME_GRINDERTASK)
+    def __init__(self):
+        super().__init__(self.columns, c.COLLECTION_NAME_GRINDERTASK)
 
-    def make_new_record(self):
-        return {c.FIELD_NAME_ID: None, 'grinder_id': self.parent_key, self.task_column: '',
+    def make_new_record(self, grinder_id: int):
+        return {c.FIELD_NAME_ID: None, 'grinder_id': grinder_id, self.task_column: '',
                 self.solution_column: '', self.created_column: dt.datetime.today()}
 
-    def get_records(self):
-        return df.get_grinder_tasks_by_grinder(self.parent_key)
+    def get_records(self, grinder_id: int):
+        return df.get_grinder_tasks_by_grinder(grinder_id)
 
 
 class GrinderTaskPresenter(PanelEditPresenter):
@@ -141,13 +142,14 @@ class GrinderTaskPresenter(PanelEditPresenter):
     edit_lines: List[frm.FormLineDef] = [frm.FormLineDef("Task", [task_field_def]),
                                          frm.FormLineDef("Solution", [solution_field_def])]
 
-    def __init__(self, grinder_data, parent):
+    def __init__(self, grinder_presenter: GrinderPresenter, parent):
+        self.grinder_presenter = grinder_presenter
         form_def: frm.FormDef = frm.FormDef(title='Grinder Task',
                                                  help=GrinderTaskModel.help,
                                                  edit_lines=self.edit_lines,
                                                  name='frmGrinderTask')
         super().__init__(parent=parent,
-                         model=GrinderTaskModel(grinder_data[c.FIELD_NAME_ID]),
+                         model=GrinderTaskModel(),
                          view=GrinderTaskView(parent),
                          form_def=form_def)
 

@@ -31,16 +31,14 @@ class SnippetHeaderModel(BaseEntityModel):
                    format_fn=trunc)
     ]
 
-    def __init__(self, subject_id: int):
-        super().__init__(subject_id, self.columns, c.COLLECTION_NAME_SNIPPET_HEADER)
+    def __init__(self):
+        super().__init__(self.columns, c.COLLECTION_NAME_SNIPPET_HEADER)
 
-    def make_new_record(self):
-        if self.parent_key is None:
-            raise InvalidParentKeyError
-        return {c.FIELD_NAME_ID: None, self.subject_id_column: self.parent_key, self.name_column: '', self.description_column: ''}
+    def make_new_record(self, subject_id: int):
+        return {c.FIELD_NAME_ID: None, self.subject_id_column: subject_id, self.name_column: '', self.description_column: ''}
 
-    def get_records(self):
-        return df.get_snippet_headers_by_subject(self.parent_key)
+    def get_records(self, subject_id: int):
+        return df.get_snippet_headers_by_subject(subject_id)
 
 
 class SnippetHeaderPresenter(ModalEditPresenter):
@@ -59,11 +57,12 @@ class SnippetHeaderPresenter(ModalEditPresenter):
                                         edit_lines=edit_lines,
                                         name='frmSnippetHeader')
 
-    def __init__(self, parent):
+    def __init__(self, parent, subject_presenter):
         super().__init__(parent=parent,
-                         model=SnippetHeaderModel(None),
+                         model=SnippetHeaderModel(),
                          view=SnippetHeaderView(parent),
                          form_def=self.form_def)
+        self.subject_presenter = subject_presenter
 
     def selection_handler(self, event):
         pass
@@ -117,18 +116,16 @@ class SnippetModel(BaseEntityModel):
                    format_fn=trunc)
     ]
 
-    def __init__(self, snippet_header_id: int):
-        super().__init__(snippet_header_id, self.columns, c.COLLECTION_NAME_SNIPPET)
+    def __init__(self):
+        super().__init__(self.columns, c.COLLECTION_NAME_SNIPPET)
 
-    def make_new_record(self):
-        if self.parent_key is None:
-            raise InvalidParentKeyError
-        return {c.FIELD_NAME_ID: None, self.snippet_header_column: self.parent_key, self.name_column: '',
+    def make_new_record(self, snippet_header_id: int):
+        return {c.FIELD_NAME_ID: None, self.snippet_header_column: snippet_header_id, self.name_column: '',
                 self.description_column: '',
                 self.body_column: ''}
 
-    def get_records(self):
-        return df.get_snippet_by_snippet_header(self.parent_key)
+    def get_records(self, snippet_header_id: int):
+        return df.get_snippet_by_snippet_header(snippet_header_id)
 
 
 class SnippetPresenter(PanelEditPresenter):
@@ -153,15 +150,16 @@ class SnippetPresenter(PanelEditPresenter):
                                          frm.FormLineDef("Description", [description_field_def]),
                                          frm.FormLineDef("Body", [body_field_def])]
 
-    def __init__(self, parent_data, parent):
+    def __init__(self, parent, snippet_header_presenter: SnippetHeaderPresenter):
         form_def: frm.FormDef = frm.FormDef(title='Snippet',
                                                  help=SnippetModel.help,
                                                  edit_lines=self.edit_lines,
                                                  name='frmSnippet')
         super().__init__(parent=parent,
-                         model=SnippetModel(parent_data[c.FIELD_NAME_ID]),
+                         model=SnippetModel(),
                          view=SnippetView(parent),
                          form_def=form_def)
+        self.snippet_header_presenter = snippet_header_presenter
 
     # these two look reusable in the base class
     def add(self, command, more):

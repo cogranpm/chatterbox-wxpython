@@ -42,7 +42,7 @@ class ShelfModel(BaseEntityModel):
     ]
 
     def __init__(self):
-        super().__init__(None, self.columns, c.COLLECTION_NAME_SHELF)
+        super().__init__(self.columns, c.COLLECTION_NAME_SHELF)
 
     def make_new_record(self):
         return {c.FIELD_NAME_ID: None, self.name_column: ''}

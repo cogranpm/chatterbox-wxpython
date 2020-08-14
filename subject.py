@@ -39,14 +39,14 @@ class SubjectModel(BaseEntityModel):
                    format_fn=trunc)
     ]
 
-    def __init__(self, shelf_id: int):
-        super().__init__(shelf_id, self.columns, c.COLLECTION_NAME_SUBJECT)
+    def __init__(self):
+        super().__init__(self.columns, c.COLLECTION_NAME_SUBJECT)
 
-    def make_new_record(self, parent_key):
-        return {c.FIELD_NAME_ID: None, self.shelf_id_column: parent_key, self.name_column: '', self.description_column: ''}
+    def make_new_record(self, shelf_id: int):
+        return {c.FIELD_NAME_ID: None, self.shelf_id_column: shelf_id, self.name_column: '', self.description_column: ''}
 
-    def get_records(self):
-        return df.get_subjects_by_shelf(self.parent_key)
+    def get_records(self, shelf_id: int):
+        return df.get_subjects_by_shelf(shelf_id)
 
 
 class SubjectPresenter(ModalEditPresenter):
@@ -64,19 +64,23 @@ class SubjectPresenter(ModalEditPresenter):
 
     def __init__(self, shelf_presenter, parent):
         super().__init__(parent=parent,
-                         model=SubjectModel(None),
+                         model=SubjectModel(),
                          view=SubjectView(parent),
                          form_def=self.form_def)
 
         self.shelf_presenter = shelf_presenter
-        self.grinder_presenter = GrinderPresenter(self.view.notebook)
-        self.publication_presenter = PublicationPresenter(self.view.notebook)
-        self.snippet_header_presenter = SnippetHeaderPresenter(self.view.notebook)
+        self.grinder_presenter = GrinderPresenter(self.view.notebook, self)
+        self.publication_presenter = PublicationPresenter(self.view.notebook, self)
+        self.snippet_header_presenter = SnippetHeaderPresenter(self.view.notebook, self)
         self.child_presenters = [self.grinder_presenter, self.publication_presenter, self.snippet_header_presenter]
         self.view.add_child_page(self.grinder_presenter.view, "Grinders", True)
         self.view.add_child_page(self.publication_presenter.view, "Publications", False)
         self.view.add_child_page(self.snippet_header_presenter.view, "Snippets", False)
         self.view.init_children()
+        shelf_record = self.get_shelf_record()
+        if shelf_record is not None:
+            records = self.model.get_records(shelf_record[c.FIELD_NAME_ID])
+            self.model.change_data(self.model.create_data(records))
 
     def selection_handler(self, event):
         super().selection_handler(event)
@@ -95,10 +99,16 @@ class SubjectPresenter(ModalEditPresenter):
             raise InvalidParentKeyError
         return super().validate_record(record)
 
+    def get_shelf_record(self):
+        selected_shelf = get_selected_item(self.shelf_presenter.view.list)
+        if selected_shelf.IsOk():
+            return get_record_from_item(self.shelf_presenter.model, selected_shelf)
+        else:
+            return self.model.make_new_record(0)
 
     # new experiment to PULL the parent key from parent presenter
     def add(self, event):
-        shelf_record = (get_record_from_item(self.shelf_presenter.model, get_selected_item(self.shelf_presenter.view.list)))
+        shelf_record = self.get_shelf_record()
         record = self.model.make_new_record(shelf_record[c.FIELD_NAME_ID])
         dlg: frm.FormDialog = frm.make_dialog(parent=self.parent, title='Add Generic')
         dlg.build(self.form_def)

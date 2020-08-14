@@ -36,24 +36,24 @@ class ColumnSpec:
 
 class BaseEntityModel(dv.PyDataViewModel):
 
-    def __init__(self, parent_key: int, columns: List[ColumnSpec], collection_name: str):
+    # def __init__(self, parent_key: int, columns: List[ColumnSpec], collection_name: str):
+    def __init__(self,  columns: List[ColumnSpec], collection_name: str):
         super().__init__()
         self.collection_name = collection_name
-        self.parent_key = parent_key
         self.columns = columns
         self.data = dict()
         df.create_entity(self.collection_name)
 
-    @abstractmethod
-    def get_records(self):
-        pass
+    # @abstractmethod
+    # def get_records(self):
+    #     pass
 
     @abstractmethod
     def make_new_record(self):
         pass
 
-    def create_data(self):
-        records = self.get_records()
+    def create_data(self, records):
+        # records = self.get_records()
         data_list = []
         for record in records:
             data_list.append(record)

@@ -39,15 +39,15 @@ class PublicationModel(BaseEntityModel):
                    sortable=True, browseable=True, format_fn=None)
     ]
 
-    def __init__(self, subject_id: int):
-        super().__init__(subject_id, self.columns, c.COLLECTION_NAME_PUBLICATION)
+    def __init__(self):
+        super().__init__(self.columns, c.COLLECTION_NAME_PUBLICATION)
 
-    def make_new_record(self):
-        return {c.FIELD_NAME_ID: None, 'subject_id': self.parent_key, self.name_column: '', self.description_column: '',
+    def make_new_record(self, subject_id: int):
+        return {c.FIELD_NAME_ID: None, 'subject_id': subject_id, self.name_column: '', self.description_column: '',
                 self.type_column: '', self.created_column: dt.datetime.today()}
 
-    def get_records(self):
-        return df.get_publications_by_subject(self.parent_key)
+    def get_records(self, subject_id: int):
+        return df.get_publications_by_subject(subject_id)
 
 
 class PublicationPresenter(ModalEditPresenter):
@@ -66,11 +66,12 @@ class PublicationPresenter(ModalEditPresenter):
                                         edit_lines=edit_lines,
                                         name='publication')
 
-    def __init__(self, parent):
+    def __init__(self, parent, subject_presenter):
         super().__init__(parent=parent,
-                         model=PublicationModel(None),
+                         model=PublicationModel(),
                          view=PublicationView(parent),
                          form_def=self.form_def)
+        self.subject_presenter = subject_presenter
 
     def selection_handler(self, event):
         super().selection_handler(event)
