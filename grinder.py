@@ -91,6 +91,13 @@ class GrinderPresenter(ModalEditPresenter):
         wx.GetApp().get_frame().add_page(key="grinder_task", title=c.NOTEBOOK_TITLE_GRINDER,
                                    window=presenter.view, page_data=None)
 
+    def parent_changed(self):
+        pass
+        # shelf_record = self.get_shelf_record()
+        # shelf_id = shelf_record[c.FIELD_NAME_ID]
+        # records = self.model.create_data(self.model.get_records(shelf_id))
+        # self.update_data(records)
+
 
 class GrinderView(ModalEditView):
 

@@ -87,7 +87,7 @@ class SubjectPresenter(ModalEditPresenter):
         record = get_record_from_item(self.model, get_selected_item(self.view.list))
         if record is not None:
             for presenter in self.child_presenters:
-                presenter.parent_changed(record)
+                presenter.parent_changed()
 
     def call_delete_query(self, record):
         df.delete_subject(record)
