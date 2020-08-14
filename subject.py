@@ -104,11 +104,13 @@ class SubjectPresenter(ModalEditPresenter):
         if selected_shelf.IsOk():
             return get_record_from_item(self.shelf_presenter.model, selected_shelf)
         else:
-            return self.model.make_new_record(0)
+           return None
 
 
     def parent_changed(self):
         shelf_record = self.get_shelf_record()
+        if shelf_record is None:
+            return
         shelf_id = shelf_record[c.FIELD_NAME_ID]
         records = self.model.create_data(self.model.get_records(shelf_id))
         self.update_data(records)
