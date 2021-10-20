@@ -1,0 +1,2 @@
+class InvalidParentKeyError(Exception):
+    pass

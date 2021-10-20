@@ -25,6 +25,14 @@ def delete_subject(record):
     grinders = get_grinders_by_subject(record[c.FIELD_NAME_ID])
     for grinder in grinders:
         delete_grinder(grinder)
+
+    publications = get_publications_by_subject(c.FIELD_NAME_ID)
+    for publication in publications:
+        delete_publication(publication)
+
+    snippet_headers = get_snippet_headers_by_subject(record[c.FIELD_NAME_ID])
+    for snippet_header in snippet_headers:
+        delete_snippet_header(snippet_header)
     delete_record(c.COLLECTION_NAME_SUBJECT, record)
 
 
@@ -50,6 +58,17 @@ def delete_grinder_task(record):
     delete_record(c.COLLECTION_NAME_GRINDERTASK, record)
 
 
+def delete_snippet_header(record):
+    snippets = get_snippet_by_snippet_header(record[c.FIELD_NAME_ID])
+    for snippet in snippets:
+        delete_snippet(snippet)
+    delete_record(c.COLLECTION_NAME_SNIPPET_HEADER, record)
+
+
+def delete_snippet(record):
+    delete_record(c.COLLECTION_NAME_SNIPPET, record)
+
+
 def get_subjects_by_shelf(shelf_id):
     return get_data_store().query(c.COLLECTION_NAME_SUBJECT, {'shelf_id': shelf_id})
 
@@ -62,8 +81,16 @@ def get_publications_by_subject(subject_id):
     return get_data_store().query(c.COLLECTION_NAME_PUBLICATION, {'subject_id': subject_id})
 
 
+def get_snippet_headers_by_subject(subject_id):
+    return get_data_store().query(c.COLLECTION_NAME_SNIPPET_HEADER, {'subject_id': subject_id})
+
+
 def get_grinder_tasks_by_grinder(grinder_id):
     return get_data_store().query(c.COLLECTION_NAME_GRINDERTASK, {'grinder_id': grinder_id})
+
+
+def get_snippet_by_snippet_header(snippet_header_id):
+    return get_data_store().query(c.COLLECTION_NAME_SNIPPET, {'snippet_header_id': snippet_header_id})
 
 
 def add_record(collection_name: str, record):

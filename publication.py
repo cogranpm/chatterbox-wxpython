@@ -3,7 +3,7 @@ from typing import List
 import datetime as dt
 
 # lib imports
-
+import wx
 
 # project imports
 from models import BaseEntityModel
@@ -14,7 +14,7 @@ import forms as frm
 
 import chatterbox_constants as c
 import data_functions as df
-from lists import ColumnType, ColumnSpec, publication_types
+from lists import ColumnType, ColumnSpec, publication_types, get_selected_item, get_record_from_item
 from forms import large
 from validators import not_empty, FieldValidator
 
@@ -39,15 +39,15 @@ class PublicationModel(BaseEntityModel):
                    sortable=True, browseable=True, format_fn=None)
     ]
 
-    def __init__(self, subject_id: int):
-        super().__init__(subject_id, self.columns, c.COLLECTION_NAME_PUBLICATION)
+    def __init__(self):
+        super().__init__(self.columns, c.COLLECTION_NAME_PUBLICATION)
 
-    def make_new_record(self):
-        return {c.FIELD_NAME_ID: None, 'subject_id': self.parent_key, self.name_column: '', self.description_column: '',
+    def make_new_record(self, subject_id: int):
+        return {c.FIELD_NAME_ID: None, 'subject_id': subject_id, self.name_column: '', self.description_column: '',
                 self.type_column: '', self.created_column: dt.datetime.today()}
 
-    def get_records(self):
-        return df.get_publications_by_subject(self.parent_key)
+    def get_records(self, subject_id: int):
+        return df.get_publications_by_subject(subject_id)
 
 
 class PublicationPresenter(ModalEditPresenter):
@@ -66,18 +66,19 @@ class PublicationPresenter(ModalEditPresenter):
                                         edit_lines=edit_lines,
                                         name='publication')
 
-    def __init__(self, parent):
+    def __init__(self, parent, subject_presenter):
         super().__init__(parent=parent,
-                         model=PublicationModel(None),
+                         model=PublicationModel(),
                          view=PublicationView(parent),
                          form_def=self.form_def)
+        self.subject_presenter = subject_presenter
+
 
     def selection_handler(self, event):
         super().selection_handler(event)
         selected_item = self.view.list.GetSelection()
         if selected_item is not None:
             record = self.model.ItemToObject(selected_item)
-            #self.grinder_presenter.parent_changed(record)
 
     def call_delete_query(self, record):
         df.delete_publication(record)
@@ -90,6 +91,21 @@ class PublicationPresenter(ModalEditPresenter):
         via the models
         """
         pass
+
+    def parent_changed(self):
+        subject_record = self.subject_presenter.get_selected_record()
+        if subject_record is None:
+            return
+        subject_id = subject_record[c.FIELD_NAME_ID]
+        records = self.model.create_data(self.model.get_records(subject_id))
+        self.update_data(records)
+
+    def add(self, event):
+        subject_record = self.subject_presenter.get_selected_record()
+        if subject_record is None:
+            return
+        record = self.model.make_new_record(subject_record[c.FIELD_NAME_ID])
+        super().add_record(record)
 
 
 class PublicationView(ModalEditView):

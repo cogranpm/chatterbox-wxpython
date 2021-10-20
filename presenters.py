@@ -12,6 +12,7 @@ import chatterbox_constants as c
 import forms as frm
 from models import BaseEntityModel
 from views import BaseView
+from lists import get_selected_item, get_record_from_item
 
 
 class BasePresenter(ABC):
@@ -45,13 +46,12 @@ class BasePresenter(ABC):
     def call_delete_query(self, record):
         df.delete_record(self.model.collection_name, record)
 
-    def parent_changed(self, record):
-        self.model.parent_key = record[c.FIELD_NAME_ID]
-        records = self.model.create_data()
-        self.update_data(records)
 
     def parent_deleted(self):
         self.model.clear_data()
+
+    def validate_record(self, record):
+        return True
 
 
 class PanelEditPresenter(BasePresenter):
@@ -88,11 +88,15 @@ class PanelEditPresenter(BasePresenter):
             if self.view.Validate():
                 self.view.bind(c.BindDirection.from_window)
                 if self.view_state == c.ViewState.adding:
+                    if not self.validate_record(record):
+                        return
                     self.added_record(record)
                     df.add_record(self.model.collection_name, record)
                 else:
                     selected_item = self.view.list.GetSelection()
                     record = self.model.ItemToObject(selected_item)
+                    if not self.validate_record(record):
+                        return
                     df.update_record(self.model.collection_name, record)
                     self.edited_record(record)
                 self.set_view_state(c.ViewState.loaded)
@@ -133,6 +137,8 @@ class PanelEditPresenter(BasePresenter):
         self.view_state = state
 
 
+
+
     def selection_handler(self, event):
         # not quite sure what to do, load the selection so it can be deleted?
         pass
@@ -161,7 +167,11 @@ class ModalEditPresenter(BasePresenter):
             frm.bind_button(self.view.btn_add, self.add)
             self.bind_edit_button_event()
             frm.bind_button(self.view.btn_delete, self.delete)
-        self.model.change_data(self.model.create_data())
+        # self.model.change_data(self.model.create_data())
+
+    @abstractmethod
+    def add(self, event):
+        pass
 
     def bind_edit_button_event(self):
         frm.bind_button(self.view.btn_edit, self.edit)
@@ -172,14 +182,15 @@ class ModalEditPresenter(BasePresenter):
     def selection_handler(self, event):
         pass
 
-    def add(self, event):
-        record = self.model.make_new_record()
+    def add_record(self, record):
         dlg: frm.FormDialog = frm.make_dialog(parent=self.parent, title='Add Generic')
         dlg.build(self.form_def)
         self.form_def.bind(record)
         dlg.TransferDataToWindow()
         result = dlg.ShowModal()
         if result == wx.ID_OK:
+            if not self.validate_record(record):
+                return
             df.add_record(self.model.collection_name, record)
             self.added_record(record)
 
@@ -192,6 +203,8 @@ class ModalEditPresenter(BasePresenter):
         dlg.TransferDataToWindow()
         result = dlg.ShowModal()
         if result == wx.ID_OK:
+            if not self.validate_record(record):
+                return
             df.update_record(self.model.collection_name, record)
             self.edited_record(record)
 
@@ -205,3 +218,9 @@ class ModalEditPresenter(BasePresenter):
     def delete_record(self, selected_item, record):
         self.deleted_record(selected_item, record)
 
+    # TODO - see if this can be put in the base class
+    def get_selected_record(self):
+        selected_item = get_selected_item(self.view.list)
+        if selected_item.IsOk():
+            return get_record_from_item(self.model, selected_item)
+        return None

@@ -12,6 +12,7 @@ from presenters import ModalEditPresenter
 from views import ModalEditViewParent
 from grinder import GrinderPresenter
 from publication import PublicationPresenter
+from snippet import SnippetHeaderPresenter
 from fn_format import trunc
 import forms as frm
 
@@ -21,6 +22,7 @@ from lists import ColumnType, ColumnSpec, get_selected_item, get_record_from_ite
 from forms import large
 from validators import not_empty, FieldValidator
 import fn_widget as w
+from Exception import InvalidParentKeyError
 
 
 class SubjectModel(BaseEntityModel):
@@ -28,6 +30,7 @@ class SubjectModel(BaseEntityModel):
     help = 'Subject'
     name_column = 'name'
     description_column = 'description'
+    shelf_id_column = 'shelf_id'
 
     columns: List[ColumnSpec] = [
         ColumnSpec(key=name_column, data_type=ColumnType.str, label='Name', width=100, sortable=True, browseable=True,
@@ -36,14 +39,14 @@ class SubjectModel(BaseEntityModel):
                    format_fn=trunc)
     ]
 
-    def __init__(self, shelf_id: int):
-        super().__init__(shelf_id, self.columns, c.COLLECTION_NAME_SUBJECT)
+    def __init__(self):
+        super().__init__(self.columns, c.COLLECTION_NAME_SUBJECT)
 
-    def make_new_record(self):
-        return {c.FIELD_NAME_ID: None, 'shelf_id': self.parent_key, self.name_column: '', self.description_column: ''}
+    def make_new_record(self, shelf_id: int):
+        return {c.FIELD_NAME_ID: None, self.shelf_id_column: shelf_id, self.name_column: '', self.description_column: ''}
 
-    def get_records(self):
-        return df.get_subjects_by_shelf(self.parent_key)
+    def get_records(self, shelf_id: int):
+        return df.get_subjects_by_shelf(shelf_id)
 
 
 class SubjectPresenter(ModalEditPresenter):
@@ -59,29 +62,61 @@ class SubjectPresenter(ModalEditPresenter):
                                         edit_lines=edit_lines,
                                         name='subject')
 
-    def __init__(self, parent):
+    def __init__(self, shelf_presenter, parent):
         super().__init__(parent=parent,
-                         model=SubjectModel(None),
+                         model=SubjectModel(),
                          view=SubjectView(parent),
                          form_def=self.form_def)
-        self.grinder_presenter = GrinderPresenter(self.view.notebook)
-        self.publication_presenter = PublicationPresenter(self.view.notebook)
-        self.child_presenters = [self.grinder_presenter, self.publication_presenter]
+
+        self.shelf_presenter = shelf_presenter
+        self.grinder_presenter = GrinderPresenter(self.view.notebook, self)
+        self.publication_presenter = PublicationPresenter(self.view.notebook, self)
+        self.snippet_header_presenter = SnippetHeaderPresenter(self.view.notebook, self)
+        self.child_presenters = [self.grinder_presenter, self.publication_presenter, self.snippet_header_presenter]
         self.view.add_child_page(self.grinder_presenter.view, "Grinders", True)
         self.view.add_child_page(self.publication_presenter.view, "Publications", False)
+        self.view.add_child_page(self.snippet_header_presenter.view, "Snippets", False)
         self.view.init_children()
+
+        # load the initial data based on parent shelf selection
+        shelf_record = self.shelf_presenter.get_selected_record()
+        if shelf_record is not None:
+            records = self.model.get_records(shelf_record[c.FIELD_NAME_ID])
+            self.model.change_data(self.model.create_data(records))
 
     def selection_handler(self, event):
         super().selection_handler(event)
         record = get_record_from_item(self.model, get_selected_item(self.view.list))
         if record is not None:
             for presenter in self.child_presenters:
-                presenter.parent_changed(record)
+                presenter.parent_changed()
 
     def call_delete_query(self, record):
         df.delete_subject(record)
         for presenter in self.child_presenters:
             presenter.parent_deleted()
+
+    def validate_record(self, record):
+        if record[SubjectModel.shelf_id_column] is None:
+            raise InvalidParentKeyError
+        return super().validate_record(record)
+
+
+    def parent_changed(self):
+        shelf_record = self.shelf_presenter.get_selected_record()
+        if shelf_record is None:
+            return
+        shelf_id = shelf_record[c.FIELD_NAME_ID]
+        records = self.model.create_data(self.model.get_records(shelf_id))
+        self.update_data(records)
+
+    def add(self, event):
+        shelf_record = self.shelf_presenter.get_selected_record()
+        if shelf_record is None:
+            return
+        record = self.model.make_new_record(shelf_record[c.FIELD_NAME_ID])
+        super().add_record(record)
+
 
 
 class SubjectView(ModalEditViewParent):
@@ -102,88 +137,5 @@ class SubjectView(ModalEditViewParent):
     def add_child_page(self, view, caption: str, default: bool):
         self.notebook.AddPage(view, caption, default)
 
-  
-# class Subject:
-#
-#     def __init__(self, parent, parent_container, grinder: gr.Grinder):
-#         self.parent = parent
-#         self.grinder = grinder
-#         self.shelf_id = None
-#         self.list_spec = make_list_spec(fkey=self.shelf_id, selection_handler=self.__selection_change, edit_handler=self.__edit)
-#         self.panel_spec = make_panel_spec(parent=parent_container, name='frmPanel', title=title,
-#                                           collection_name=collection_name,
-#                                           add_handler=self.__add, edit_handler=self.__edit)
-#         self.panel = make_panel(self.panel_spec, self.list_spec)
-#
-#     # called from event on panel
-#     def __add(self, event):
-#         if self.shelf_id is None:
-#             return
-#         record = make_new_record(self.shelf_id)
-#
-#         dlg: FormDialog = make_dialog(parent=self.parent,
-#                                              record=record, title=title, collection_name=collection_name)
-#         form: FormSpec = self.__make_form(dialog=dlg, name=form_name,
-#                                           record=record, form_title="Add " + title, helpstr=helpstr)
-#         dlg.build(form)
-#         result = dlg.ShowModal()
-#         if result == wx.ID_OK:
-#             df.add_record(collection_name, record)
-#             self.list_spec.added_record(record)
-#
-#     def __edit(self, event):
-#         selected_item = get_selected_item(self.panel.list)
-#         record = get_record_from_item(self.list_spec.model, selected_item)
-#         dlg: FormDialog = make_dialog(parent=self.parent,
-#                                       record=record, title=title, collection_name=collection_name)
-#         form: FormSpec = self.__make_form(dialog=dlg, name=form_name,
-#                                           record=record, form_title="Edit " + title, helpstr=helpstr)
-#         dlg.build(form)
-#         result = dlg.ShowModal()
-#         if result == wx.ID_OK:
-#             df.update_record(collection_name, record)
-#             self.list_spec.edited_record(record)
-#
-#     def __selection_change(self, event: dv.DataViewEvent):
-#         selected_item = get_selected_item(self.panel.list)
-#         if selected_item is not None:
-#             record = get_record_from_item(self.list_spec.model, selected_item)
-#             self.grinder.parent_changed(record[c.FIELD_NAME_ID])
-#
-#     def __make_form(self, dialog: FormDialog, name: str, record, form_title: str, helpstr: str):
-#         form: FormSpec = FormSpec(parent=dialog, name=name, title=form_title, helpstr=helpstr, edit_lines=[
-#             edit_line("Name", [TextField(name_column, large(),
-#                                          validator=FieldValidator(record, name_column, [not_empty]))]),
-#             edit_line("Description", [TextField(description_column, large(),
-#                                                 validator=FieldValidator(record, description_column, [not_empty]))])
-#         ])
-#         return form
-#
-#     # comes from a list event
-#     def parent_changed(self, fkey: int):
-#         self.shelf_id = fkey
-#         self.list_spec.update_data(create_data(fkey, df.get_subjects_by_shelf))
-#
-#
-# def create_data(shelf_key, query_fn):
-#     records = query_fn(shelf_key)
-#     list = []
-#     for record in records:
-#         list.append(record)
-#     return list
-#
-#
-# def make_new_record(shelf_id: int):
-#     return {'id': None, 'shelf_id': shelf_id, 'name': '', 'description': ''}
-#
-#
-# def make_list_spec(fkey, selection_handler, edit_handler):
-#     return ListSpec(columns=[
-#         ColumnSpec(key=name_column, data_type=ColumnType.str, label='Name', width=100, sortable=True, browseable=True, format_fn=None),
-#         ColumnSpec(key=description_column, data_type=ColumnType.str, label='Description', width=100, sortable=True, browseable=True, format_fn=None)
-#     ], selection_handler=selection_handler,
-#         edit_handler=edit_handler,
-#         data=create_data(fkey, df.get_subjects_by_shelf))
-#
-#
-#
+
+

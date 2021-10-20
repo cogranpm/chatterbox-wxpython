@@ -27,6 +27,7 @@ from presenters import ModalEditPresenter
 from views import ModalEditViewParent
 from subject import SubjectPresenter
 import fn_widget as w
+from Exception import InvalidParentKeyError
 
 
 
@@ -41,7 +42,7 @@ class ShelfModel(BaseEntityModel):
     ]
 
     def __init__(self):
-        super().__init__(None, self.columns, c.COLLECTION_NAME_SHELF)
+        super().__init__(self.columns, c.COLLECTION_NAME_SHELF)
 
     def make_new_record(self):
         return {c.FIELD_NAME_ID: None, self.name_column: ''}
@@ -70,20 +71,25 @@ class ShelfPresenter(ModalEditPresenter):
                          form_def=self.form_def)
 
         # set if we can "put" the subject in the child container
-        self.subject_presenter = SubjectPresenter(self.view.subject_container)
+        self.subject_presenter = SubjectPresenter(self, self.view.subject_container)
         self.view.init_children()
+        self.model.change_data(self.model.create_data(self.model.get_records()))
 
 
     def selection_handler(self, event):
         super().selection_handler(event)
-        #selected_item = self.view.list.GetSelection()
-        #record = self.model.ItemToObject(selected_item)
-        self.subject_presenter.parent_changed(get_record_from_item(self.model, get_selected_item(self.view.list)))
+        # print(get_record_from_item(self.model, get_selected_item(self.view.list)))
+        self.subject_presenter.parent_changed()
 
     # replace this, need to pass on delete request to subject presenter
     def call_delete_query(self, record):
         df.delete_shelf(record)
         self.subject_presenter.parent_deleted()
+
+    def add(self, event):
+        record = self.model.make_new_record()
+        super().add_record(record)
+
 
 
 class ShelfView(ModalEditViewParent):
